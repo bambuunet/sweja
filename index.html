@@ -9,28 +9,34 @@
     <script type="text/javascript" src="js/Classes.js"></script>
     <script type="text/javascript" src="js/SwephData.js"></script>
     <script type="text/javascript" src="js/SwissData.js"></script>
+    <script type="text/javascript" src="js/SwissLib.js"></script>
+    <script type="text/javascript" src="js/Swemmoon.js"></script>
     
     <script type="text/javascript" src="js/SweDate.js"></script>
+    <script type="text/javascript" src="js/Swecl.js"></script>
     <script type="text/javascript" src="js/SwissEph.js"></script>
     <title>swejs</title>
   </head>
   <body>
 
     <script>
-      Swe;
+      
       var jday = 1, jmon = 1, jyear = 2018;
       var jut = 0.0;
       var SE_GREG_CAL = true;
-      var tjd_ut = Swe.SweDate.swe_julday(jyear,jmon,jday,jut,SE_GREG_CAL); 
+
+      var date = new SweDate;
+      var tjd_ut = date.swe_julday(jyear,jmon,jday,jut,SE_GREG_CAL); 
       console.log("tjd_ut:" + tjd_ut);
 
       var p = Swe.SE_SUN;
       var iflag = Swe.SEFLG_SPEED;
 
       var x2 = [];
-      var serr = 0;
+      var serr = "";
 
-      var iflgret = Swe.SwissEph.swe_calc_ut(tjd_ut, p, iflag, x2, serr);
+      var eph = new SwissEph;
+      var iflgret = eph.swe_calc_ut(tjd_ut, p, iflag, x2, serr);
 
 
 
