@@ -1,6 +1,6 @@
 class SweDate{
-  constructor(){
-    this.sw =  new SwissData;
+  constructor(year, month, day, hour, calType){
+    this.sw =  Swe.SwissData;
     this.SUNDAY = 0;
     this.MONDAY = 1,
     this.TUESDAY = 2;
@@ -14,13 +14,13 @@ class SweDate{
     this.SE_KEEP_JD = false;
     this.init_leapseconds_done = false;
 
-    this.JD0 = 2440587.5;//1970 January 1.0
+    this.JD0 = 2440587.5;
     this.tid_acc  = Swe.SE_TIDAL_DEFAULT;
 
     this.is_tid_acc_manual  = false;
     this.init_dt_done = false;
     this.jd = 0.0;
-    this.jdCO  = 2299160.5;// JD for the start of the Gregorian calendar system (October 15, 1582) =
+    this.jdCO  = 2299160.5;
     this.calType = false;
     this.year = 0;
     this.month = 0;
@@ -116,89 +116,489 @@ class SweDate{
          1570, 1090,  740,  490,  320,  200,  120,
     ];
 
+    /* Leap seconds were inserted at the end of the following days:*/
+    this.NLEAP_SECONDS = 26;
+    this.NLEAP_SECONDS_SPACE = 100;
+    this.leap_seconds = [
+      19720630,
+      19721231,
+      19731231,
+      19741231,
+      19751231,
+      19761231,
+      19771231,
+      19781231,
+      19791231,
+      19810630,
+      19820630,
+      19830630,
+      19850630,
+      19871231,
+      19891231,
+      19901231,
+      19920630,
+      19930630,
+      19940630,
+      19951231,
+      19970630,
+      19981231,
+      20051231,
+      20081231,
+      20120630,
+      20150630,
+      0,  /* keep this 0 as end mark */
+      // JAVA ONLY to have the array extended to NLEAP_SECONDS_SPACE elements:
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+    this.J1972 = 2441317.5;
+    this.NLEAP_INIT = 10;
+
+    //引数がゼロ
+    if(year === undefined){
+      var now = new Date();
+      year = now.getUTCFullYear();
+      month = now.getUTCMonth() + 1;
+      day = now.getUTCDate();
+      hour = now.getUTCHours() + now.getUTCMinutes()/60 + now.getUTCSeconds()/3600;
+      this.setFields(year, month, day, hour, this.SE_GREG_CAL);
+    //引数が1つ
+    }else if(month === undefined){
+      var jd = year;
+      this.initDateFromJD(jd, this.jdCO<=jd?this.SE_GREG_CAL:this.SE_JUL_CAL);
+    //引数が2つ
+    }else if(day === undefined){
+      var jd = year;
+      var calType = month;
+      this.initDateFromJD(jd, calType);
+    //引数が4つ
+    }else if(calType === undefined){
+      this.setFields(year, month, day, hour);
+    //引数が5つ
+    }else{
+      this.setFields(year, month, day, hour, calType);
+    }
   };
 
   getJulDay(year, month, day, hour, calType) {
-    if(year === null){
+    if(year === undefined){
       return this.jd;
     }
 
-    if(calType === null){
+    if(calType === undefined){
       return this.swe_julday(year, month, day, hour, this.SE_GREG_CAL);
     }
 
     return this.swe_julday(year, month, day, hour, calType);
   };
 
+  getDayOfWeekNr(year, month, day, calType) {
+    //引数がゼロ
+    if(year === undefined){
+      return (Math.floor(this.jd-5.5))%7;
+    //引数が1つ
+    }else if(month === undefined){
+      var jd = year;
+      return (Math.floor(jd-5.5))%7;
+    //引数が3つ
+    }else if(calType === undefined){
+      return (Math.floor(this.swe_julday(year, month, day, 0.0, this.SE_GREG_CAL)-5.5))%7;
+    //引数が4つ
+    }else{
+      return (Math.floor(this.swe_julday(year, month, day, 0.0, calType)-5.5))%7;
+    }
+  }
 
-  ////////////////////////////////////////////////////////////////////////////
-  /// deltaT
-  ////////////////////////////////////////////////////////////////////////////
-  /* DeltaT = Ephemeris Time - Universal Time, in days.
-   *
-   * 1620 - today + a couple of years:
-   * ---------------------------------
-   * The tabulated values of deltaT, in hundredths of a second,
-   * were taken from The Astronomical Almanac 1997, page K8.  The program
-   * adjusts for a value of secular tidal acceleration ndot = -25.7376.
-   * arcsec per century squared, the value used in JPL's DE403 ephemeris.
-   * ELP2000 (and DE200) used the value -23.8946.
-   * To change ndot, one can
-   * either redefine SE_TIDAL_DEFAULT in swephexp.h
-   * or use the routine swe_set_tid_acc() before calling Swiss
-   * Ephemeris.
-   * Bessel's interpolation formula is implemented to obtain fourth
-   * order interpolated values at intermediate times.
-   *
-   * -1000 - 1620:
-   * ---------------------------------
-   * For dates between -500 and 1600, the table given by Morrison &
-   * Stephenson (2004; p. 332) is used, with linear interpolation.
-   * This table is based on an assumed value of ndot = -26.
-   * The program adjusts for ndot = -25.7376.
-   * For 1600 - 1620, a linear interpolation between the last value
-   * of the latter and the first value of the former table is made.
-   *
-   * before -1000:
-   * ---------------------------------
-   * For times before -1100, a formula of Morrison & Stephenson (2004)
-   * (p. 332) is used:
-   * dt = 32 * t * t - 20 sec, where t is centuries from 1820 AD.
-   * For -1100 to -1000, a transition from this formula to the Stephenson
-   * table has been implemented in order to avoid a jump.
-   *
-   * future:
-   * ---------------------------------
-   * For the time after the last tabulated value, we use the formula
-   * of Stephenson (1997; p. 507), with a modification that avoids a jump
-   * at the end of the tabulated period. A linear term is added that
-   * makes a slow transition from the table to the formula over a period
-   * of 100 years. (Need not be updated, when table will be enlarged.)
-  */
+  getCalendarType() {
+    return this.calType;
+  }
+
+  getYear() {
+    return this.year;
+  }
+
+  getMonth() {
+    return this.month;
+  }
+
+  getDay() {
+    return this.day;
+  }
+
+  getHour() {
+    return this.hour;
+  }
+
+  getDeltaT(tjd) {
+    if(tjd === undefined){
+      if (this.deltatIsValid) { return this.deltaT; }
+      this.deltaT=calc_deltaT(this.getJulDay());
+      this.deltatIsValid=true;
+      return this.deltaT;
+    }
+
+    var sdt = this.calc_deltaT(tjd);
+    return sdt;
+  }
+
+  getDate(jd) {
+    //引数がoffsetである
+    if(Math.floor(jd) === jd){
+      var millis=((this.getJulDay()-this.JD0)*24*3600*1000)+offset;
+      return new Date(millis);
+    }
+
+    var millis=(jd-this.JD0)*24*3600*1000;
+    return new Date(millis);
+  }
+
+  setJulDay(newJD) {
+    this.jd=newJD;
+    this.deltatIsValid=false;
+    var dt=this.swe_revjul(newJD,this.calType);
+    this.year=dt.year;
+    this.month=dt.month;
+    this.day=dt.day;
+    this.hour=dt.hour;
+  }
+
+  setCalendarType(newCalType, keepDate) {
+    if (this.calType != this.newCalType) {
+      this.calType=newCalType;
+      this.deltatIsValid=false;
+      if (keepDate) {
+        this.jd=this.swe_julday(this.year, this.month, this.day,
+                           this.hour, this.calType);
+      } else {
+        var dt=this.swe_revjul(this.jd,newCalType);
+        this.year=dt.year;
+        this.month=dt.month;
+        this.day=dt.day;
+        this.hour=dt.hour;
+      }
+    }
+  }
+
+  updateCalendarType() {
+    this.calType=(this.jdCO<=this.jd?this.SE_GREG_CAL:this.SE_JUL_CAL);;
+  }
+
+
+  setDate(newYear, newMonth, newDay, newHour, check) {
+    this.year=newYear;
+    this.month=newMonth;
+    this.day=newDay;
+    this.hour=newHour;
+    this.deltatIsValid=false;
+    this.jd=this.swe_julday(this.year, this.month, this.day,
+                       this.hour, this.calType);
+    if (check) {
+      var oldMonth=newMonth;
+      var oldDay=newDay;
+      var oldHour=newHour;
+      var dt=this.swe_revjul(this.jd,this.calType);
+      this.year=dt.year;
+      this.month=dt.month;
+      this.day=dt.day;
+      this.hour=dt.hour;
+
+      return (this.year==newYear &&
+          this.month==oldMonth &&
+          this.day==oldDay &&
+          Math.abs(this.hour-oldHour)<1E-6);
+    }
+    return true;
+  }
+
+  setYear(newYear, check) {
+
+    this.year=newYear;
+    this.deltatIsValid=false;
+    this.jd=this.swe_julday(this.year, this.month, this.day,
+                       this.hour, this.calType);  // -> erzeugt JD
+    if (check) {
+      var oldMonth=this.month;
+      var oldDay=this.day;
+      var dt=this.swe_revjul(this.jd,this.calType);  // -> erzeugt neues Datum
+      this.year=dt.year;
+      this.month=dt.month;
+      this.day=dt.day;
+      this.hour=dt.hour;
+
+      return (this.year==newYear && this.month==oldMonth && this.day==oldDay);
+    }
+    return true;
+  }
+
+  setMonth(newMonth, check) {
+
+    this.month=newMonth;
+    this.deltatIsValid=false;
+    this.jd=this.swe_julday(this.year, this.month, this.day,
+                       this.hour, this.calType);  // -> erzeugt JD
+    if (check) {
+      var oldYear=this.year;
+      var oldDay=this.day;
+      var dt=this.swe_revjul(this.jd,this.calType);  // -> erzeugt neues Datum
+      this.year=dt.year;
+      this.month=dt.month;
+      this.day=dt.day;
+      this.hour=dt.hour;
+
+      return (this.year==oldYear && this.month==newMonth && this.day==oldDay);
+    }
+    return true;
+  }
+
+  setDay(newDay, check) {
+
+    this.day=newDay;
+    this.deltatIsValid=false;
+    this.jd=this.swe_julday(this.year, this.month, this.day,
+                       this.hour, this.calType);  // -> erzeugt JD
+    if (check) {
+      var oldYear=this.year;
+      var oldMonth=this.month;
+      var dt=this.swe_revjul(this.jd,this.calType);  // -> erzeugt neues Datum
+      this.year=dt.year;
+      this.month=dt.month;
+      this.day=dt.day;
+      this.hour=dt.hour;
+
+      return (this.year==oldYear && this.month==oldMonth && this.day==newDay);
+    }
+    return true;
+  }
+
+  setHour(newHour) {
+    this.hour=newHour;
+    this.jd=this.swe_julday(this.year, this.month, this.day,
+                       this.hour, this.calType);
+    return true;
+  }
+
+  checkDate() {
+
+    var cd = checkDate(this.year, this.month, this.day, this.hour);
+
+    return cd;
+  }
+
+
+  checkDate(year, month, day) {
+
+    var cd = checkDate(year, month, day, 0.0);
+
+    return cd;
+  }
+
+  checkDate(year, month, day, hour) {
+
+    var jd=this.swe_julday(year,month,day,hour,this.SE_GREG_CAL);
+    var dt=this.swe_revjul(jd,this.SE_GREG_CAL);
+
+    return (dt.year==year && dt.month==month && dt.day==day);
+  }
 
   /**
-  * Queries the delta T value for the date of this object.
-  * @return delta T
+  * Makes the date to be a valid date.
   */
-  getDeltaT(){
-    if(!this.deltatIsValid){
-      this.deltaT = this.calc_deltaT(this.getJulDay());
-    }
-    return this.deltaT;
-  };
+  makeValidDate() {
 
-  /* returns DeltaT (ET - UT) in days
-   * double tjd   =   julian day in UT
-   */
-  calc_deltaT(tjd){
+    var jd=this.swe_julday(this.year,this.month,this.day,this.hour,this.SE_GREG_CAL);
+    var dt=this.swe_revjul(jd,this.SE_GREG_CAL);
+    this.year=dt.year;
+    this.month=dt.month;
+    this.day=dt.day;
+    this.hour=dt.hour;
+
+  }
+
+  getGregorianChange() {
+
+    return this.jdCO;
+  }
+
+  setGregorianChange(year, month, day) {
+
+    this.year = year;
+    this.month = month;
+    this.day = day;
+    deltatIsValid = false;
+    this.calType = this.SE_GREG_CAL;
+    if (this.year < year ||
+        (this.year == year && this.month < month) ||
+        (this.year == year && this.month == month && this.day < day)) {
+      this.calType = this.SE_JUL_CAL;
+    }
+    this.jdCO = this.swe_julday(year, month, day, 0., this.SE_GREG_CAL);
+    this.jd = this.swe_julday(this.year, this.month, this.day, this.hour,
+                         this.calType);
+
+  }
+
+  /**
+  * Changes the date of the start of the Gregorian calendar system.
+  * This method will keep the julian day number and change year,
+  * month and day of the date of this SweDate object if required.
+  * @param newJDCO The julian day number, on which the Gregorian calendar
+  * came into effect.
+  */
+  setGregorianChange(newJDCO) {
+
+    this.jdCO = newJDCO;
+    this.calType = (this.jd>=this.jdCO?this.SE_GREG_CAL:this.SE_JUL_CAL);
+    var dt = this.swe_revjul(this.jd,this.calType);
+    this.year = dt.year;
+    this.month = dt.month;
+    this.day = dt.day;
+    this.hour = dt.hour;
+
+  }
+  // End of access to private variables ////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+  * Returns the tidal acceleration used in calculations of delta T.<br>
+  * Was <code>double swe_get_tid_acc()</code> in the original
+  * C sources.
+  * @return Tidal acceleration
+  */
+  getGlobalTidalAcc() {
+    return this.tid_acc;
+  }
+
+  swe_set_tid_acc(t_acc) {
+    this.setGlobalTidalAcc(t_acc);
+  }
+
+  setGlobalTidalAcc(t_acc) {
+    if (t_acc == Swe.SE_TIDAL_AUTOMATIC) {
+      this.tid_acc = Swe.SE_TIDAL_DEFAULT;
+      this.is_tid_acc_manual = false;
+      return;
+    }
+    this.tid_acc = t_acc;
+    this.is_tid_acc_manual = true;
+  }
+
+  swi_set_tid_acc(tjd_ut, iflag, denum) {
+    this.setGlobalTidalAcc(tjd_ut, iflag, denum);
+  }
+
+  setGlobalTidalAcc(tjd_ut, iflag, denum) {
+    var xx = new Array(6);
+    var tjd_et;
+    var retval = 0;
+    /* manual tid_acc overrides automatic tid_acc */
+    if (this.is_tid_acc_manual)
+      return;
+    if (denum == 0) {
+      if ((iflag & Swe.SEFLG_MOSEPH) != 0) {
+        this.tid_acc = Swe.SE_TIDAL_DE404;
+        return;
+      }
+      if (denum == 0) {
+        denum = 404; /* DE number of Moshier ephemeris */
+      }
+    }
+    switch(denum) {
+      case 200: this.tid_acc = Swe.SE_TIDAL_DE200; break;
+      case 403: this.tid_acc = Swe.SE_TIDAL_DE403; break;
+      case 404: this.tid_acc = Swe.SE_TIDAL_DE404; break;
+      case 405: this.tid_acc = Swe.SE_TIDAL_DE405; break;
+      case 406: this.tid_acc = Swe.SE_TIDAL_DE406; break;
+      case 421: this.tid_acc = Swe.SE_TIDAL_DE421; break; 
+      case 430: this.tid_acc = Swe.SE_TIDAL_DE430; break;
+      case 431: this.tid_acc = Swe.SE_TIDAL_DE431; break;
+      default: this.tid_acc = Swe.SE_TIDAL_DEFAULT; break;
+    }
+
+  }
+
+  setSwissEphObject(swiss) {
+    this.sw = swiss;
+  }
+
+  toString() {
+    var hour = getHour();
+    var h = (hour<10?" ":"") + Math.floor(hour) + ":";
+    hour = 60 * (hour - Math.floor(hour));
+    h += (hour<10?"0":"") + Math.floor(hour) + ":";
+    hour = 60 * (hour - Math.floor(hour));
+    h += (hour<10?"0":"") + hour ;
+
+    return "(YYYY/MM/DD) " +
+           getYear() + "/" +
+           (getMonth()<10?"0":"") + getMonth() + "/" +
+           (getDay()<10?"0":"") + getDay() + ", " +
+           h + "h " +
+           (getCalendarType()?"(greg)":"(jul)") + "\n" +
+           "Jul. Day: " + getJulDay() + "; " +
+           "DeltaT: " + getDeltaT();
+  }
+
+  swe_julday(year, month, day, hour, calType) {
+    var jd, u, u0, u1, u2;
+    u = year;
+    if (month < 3) { u -=1; }
+    u0 = u + 4712.0;
+    u1 = month + 1.0;
+    if (u1 < 4) { u1 += 12.0; }
+    jd = Math.floor(u0*365.25)
+       + Math.floor(30.6*u1+0.000001)
+       + day + hour/24.0 - 63.5;
+    if (calType == this.SE_GREG_CAL) {
+      u2 = Math.floor(Math.abs(u) / 100) - Math.floor(Math.abs(u) / 400);
+      if (u < 0.0) {
+        u2 = -u2;
+      }
+      jd = jd - u2 + 2;
+      if ((u < 0.0) && (u/100 == Math.floor(u/100)) &&
+                          (u/400 != Math.floor(u/400))) {
+        jd -=1;
+      }
+    }
+    return jd;
+  }
+
+  swe_revjul (jd, calType) {
+    var dt=new IDate();
+    var u0,u1,u2,u3,u4;
+
+    u0 = jd + 32082.5;
+    if (calType == this.SE_GREG_CAL) {
+      u1 = u0 + Math.floor (u0/36525.0) - Math.floor (u0/146100.0) - 38.0;
+      if (jd >= 1830691.5) {
+        u1 +=1;
+      }
+      u0 = u0 + Math.floor (u1/36525.0) - Math.floor (u1/146100.0) - 38.0;
+    }
+    u2 = Math.floor (u0 + 123.0);
+    u3 = Math.floor ( (u2 - 122.2) / 365.25);
+    u4 = Math.floor ( (u2 - Math.floor (365.25 * u3) ) / 30.6001);
+    dt.month = Math.floor(u4 - 1.0);
+    if (dt.month > 12) {
+      dt.month -= 12;
+    }
+    dt.day = Math.floor(u2 - Math.floor (365.25 * u3) - Math.floor (30.6001 * u4));
+    dt.year = Math.floor(u3 + Math.floor ( (u4 - 2.0) / 12.0) - 4800);
+    dt.hour = (jd - Math.floor (jd + 0.5) + 0.5) * 24.0;
+
+    return dt;
+  }
+
+  calc_deltaT(tjd) {
+
     var ans = 0;
     var B, Y, Ygreg, dd;
     var iy;
     var deltat_model = this.sw.astro_models[Swe.SE_MODEL_DELTAT];
-
     if (deltat_model == 0) deltat_model = Swe.SEMOD_DELTAT_DEFAULT;
     /* read additional values from swedelta.txt */
-    /* AS_BOOL use_espenak_meeus = DELTAT_ESPENAK_MEEUS_2006;*/
+    /*AS_BOOL use_espenak_meeus = DELTAT_ESPENAK_MEEUS_2006;*/
     Y = 2000.0 + (tjd - Swe.SwephData.J2000)/365.25;
     Ygreg = 2000.0 + (tjd - Swe.SwephData.J2000)/365.2425;
     /* Before 1633 AD, if the macro DELTAT_ESPENAK_MEEUS_2006 is TRUE: 
@@ -224,13 +624,13 @@ class SweDate{
          * linear interpolation between 
          * end of table dt2 and start of table dt */
         if (Y >= this.TAB2_END) { 
-    B = this.TABSTART - this.TAB2_END;
-    iy = (this.TAB2_END - this.TAB2_START) / this.TAB2_STEP;
-    dd = (Y - TAB2_END) / B;
-    /*ans = dt2[iy] + dd * (dt[0] / 100.0 - dt2[iy]);*/
-    ans = this.dt2[iy] + dd * (dt[0] - this.dt2[iy]);
-    ans = this.adjust_for_tidacc(ans, Ygreg);
-    return ans / 86400.0;
+          B = this.TABSTART - this.TAB2_END;
+          iy = (this.TAB2_END - this.TAB2_START) / this.TAB2_STEP;
+          dd = (Y - this.TAB2_END) / B;
+          /*ans = dt2[iy] + dd * (dt[0] / 100.0 - dt2[iy]);*/
+          ans = this.dt2[iy] + dd * (dt[0] - this.dt2[iy]);
+          ans = this.adjust_for_tidacc(ans, Ygreg);
+          return ans / 86400.0;
         }
       }
     }
@@ -241,27 +641,23 @@ class SweDate{
     if (Y >= this.TABSTART) {
       return this.deltat_aa(tjd);
     }
-
     return ans / 86400.0;
-  };
-
+  }
 
   deltat_aa(tjd) {
-    var ans = ans2 = ans3 = 0;
+    var ans = 0, ans2, ans3;
     var p, B, B2, Y, dd;
-    var d = [];
+    var d = new Array(6);
     var i, iy, k;
-
-    /* read additional values from swedelta.txt */
-    var tabsiz = Swe.TABSIZ;
-    var tabend = Swe.TABSTART + tabsiz - 1;
+    var tabsiz = this.TABSIZ;
+    var tabend = this.TABSTART + tabsiz - 1;
     /*Y = 2000.0 + (tjd - J2000)/365.25;*/
     Y = 2000.0 + (tjd - Swe.SwephData.J2000)/365.2425;
     if (Y <= tabend) {
       /* Index into the table.
        */
       p = Math.floor(Y);
-      iy = parseInt(p - Swe.TABSTART, 10);
+      iy = Math.floor(p - this.TABSTART);
       /* Zeroth order estimate is value at start of year */
       ans = this.dt[iy];
       k = iy + 1;
@@ -270,16 +666,18 @@ class SweDate{
       /* The fraction of tabulation interval */
       p = Y - p;
       /* First order interpolated value */
-      ans += p*(this.dt[k] - this.dt[iy]);
+      ans += p*( this.dt[k] - this.dt[iy]);
       if( (iy-1 < 0) || (iy+2 >= tabsiz) )
         return this.deltat_aa_label_done(ans, Y); /* can't do second differences */
       /* Make table of first differences */
       k = iy - 2;
       for( i=0; i<5; i++ ) {
-        if( (k < 0) || (k+1 >= tabsiz) )
+        if( (k < 0) || (k+1 >= tabsiz) ){
           d[i] = 0;
-        else
+        }
+        else{
           d[i] = this.dt[k+1] - this.dt[k];
+        }
         k += 1;
       }
       /* Compute second differences */
@@ -306,12 +704,6 @@ class SweDate{
 
       return this.deltat_aa_label_done(ans, Y); /* No data, can't go on. */
     }
-    /* today - :
-     * Formula Stephenson (1997; p. 507),
-     * with modification to avoid jump at end of AA table,
-     * similar to what Meeus 1998 had suggested.
-     * Slow transition within 100 years.
-     */
     B = 0.01 * (Y - 1820);
     ans = -20 + 31 * B * B;
     /* slow transition from tabulated values to Stephenson formula: */
@@ -323,22 +715,20 @@ class SweDate{
       ans += dd * (Y - (tabend + 100)) * 0.01;
     }
     return ans / 86400.0;
-  };
+  }
 
   deltat_longterm_morrison_stephenson(tjd) {
     var Ygreg =  2000.0 + (tjd - Swe.SwephData.J2000)/365.2425;
     var u = (Ygreg  - 1820) / 100.0;
     return (-20 + 32 * u * u);
-  };
+  }
 
   deltat_stephenson_morrison_1600(tjd) {
-    var ans = ans2 = ans3 = 0;
-    var p, B, dd, tjd0, iy;
+    var ans = 0, ans2, ans3;
+    var p, B, dd;
+    var tjd0;
+    var iy;
     var Y = 2000.0 + (tjd - Swe.SwephData.J2000)/365.2425;
-
-    /* before -1000:
-     * formula by Stephenson&Morrison (2004; p. 335) but adjusted to fit the 
-     * starting point of table dt2. */
     if( Y < this.TAB2_START ) {
       /*B = (Y - LTERM_EQUATION_YSTART) * 0.01;
       ans = -20 + LTERM_EQUATION_COEFF * B * B;*/
@@ -347,39 +737,32 @@ class SweDate{
       /* transition from formula to table over 100 years */
       if (Y >= this.TAB2_START - 100) {
         /* starting value of table dt2: */
-        ans2 = this.adjust_for_tidacc(this.dt2[0], this.TAB2_START);
-        /* value of formula at epoch TAB2_START */
-        /* B = (TAB2_START - LTERM_EQUATION_YSTART) * 0.01;
-        ans3 = -20 + LTERM_EQUATION_COEFF * B * B;*/
+        ans2 = this.adjust_for_tidacc(dt2[0], this.TAB2_START);
         tjd0 = (this.TAB2_START - 2000) * 365.2425 + Swe.SwephData.J2000;
         ans3 = this.deltat_longterm_morrison_stephenson(tjd0);
         ans3 = this.adjust_for_tidacc(ans3, Y);
         dd = ans3 - ans2;
         B = (Y - (this.TAB2_START - 100)) * 0.01;
-        /* fit to starting point of table dt2. */
         ans = ans - dd * B;
       }
     }
-    /* between -1000 and 1600: 
-     * linear interpolation between values of table dt2 (Stephenson&Morrison 2004) */
     if (Y >= this.TAB2_START && Y < this.TAB2_END) { 
       var Yjul = 2000 + (tjd - 2451557.5) / 365.25;
       p = Math.floor(Yjul);
-      iy = parseInt((p - this.TAB2_START) / this.TAB2_STEP, 10);
+      iy = Math.floor((p - this.TAB2_START) / this.TAB2_STEP);
       dd = (Yjul - (this.TAB2_START + this.TAB2_STEP * iy)) / this.TAB2_STEP;
       ans = this.dt2[iy] + (this.dt2[iy+1] - this.dt2[iy]) * dd;
-      /* correction for tidal acceleration used by our ephemeris */
       ans = this.adjust_for_tidacc(ans, Y);
     }
     ans /= 86400.0;
     return ans;
-  };
+  }
 
   deltat_espenak_meeus_1620(tjd) {
     var ans = 0;
     var Ygreg;
     var u;
-    Ygreg = 2000.0 + (tjd - SwephData.J2000)/365.2425;
+    Ygreg = 2000.0 + (tjd - Swe.SwephData.J2000)/365.2425;
     if (Ygreg < -500) {
       ans = this.deltat_longterm_morrison_stephenson(tjd);
     } else if (Ygreg < 500) {
@@ -419,55 +802,291 @@ class SweDate{
     ans = this.adjust_for_tidacc(ans, Ygreg);
     ans /= 86400.0;
     return ans;
-  };
+  }
 
   deltat_aa_label_done(ans, Y) {
     ans = this.adjust_for_tidacc(ans, Y);
     return ans / 86400.0;
-  };
+  }
 
-  /* Astronomical Almanac table is corrected by adding the expression
-   *     -0.000091 (ndot + 26)(year-1955)^2  seconds
-   * to entries prior to 1955 (AA page K8), where ndot is the secular
-   * tidal term in the mean motion of the Moon.
-   *
-   * Entries after 1955 are referred to atomic time standards and
-   * are not affected by errors in Lunar or planetary theory.
-   */
   adjust_for_tidacc(ans, Y) {
     var B;
     if( Y < 1955.0 ) {
       B = (Y - 1955.0);
       ans += -0.000091 * (this.tid_acc + 26.0) * B * B;
     }
+
     return ans;
-  };
-
-
-
-  swe_julday(year, month, day, hour, calType) {
-    var jd, u, u0, u1, u2;
-    u = year;
-    if (month < 3) { u -=1; }
-    u0 = u + 4712.0;
-    u1 = month + 1.0;
-    if (u1 < 4) { u1 += 12.0; }
-    jd = Math.floor(u0*365.25)
-       + Math.floor(30.6*u1+0.000001)
-       + day + hour/24.0 - 63.5;
-    if (calType == this.SE_GREG_CAL) {
-      u2 = Math.floor(Math.abs(u) / 100) - Math.floor(Math.abs(u) / 400);
-      if (u < 0.0) {
-        u2 = -u2;
-      }
-      jd = jd - u2 + 2;
-      if ((u < 0.0) && (u/100 == Math.floor(u/100)) &&
-                          (u/400 != Math.floor(u/400))) {
-        jd -=1;
-      }
-    }
-    return jd;
   }
 
+  initDateFromJD(jd, calType) {
+    this.jd=jd;
+    this.calType=calType;
+    var dt=this.swe_revjul(jd, calType);
+    this.year=dt.year;
+    this.month=dt.month;
+    this.day=dt.day;
+    this.hour=dt.hour;
+
+  }
+
+  setFields(year, month, day, hour, calType) {
+    if(calType === undefined){
+      var dt=this.swe_revjul(this.jdCO,this.SE_GREG_CAL);
+      var calType = this.SE_GREG_CAL;
+      if (dt.year > year ||
+          (dt.year == year && dt.month > month) ||
+          (dt.year == year && dt.month == month && dt.day > day)) {
+        calType = this.SE_JUL_CAL;
+      }
+      this.setFields(year, month, day, hour, calType);
+    }
+
+    this.year=year;
+    this.month=month;
+    this.day=day;
+    this.hour=hour;
+    this.calType=calType;
+    this.jd=this.swe_julday(year, month, day, hour, calType);
+  }
+
+
+  getUTCFromLocalTime(iyear, imonth, iday, ihour, imin, dsec, d_timezone) {
+    return this.getLocalTimeFromUTC(iyear, imonth, iday, ihour, imin, dsec, -d_timezone);
+  };
+
+  getLocalTimeFromUTC(iyear, imonth, iday, ihour, imin, dsec, d_timezone) {
+    var iyear_out, imonth_out, iday_out, ihour_out, imin_out;
+    var dsec_out;
+    var tjd, d;
+    var have_leapsec = false;
+    var dhour;
+    if (dsec >= 60.0) {
+      have_leapsec = true;
+      dsec -= 1.0;
+    }
+    dhour = ihour + imin / 60.0 + dsec / 3600.0;
+    tjd = this.swe_julday(iyear, imonth, iday, 0, this.SE_GREG_CAL);
+    dhour -= d_timezone;
+    if (dhour < 0.0) {
+      tjd -= 1.0;
+      dhour += 24.0;
+    }
+    if (dhour >= 24.0) {
+      tjd += 1.0;
+      dhour -= 24.0;
+    }
+//    swe_revjul(tjd + 0.001, SE_GREG_CAL, iyear_out, imonth_out, iday_out, &d);
+    var dt = this.swe_revjul(tjd + 0.001, this.SE_GREG_CAL);
+    iyear_out = dt.year;
+    imonth_out = dt.month;
+    iday_out = dt.day;
+    ihour_out = Math.floor(dhour);
+    d = (dhour - ihour_out) * 60;
+    imin_out = Math.floor(d);
+    dsec_out = (d - imin_out) * 60;
+    if (have_leapsec) dsec_out += 1.0;
+    return new SDate(iyear_out, imonth_out, iday_out, ihour_out, imin_out, dsec_out);
+  }
+
+  init_leapsec() {
+    return NLEAP_SECONDS;
+  }
+
+  isValidUTCDate(iyear, imonth, iday, ihour, imin, dsec, gregflag) {
+    return this.getInvalidUTCDateError(iyear, imonth, iday, ihour, imin, dsec, gregflag) == null;
+  }
+
+  getInvalidUTCDateError(iyear, imonth, iday, ihour, imin, dsec, gregflag) {
+    var dret = new Array(2);
+    var tjd_ut1, tjd_et, tjd_et_1972, dhour, d;
+    var iyear2, imonth2, iday2;
+    var i, j, ndat, nleap, tabsiz_nleap;
+    tjd_ut1 = this.swe_julday(iyear, imonth, iday, 0, gregflag);
+    var dt = this.swe_revjul(tjd_ut1, gregflag);
+
+    if (iyear != dt.year || imonth != dt.month || iday != dt.day) {
+      return "invalid date: year = " + iyear + ", month = " + imonth + ", day = " + iyear + iday;
+    }
+    if (ihour < 0 || ihour > 23
+     || imin < 0 || imin > 59
+     || dsec < 0 || dsec >= 61
+     || (dsec >= 60 && (imin < 59 || ihour < 23 || tjd_ut1 < J1972))) {
+      return "invalid time: " + ihour + ":" + imin + ":" + dsec;
+    }
+
+    tabsiz_nleap = this.init_leapsec();
+    ndat = iyear * 10000 + imonth * 100 + iday;
+
+    if (dsec >= 60) {
+      j = 0;
+      for (i = 0; i < tabsiz_nleap; i++) {
+        if (ndat == this.leap_seconds[i]) {
+          j = 1;
+          break;
+        }
+      }
+      if (j != 1) {
+        return "invalid time (no leap second!): " + ihour + ":" + imin + ":" + dsec;
+      }
+    }
+    return null;
+  }
+
+  getJDfromUTC(iyear, imonth, iday, ihour, imin, dsec, gregflag, checkValidInput) {
+    var dret = new Array(2);
+    var tjd_ut1, tjd_et, tjd_et_1972, dhour, d;
+    var i, j, ndat, nleap, tabsiz_nleap;
+
+    if (checkValidInput) {
+      var err = this.getInvalidUTCDateError(iyear, imonth, iday, ihour, imin, dsec, gregflag);
+      if (err != null) {
+        tjd_ut1 = this.swe_julday(iyear, imonth, iday, ihour+imin/60.+dsec/3600., gregflag);
+        throw new SwissephException(tjd_ut1, SwissephException.INVALID_DATE, err);
+      }
+    }
+    tjd_ut1 = this.swe_julday(iyear, imonth, iday, 0, gregflag);
+    dhour = ihour + imin / 60.0 + dsec / 3600.0;
+
+    if (tjd_ut1 < J1972) {
+      dret[1] = this.swe_julday(iyear, imonth, iday, dhour, gregflag);
+      dret[0] = dret[1] + getDeltaT(dret[1]);
+      return dret;
+    }
+
+    if (gregflag == this.SE_JUL_CAL) {
+      gregflag = this.SE_GREG_CAL;
+      var dt = this.swe_revjul(tjd_ut1, gregflag);
+    }
+
+    tabsiz_nleap = init_leapsec();
+    nleap = this.NLEAP_INIT;
+    ndat = iyear * 10000 + imonth * 100 + iday;
+    for (i = 0; i < tabsiz_nleap; i++) {
+      if (ndat <= this.leap_seconds[i])
+        break;
+      nleap++;
+    }
+
+    d = this.getDeltaT(tjd_ut1) * 86400.0;
+    if (d - nleap - 32.184 >= 1.0) {
+      dret[1] = tjd_ut1 + dhour / 24.0;
+      dret[0] = dret[1] + this.getDeltaT(dret[1]);
+      return dret;
+    }
+    /*
+     * convert UTC to ET and UT1
+     */
+    /* the number of days between input date and 1 jan 1972: */
+    d = tjd_ut1 - J1972;
+    /* SI time since 1972, ignoring leap seconds: */
+    d += ihour / 24.0 + imin / 1440.0 + dsec / 86400.0;
+    /* ET (TT) */
+    tjd_et_1972 = J1972 + (32.184 + this.NLEAP_INIT) / 86400.0;
+    tjd_et = tjd_et_1972 + d + ((nleap - this.NLEAP_INIT)) / 86400.0;
+    d = this.getDeltaT(tjd_et);
+    tjd_ut1 = tjd_et - this.getDeltaT(tjd_et - d);
+    tjd_ut1 = tjd_et - this.getDeltaT(tjd_ut1);
+    dret[0] = tjd_et;
+    dret[1] = tjd_ut1;
+    return dret;
+  }
+
+  getUTCfromJDET(tjd_et, gregflag) {
+    var i;
+    var second_60 = 0;
+    var iyear, imonth, iday, ihour, imin, iyear2, imonth2, iday2, nleap, ndat, tabsiz_nleap;
+    var dsec, d, tjd, tjd_et_1972, tjd_ut;
+    var dret = new Array(10);
+    /*
+     * if tjd_et is before 1 jan 1972 UTC, return UT1
+     */
+    tjd_et_1972 = J1972 + (32.184 + NLEAP_INIT) / 86400.0;
+    d = getDeltaT(tjd_et);
+    tjd_ut = tjd_et - this.getDeltaT(tjd_et - d);
+    tjd_ut = tjd_et - this.getDeltaT(tjd_ut);
+
+    if (tjd_et < tjd_et_1972) {
+      var dt=this.swe_revjul(tjd_ut, gregflag);
+      return new SDate(dt.year, dt.month, dt.day, dt.hour);
+    }
+
+    tabsiz_nleap = this.init_leapsec();
+    var dt=this.swe_revjul(tjd_ut-1, this.SE_GREG_CAL);
+    iyear2 = dt.year;
+    imonth2 = dt.month;
+    iday2 = dt.day;
+    d = dt.hour;
+    ndat = iyear2 * 10000 + imonth2 * 100 + iday2;
+    nleap = 0;
+    for (i = 0; i < tabsiz_nleap; i++) {
+      if (ndat <= this.leap_seconds[i])
+        break;
+      nleap++;
+    }
+    /* date of potentially missing leapsecond */
+    if (nleap < tabsiz_nleap) {
+      i = this.leap_seconds[nleap];
+      iyear2 = i / 10000;
+      imonth2 = (i % 10000) / 100;;
+      iday2 = i % 100;
+      tjd = this.swe_julday(iyear2, imonth2, iday2, 0, this.SE_GREG_CAL);
+
+      dt=this.swe_revjul(tjd_ut+1, this.SE_GREG_CAL);
+      iyear2 = dt.year;
+      imonth2 = dt.month;
+      iday2 = dt.day;
+      d = dt.hour;
+      dret = this.getJDfromUTC(iyear2,imonth2,iday2, 0, 0, 0, this.SE_GREG_CAL, false);
+      d = tjd_et - dret[0];
+      if (d >= 0) {
+        nleap++;
+      } else if (d < 0 && d > -1.0/86400.0) {
+        second_60 = 1;
+      }
+    }
+
+    tjd = J1972 + (tjd_et - tjd_et_1972) - (nleap + second_60) / 86400.0;
+
+    dt=this.swe_revjul(tjd, this.SE_GREG_CAL);
+    iyear = dt.year;
+    imonth = dt.month;
+    iday = dt.day;
+    d = dt.hour;
+    ihour = Math.floor(d);
+    d -= ihour;
+    d *= 60;
+    imin = Math.floor(d);
+    dsec = (d - imin) * 60.0 + second_60;
+
+    d = this.getDeltaT(tjd_et);
+    d = this.getDeltaT(tjd_et - d);
+    if (d * 86400.0 - (nleap + this.NLEAP_INIT) - 32.184 >= 1.0) {
+
+      dt=this.swe_revjul(tjd_et - d, this.SE_GREG_CAL);
+      iyear = dt.year;
+      imonth = dt.month;
+      iday = dt.day;
+      d = dt.hour;
+      ihour = Math.floor(d);
+      d -= ihour;
+      d *= 60;
+      imin = Math.floor(d);
+      dsec = (d - imin) * 60.0;
+    }
+    if (gregflag == this.SE_JUL_CAL) {
+      tjd = this.swe_julday(iyear, imonth, iday, 0, this.SE_GREG_CAL);
+
+      dt=this.swe_revjul(tjd, this.SE_GREG_CAL);
+      return new SDate(dt.year, dt.month, dt.day, dt.hour);
+    }
+    return new SDate(iyear, imonth, iday, ihour, imin, dsec);
+  }
+
+
+  getUTCfromJDUT1(tjd_ut, gregflag) {
+    var tjd_et = tjd_ut + this.getDeltaT(tjd_ut);
+    return this.getUTCfromJDET(tjd_et, gregflag);
+  }
 
 };

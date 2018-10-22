@@ -3,8 +3,8 @@ class Swemmoon{
   constructor(swed, sl){
     this.swed=swed;
     this.sl=sl;
-    if (this.swed ==null) { this.swed =new SwissData(); }
-    if (this.sl   ==null) { this.sl   =new SwissLib(); }
+    if (this.swed ==undefined) { this.swed =new Swe.SwissData(); }
+    if (this.sl   ==undefined) { this.sl   =new SwissLib(); }
 
 
     /* The following coefficients were calculated by a simultaneous least
@@ -46,7 +46,7 @@ class Swemmoon{
 
     /* Perturbation tables
      */
-    this.NLR=118;
+    this.this.NLR=118;
     this.LR=[
       /*
                      Longitude    Radius
@@ -486,7 +486,6 @@ class Swemmoon{
     this.NF;
     this.T;
     this.T2;
-
     this.T3;
     this.T4;
     this.f;
@@ -520,7 +519,7 @@ class Swemmoon{
    */
   swi_moshmoon2(J, pol) {
     this.T = (J-Swe.SwephData.J2000)/36525.0;
-    this.T2 = T*T;
+    this.T2 = this.T*this.T;
     this.mean_elements();
     this.mean_elements_pl();
     this.moon1();
@@ -569,320 +568,318 @@ class Swemmoon{
       return(Swe.OK);
     }
     /* else compute moon */
-    swi_moshmoon2(tjd, xpm);
+    this.swi_moshmoon2(tjd, xpm);
     if (do_save) {
       pdp.teval = tjd;
       pdp.xflgs = -1;
       pdp.iephe = Swe.SEFLG_MOSEPH;
     }
 
-    ecldat_equ2000(tjd, xpm);
+    this.ecldat_equ2000(tjd, xpm);
     t = tjd + Swe.SwephData.MOON_SPEED_INTV;
-    swi_moshmoon2(t, x1);
-    ecldat_equ2000(t, x1);
+    this.swi_moshmoon2(t, x1);
+    this.ecldat_equ2000(t, x1);
     t = tjd - Swe.SwephData.MOON_SPEED_INTV;
-    swi_moshmoon2(t, x2);
-    ecldat_equ2000(t, x2);
-    for (i = 0; i <= 2; i++) {
+    this.swi_moshmoon2(t, x2);
+    this.ecldat_equ2000(t, x2);
+    for (var i = 0; i <= 2; i++) {
       b = (x1[i] - x2[i]) / 2;
       a = (x1[i] + x2[i]) / 2 - xpm[i];
       xpm[i+3] = (2 * a + b) / Swe.SwephData.MOON_SPEED_INTV;
     }
     if (xpmret != null) {
-      for (i = 0; i <= 5; i++) {
+      for(var i = 0; i <= 5; i++) {
         xpmret[i] = xpm[i];
       }
     }
     return(Swe.OK);
   }
 
-
-
   moon1() {
     var a;
     for (var i = 0; i < 5; i++) {
       for (var j = 0; j < 8; j++) {
-        ss[i][j] = 0;
-        cc[i][j] = 0;
+        this.ss[i][j] = 0;
+        this.cc[i][j] = 0;
       }
     }
     /* End of code addition */
-    sscc( 0, Swe.SwephData.STR*D, 6 );
-    sscc( 1, Swe.SwephData.STR*M,  4 );
-    sscc( 2, Swe.SwephData.STR*MP, 4 );
-    sscc( 3, Swe.SwephData.STR*NF, 4 );
-    moonpol[0] = 0.0;
-    moonpol[1] = 0.0;
-    moonpol[2] = 0.0;
+    this.sscc( 0, Swe.SwephData.STR*this.D, 6 );
+    this.sscc( 1, Swe.SwephData.STR*this.M,  4 );
+    this.sscc( 2, Swe.SwephData.STR*this.MP, 4 );
+    this.sscc( 3, Swe.SwephData.STR*this.NF, 4 );
+    this.moonpol[0] = 0.0;
+    this.moonpol[1] = 0.0;
+    this.moonpol[2] = 0.0;
     /* terms in T^2, scale 1.0 = 10^-5" */
-    chewm( LRT2, NLRT2, 4, 2, moonpol );
-    chewm( BT2, NBT2, 4, 4, moonpol );
-    f = 18 * Ve - 16 * Ea;
-    g = Swe.SwephData.STR*(f - MP );  /* 18V - 16E - l */
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l = 6.367278 * cg + 12.747036 * sg;  /* t^0 */
-    l1 = 23123.70 * cg - 10570.02 * sg;  /* t^1 */
-    l2 = z[12] * cg + z[13] * sg;        /* t^2 */
-    moonpol[2] += 5.01 * cg + 2.72 * sg;
-    g = Swe.SwephData.STR * (10.*Ve - 3.*Ea - MP);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.253102 * cg + 0.503359 * sg;
-    l1 += 1258.46 * cg + 707.29 * sg;
-    l2 += z[14] * cg + z[15] * sg;
-    g = Swe.SwephData.STR*(8.*Ve - 13.*Ea);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.187231 * cg - 0.127481 * sg;
-    l1 += -319.87 * cg - 18.34 * sg;
-    l2 += z[16] * cg + z[17] * sg;
-    a = 4.0*Ea - 8.0*Ma + 3.0*Ju;
-    g = Swe.SwephData.STR * a;
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.866287 * cg + 0.248192 * sg;
-    l1 += 41.87 * cg + 1053.97 * sg;
-    l2 += z[18] * cg + z[19] * sg;
-    g = Swe.SwephData.STR*(a - MP);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.165009 * cg + 0.044176 * sg;
-    l1 += 4.67 * cg + 201.55 * sg;
-    g = Swe.SwephData.STR*f;  /* 18V - 16E */
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.330401 * cg + 0.661362 * sg;
-    l1 += 1202.67 * cg - 555.59 * sg;
-    l2 += z[20] * cg + z[21] * sg;
-    g = Swe.SwephData.STR*(f - 2.0*MP );  /* 18V - 16E - 2l */
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.352185 * cg + 0.705041 * sg;
-    l1 += 1283.59 * cg - 586.43 * sg;
-    g = Swe.SwephData.STR * (2.0*Ju - 5.0*Sa);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.034700 * cg + 0.160041 * sg;
-    l2 += z[22] * cg + z[23] * sg;
-    g = Swe.SwephData.STR * (SWELP - NF);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.000116 * cg + 7.063040 * sg;
-    l1 +=  298.8 * sg;
+    this.chewm( this.LRT2, this.NLRT2, 4, 2, this.moonpol );
+    this.chewm( this.BT2, this.NBT2, 4, 4, this.moonpol );
+    this.f = 18 * this.Ve - 16 * this.Ea;
+    this.g = Swe.SwephData.STR*(this.f - this.MP );  /* 18V - 16E - l */
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l = 6.367278 * this.cg + 12.747036 * this.sg;  /* t^0 */
+    this.l1 = 23123.70 * this.cg - 10570.02 * this.sg;  /* t^1 */
+    this.l2 = this.z[12] * this.cg + this.z[13] * this.sg;        /* t^2 */
+    this.moonpol[2] += 5.01 * this.cg + 2.72 * this.sg;
+    this.g = Swe.SwephData.STR * (10.*this.Ve - 3.*this.Ea - this.MP);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.253102 * this.cg + 0.503359 * this.sg;
+    this.l1 += 1258.46 * this.cg + 707.29 * this.sg;
+    this.l2 += this.z[14] * this.cg + this.z[15] * this.sg;
+    this.g = Swe.SwephData.STR*(8.*this.Ve - 13.*this.Ea);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.187231 * this.cg - 0.127481 * this.sg;
+    this.l1 += -319.87 * this.cg - 18.34 * this.sg;
+    this.l2 += this.z[16] * this.cg + this.z[17] * this.sg;
+    a = 4.0*this.Ea - 8.0*Ma + 3.0*Ju;
+    this.g = Swe.SwephData.STR * a;
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.866287 * this.cg + 0.248192 * this.sg;
+    this.l1 += 41.87 * this.cg + 1053.97 * this.sg;
+    this.l2 += this.z[18] * this.cg + this.z[19] * this.sg;
+    this.g = Swe.SwephData.STR*(a - this.MP);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.165009 * this.cg + 0.044176 * this.sg;
+    this.l1 += 4.67 * this.cg + 201.55 * this.sg;
+    this.g = Swe.SwephData.STR*this.f;  /* 18V - 16E */
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.330401 * this.cg + 0.661362 * this.sg;
+    this.l1 += 1202.67 * this.cg - 555.59 * this.sg;
+    this.l2 += this.z[20] * this.cg + this.z[21] * this.sg;
+    this.g = Swe.SwephData.STR*(this.f - 2.0*this.MP );  /* 18V - 16E - 2l */
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.352185 * this.cg + 0.705041 * this.sg;
+    this.l1 += 1283.59 * this.cg - 586.43 * this.sg;
+    this.g = Swe.SwephData.STR * (2.0*Ju - 5.0*this.Sa);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.034700 * this.cg + 0.160041 * this.sg;
+    this.l2 += this.z[22] * this.cg + this.z[23] * this.sg;
+    this.g = Swe.SwephData.STR * (this.SWELP - this.NF);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.000116 * this.cg + 7.063040 * this.sg;
+    this.l1 +=  298.8 * this.sg;
     /* T^3 terms */
-    sg = Math.sin( Swe.SwephData.STR * M );
-    /* l3 +=  z[24] * sg;                   moshier! l3 not initialized! */
-    l3 =  z[24] * sg;
-    l4 = 0;
-    g = Swe.SwephData.STR * (2.0*D - M);
-    sg = Math.sin(g);
-    cg = Math.cos(g);
-    moonpol[2] +=  -0.2655 * cg * T;
-    g = Swe.SwephData.STR * (M - MP);
-    moonpol[2] +=  -0.1568 * Math.cos( g ) * T;
-    g = Swe.SwephData.STR * (M + MP);
-    moonpol[2] +=  0.1309 * Math.cos( g ) * T;
-    g = Swe.SwephData.STR * (2.0*(D + M) - MP);
-    sg = Math.sin(g);
-    cg = Math.cos(g);
-    moonpol[2] +=   0.5568 * cg * T;
-    l2 += moonpol[0];
-    g = Swe.SwephData.STR*(2.0*D - M - MP);
-    moonpol[2] +=  -0.1910 * Math.cos( g ) * T;
-    moonpol[1] *= T;
-    moonpol[2] *= T;
+    this.sg = Math.sin( Swe.SwephData.STR * this.M );
+    /* l3 +=  this.z[24] * sg;                   moshier! l3 not initialized! */
+    this.l3 =  this.z[24] * this.sg;
+    this.l4 = 0;
+    this.g = Swe.SwephData.STR * (2.0*D - M);
+    this.sg = Math.sin(this.g);
+    this.cg = Math.cos(this.g);
+    this.moonpol[2] +=  -0.2655 * this.cg * this.T;
+    this.g = Swe.SwephData.STR * (this.M - this.MP);
+    this.moonpol[2] +=  -0.1568 * Math.cos( this.g ) * this.T;
+    this.g = Swe.SwephData.STR * (this.M + this.MP);
+    this.moonpol[2] +=  0.1309 * Math.cos( this.g ) * this.T;
+    this.g = Swe.SwephData.STR * (2.0*(D + M) - this.MP);
+    this.sg = Math.sin(this.g);
+    this.cg = Math.cos(this.g);
+    this.moonpol[2] +=   0.5568 * this.cg * this.T;
+    this.l2 += this.moonpol[0];
+    this.g = Swe.SwephData.STR*(2.0*D - this.M - this.MP);
+    this.moonpol[2] +=  -0.1910 * Math.cos( this.g ) * this.T;
+    this.moonpol[1] *= this.T;
+    this.moonpol[2] *= this.T;
     /* terms in T */
-    moonpol[0] = 0.0;
-    chewm( BT, NBT, 4, 4, moonpol );
-    chewm( LRT, NLRT, 4, 1, moonpol );
-    g = Swe.SwephData.STR*(f - MP - NF - 2355767.6); /* 18V - 16E - l - F */
-    moonpol[1] +=  -1127. * Math.sin(g);
-    g = Swe.SwephData.STR*(f - MP + NF - 235353.6); /* 18V - 16E - l + F */
-    moonpol[1] +=  -1123. * Math.sin(g);
-    g = Swe.SwephData.STR*(Ea + D + 51987.6);
-    moonpol[1] +=  1303. * Math.sin(g);
-    g = Swe.SwephData.STR*SWELP;
-    moonpol[1] +=  342. * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*Ve - 3.*Ea);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l +=  -0.343550 * cg - 0.000276 * sg;
-    l1 +=  105.90 * cg + 336.53 * sg;
-    g = Swe.SwephData.STR*(f - 2.*D); /* 18V - 16E - 2D */
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.074668 * cg + 0.149501 * sg;
-    l1 += 271.77 * cg - 124.20 * sg;
-    g = Swe.SwephData.STR*(f - 2.*D - MP);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.073444 * cg + 0.147094 * sg;
-    l1 += 265.24 * cg - 121.16 * sg;
-    g = Swe.SwephData.STR*(f + 2.*D - MP);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.072844 * cg + 0.145829 * sg;
-    l1 += 265.18 * cg - 121.29 * sg;
-    g = Swe.SwephData.STR*(f + 2.*(D - MP));
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.070201 * cg + 0.140542 * sg;
-    l1 += 255.36 * cg - 116.79 * sg;
-    g = Swe.SwephData.STR*(Ea + D - NF);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.288209 * cg - 0.025901 * sg;
-    l1 += -63.51 * cg - 240.14 * sg;
-    g = Swe.SwephData.STR*(2.*Ea - 3.*Ju + 2.*D - MP);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += 0.077865 * cg + 0.438460 * sg;
-    l1 += 210.57 * cg + 124.84 * sg;
-    g = Swe.SwephData.STR*(Ea - 2.*Ma);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.216579 * cg + 0.241702 * sg;
-    l1 += 197.67 * cg + 125.23 * sg;
-    g = Swe.SwephData.STR*(a + MP);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.165009 * cg + 0.044176 * sg;
-    l1 += 4.67 * cg + 201.55 * sg;
-    g = Swe.SwephData.STR*(a + 2.*D - MP);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.133533 * cg + 0.041116 * sg;
-    l1 +=  6.95 * cg + 187.07 * sg;
-    g = Swe.SwephData.STR*(a - 2.*D + MP);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.133430 * cg + 0.041079 * sg;
-    l1 +=  6.28 * cg + 169.08 * sg;
-    g = Swe.SwephData.STR*(3.*Ve - 4.*Ea);
-    cg = Math.cos(g);
-    sg = Math.sin(g);
-    l += -0.175074 * cg + 0.003035 * sg;
-    l1 +=  49.17 * cg + 150.57 * sg;
-    g = Swe.SwephData.STR*(2.*(Ea + D - MP) - 3.*Ju + 213534.);
-    l1 +=  158.4 * Math.sin(g);
-    l1 += moonpol[0];
-    a = 0.1 * T; /* set amplitude scale of 1.0 = 10^-4 arcsec */
-    moonpol[1] *= a;
-    moonpol[2] *= a;
+    this.moonpol[0] = 0.0;
+    this.chewm( this.BT, this.NBT, 4, 4, this.moonpol );
+    this.chewm( this.LRT, this.NLRT, 4, 1, this.moonpol );
+    this.g = Swe.SwephData.STR*(this.f - this.MP - this.NF - 2355767.6); /* 18V - 16E - l - F */
+    this.moonpol[1] +=  -1127. * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.f - this.MP + this.NF - 235353.6); /* 18V - 16E - l + F */
+    this.moonpol[1] +=  -1123. * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ea + D + 51987.6);
+    this.moonpol[1] +=  1303. * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*this.SWELP;
+    this.moonpol[1] +=  342. * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*this.Ve - 3.*this.Ea);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l +=  -0.343550 * this.cg - 0.000276 * this.sg;
+    this.l1 +=  105.90 * this.cg + 336.53 * this.sg;
+    this.g = Swe.SwephData.STR*(this.f - 2.*D); /* 18V - 16E - 2D */
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.074668 * this.cg + 0.149501 * this.sg;
+    this.l1 += 271.77 * this.cg - 124.20 * this.sg;
+    this.g = Swe.SwephData.STR*(this.f - 2.*D - this.MP);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.073444 * this.cg + 0.147094 * this.sg;
+    this.l1 += 265.24 * this.cg - 121.16 * this.sg;
+    this.g = Swe.SwephData.STR*(this.f + 2.*D - this.MP);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.072844 * this.cg + 0.145829 * this.sg;
+    this.l1 += 265.18 * this.cg - 121.29 * this.sg;
+    this.g = Swe.SwephData.STR*(this.f + 2.*(D - this.MP));
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.070201 * this.cg + 0.140542 * this.sg;
+    this.l1 += 255.36 * this.cg - 116.79 * this.sg;
+    this.g = Swe.SwephData.STR*(this.Ea + D - this.NF);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.288209 * this.cg - 0.025901 * this.sg;
+    this.l1 += -63.51 * this.cg - 240.14 * this.sg;
+    this.g = Swe.SwephData.STR*(2.*this.Ea - 3.*Ju + 2.*D - this.MP);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += 0.077865 * this.cg + 0.438460 * this.sg;
+    this.l1 += 210.57 * this.cg + 124.84 * this.sg;
+    this.g = Swe.SwephData.STR*(this.Ea - 2.*this.Ma);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.216579 * this.cg + 0.241702 * this.sg;
+    this.l1 += 197.67 * this.cg + 125.23 * this.sg;
+    this.g = Swe.SwephData.STR*(a + this.MP);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.165009 * this.cg + 0.044176 * this.sg;
+    this.l1 += 4.67 * this.cg + 201.55 * this.sg;
+    this.g = Swe.SwephData.STR*(a + 2.*D - this.MP);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.133533 * this.cg + 0.041116 * this.sg;
+    this.l1 +=  6.95 * this.cg + 187.07 * this.sg;
+    this.g = Swe.SwephData.STR*(a - 2.*D + this.MP);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.133430 * this.cg + 0.041079 * this.sg;
+    this.l1 +=  6.28 * this.cg + 169.08 * this.sg;
+    this.g = Swe.SwephData.STR*(3.*this.Ve - 4.*this.Ea);
+    this.cg = Math.cos(this.g);
+    this.sg = Math.sin(this.g);
+    this.l += -0.175074 * this.cg + 0.003035 * this.sg;
+    this.l1 +=  49.17 * this.cg + 150.57 * this.sg;
+    this.g = Swe.SwephData.STR*(2.*(this.Ea + D - this.MP) - 3.*Ju + 213534.);
+    this.l1 +=  158.4 * Math.sin(this.g);
+    this.l1 += this.moonpol[0];
+    a = 0.1 * this.T; /* set amplitude scale of 1.0 = 10^-4 arcsec */
+    this.moonpol[1] *= a;
+    this.moonpol[2] *= a;
   }
 
-  void moon2() {
+  moon2() {
     /* terms in T^0 */
-    g = Swe.SwephData.STR*(2*(Ea-Ju+D)-MP+648431.172);
-    l += 1.14307 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ve-Ea+648035.568);
-    l += 0.82155 * Math.sin(g);
-    g = Swe.SwephData.STR*(3*(Ve-Ea)+2*D-MP+647933.184);
-    l += 0.64371 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ea-Ju+4424.04);
-    l += 0.63880 * Math.sin(g);
-    g = Swe.SwephData.STR*(SWELP + MP - NF + 4.68);
-    l += 0.49331 * Math.sin(g);
-    g = Swe.SwephData.STR*(SWELP - MP - NF + 4.68);
-    l += 0.4914 * Math.sin(g);
-    g = Swe.SwephData.STR*(SWELP+NF+2.52);
-    l += 0.36061 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*Ve - 2.*Ea + 736.2);
-    l += 0.30154 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*Ea - 3.*Ju + 2.*D - 2.*MP + 36138.2);
-    l += 0.28282 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*Ea - 2.*Ju + 2.*D - 2.*MP + 311.0);
-    l += 0.24516 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ea - Ju - 2.*D + MP + 6275.88);
-    l += 0.21117 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*(Ea - Ma) - 846.36);
-    l += 0.19444 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*(Ea - Ju) + 1569.96);
-    l -= 0.18457 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*(Ea - Ju) - MP - 55.8);
-    l += 0.18256 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ea - Ju - 2.*D + 6490.08);
-    l += 0.16499 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ea - 2.*Ju - 212378.4);
-    l += 0.16427 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*(Ve - Ea - D) + MP + 1122.48);
-    l += 0.16088 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ve - Ea - MP + 32.04);
-    l -= 0.15350 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ea - Ju - MP + 4488.88);
-    l += 0.14346 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*(Ve - Ea + D) - MP - 8.64);
-    l += 0.13594 * Math.sin(g);
-    g = Swe.SwephData.STR*(2.*(Ve - Ea - D) + 1319.76);
-    l += 0.13432 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ve - Ea - 2.*D + MP - 56.16);
-    l -= 0.13122 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ve - Ea + MP + 54.36);
-    l -= 0.12722 * Math.sin(g);
-    g = Swe.SwephData.STR*(3.*(Ve - Ea) - MP + 433.8);
-    l += 0.12539 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ea - Ju + MP + 4002.12);
-    l += 0.10994 * Math.sin(g);
-    g = Swe.SwephData.STR*(20.*Ve - 21.*Ea - 2.*D + MP - 317511.72);
-    l += 0.10652 * Math.sin(g);
-    g = Swe.SwephData.STR*(26.*Ve - 29.*Ea - MP + 270002.52);
-    l += 0.10490 * Math.sin(g);
-    g = Swe.SwephData.STR*(3.*Ve - 4.*Ea + D - MP - 322765.56);
-    l += 0.10386 * Math.sin(g);
-    g = Swe.SwephData.STR*(SWELP+648002.556);
-    B =  8.04508 * Math.sin(g);
-    g = Swe.SwephData.STR*(Ea+D+996048.252);
-    B += 1.51021 * Math.sin(g);
-    g = Swe.SwephData.STR*(f - MP + NF + 95554.332);
-    B += 0.63037 * Math.sin(g);
-    g = Swe.SwephData.STR*(f - MP - NF + 95553.792);
-    B += 0.63014 * Math.sin(g);
-    g = Swe.SwephData.STR*(SWELP - MP + 2.9);
-    B +=  0.45587 * Math.sin(g);
-    g = Swe.SwephData.STR*(SWELP + MP + 2.5);
-    B +=  -0.41573 * Math.sin(g);
-    g = Swe.SwephData.STR*(SWELP - 2.0*NF + 3.2);
-    B +=  0.32623 * Math.sin(g);
-    g = Swe.SwephData.STR*(SWELP - 2.0*D + 2.5);
-    B +=  0.29855 * Math.sin(g);
+    this.g = Swe.SwephData.STR*(2*(this.Ea-Ju+D)-MP+648431.172);
+    this.l += 1.14307 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ve-Ea+648035.568);
+    this.l += 0.82155 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(3*(this.Ve-Ea)+2*D-MP+647933.184);
+    this.l += 0.64371 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ea-Ju+4424.04);
+    this.l += 0.63880 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.SWELP + this.MP - this.NF + 4.68);
+    this.l += 0.49331 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.SWELP - this.MP - this.NF + 4.68);
+    this.l += 0.4914 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.SWELP+NF+2.52);
+    this.l += 0.36061 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*this.Ve - 2.*this.Ea + 736.2);
+    this.l += 0.30154 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*this.Ea - 3.*Ju + 2.*D - 2.*this.MP + 36138.2);
+    this.l += 0.28282 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*this.Ea - 2.*Ju + 2.*D - 2.*this.MP + 311.0);
+    this.l += 0.24516 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ea - this.Ju - 2.*D + this.MP + 6275.88);
+    this.l += 0.21117 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*(this.Ea - this.Ma) - 846.36);
+    this.l += 0.19444 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*(this.Ea - this.Ju) + 1569.96);
+    this.l -= 0.18457 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*(this.Ea - this.Ju) - this.MP - 55.8);
+    this.l += 0.18256 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ea - this.Ju - 2.*D + 6490.08);
+    this.l += 0.16499 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ea - 2.*Ju - 212378.4);
+    this.l += 0.16427 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea - D) + this.MP + 1122.48);
+    this.l += 0.16088 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ve - this.Ea - this.MP + 32.04);
+    this.l -= 0.15350 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ea - this.Ju - this.MP + 4488.88);
+    this.l += 0.14346 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea + D) - this.MP - 8.64);
+    this.l += 0.13594 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea - D) + 1319.76);
+    this.l += 0.13432 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ve - this.Ea - 2.*D + this.MP - 56.16);
+    this.l -= 0.13122 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ve - this.Ea + this.MP + 54.36);
+    this.l -= 0.12722 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(3.*(this.Ve - this.Ea) - this.MP + 433.8);
+    this.l += 0.12539 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ea - this.Ju + this.MP + 4002.12);
+    this.l += 0.10994 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(20.*this.Ve - 21.*this.Ea - 2.*D + this.MP - 317511.72);
+    this.l += 0.10652 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(26.*this.Ve - 29.*this.Ea - this.MP + 270002.52);
+    this.l += 0.10490 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(3.*this.Ve - 4.*this.Ea + D - this.MP - 322765.56);
+    this.l += 0.10386 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.SWELP+648002.556);
+    this.B =  8.04508 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.Ea+D+996048.252);
+    this.B += 1.51021 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.f - this.MP + this.NF + 95554.332);
+    this.B += 0.63037 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.f - this.MP - this.NF + 95553.792);
+    this.B += 0.63014 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.SWELP - this.MP + 2.9);
+    this.B +=  0.45587 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.SWELP + this.MP + 2.5);
+    this.B +=  -0.41573 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.SWELP - 2.0*NF + 3.2);
+    this.B +=  0.32623 * Math.sin(this.g);
+    this.g = Swe.SwephData.STR*(this.SWELP - 2.0*D + 2.5);
+    this.B +=  0.29855 * Math.sin(this.g);
   }
 
-  void moon3() {
+  moon3() {
     /* terms in T^0 */
-    moonpol[0] = 0.0;
-    chewm( LR, NLR, 4, 1, moonpol );
-    chewm( MB, NMB, 4, 3, moonpol );
-    l += (((l4 * T + l3) * T + l2) * T + l1) * T * 1.0e-5;
-    moonpol[0] = SWELP + l + 1.0e-4 * moonpol[0];
-    moonpol[1] = 1.0e-4 * moonpol[1] + B;
-    moonpol[2] = 1.0e-4 * moonpol[2] + 385000.52899; /* kilometers */
+    this.moonpol[0] = 0.0;
+    this.chewm( this.LR, this.this.NLR, 4, 1, this.moonpol );
+    this.chewm( this.MB, this.NMB, 4, 3, this.moonpol );
+    this.l += (((l4 * this.T + this.l3) * this.T + this.l2) * this.T + this.l1) * this.T * 1.0e-5;
+    this.moonpol[0] = this.SWELP + this.l + 1.0e-4 * this.moonpol[0];
+    this.moonpol[1] = 1.0e-4 * this.moonpol[1] + this.B;
+    this.moonpol[2] = 1.0e-4 * this.moonpol[2] + 385000.52899; /* kilometers */
   }
 
 
   /* Compute final ecliptic polar coordinates
    */
   moon4() {
-    moonpol[2] /= Swe.AUNIT / 1000;
-    moonpol[0] = Swe.SwephData.STR * mods3600( moonpol[0] );
-    moonpol[1] = Swe.SwephData.STR * moonpol[1];
-    B = moonpol[1];
+    this.moonpol[2] /= Swe.AUNIT / 1000;
+    this.moonpol[0] = Swe.SwephData.STR * this.mods3600( this.moonpol[0] );
+    this.moonpol[1] = Swe.SwephData.STR * this.moonpol[1];
+    this.B = this.moonpol[1];
   }
 
 
   corr_mean_node(J) {
     var J0, dJ, dayscty, dcor, dcor0, dcor1, dfrac;
     var i;
-    J0 = CORR_MNODE_JD_T0GREG; /* 1-jan--13000 greg */
+    J0 = this.CORR_MNODE_JD_T0GREG; /* 1-jan--13000 greg */
     dayscty = 36524.25; /* days per Gregorian century */
     if (J < Swe.SwephData.JPL_DE431_START) return 0;
     if (J > Swe.SwephData.JPL_DE431_END) return 0;
-  /*if (J > CORR_MNODE_JD_T1GREG && J < CORR_MNODE_JD_T2GREG) return 0;*/
+  /*if (J > this.CORR_MNODE_JD_T1GREG && J < this.CORR_MNODE_JD_T2GREG) return 0;*/
     dJ = J - J0;
-    i = (int)Math.floor(dJ / dayscty); /* centuries = index of lower correction value */
+    i = Math.floor(dJ / dayscty); /* centuries = index of lower correction value */
     dfrac = (dJ - i * dayscty) / dayscty;
-    dcor0 = mean_node_corr[i];
-    dcor1 = mean_node_corr[i + 1];
+    dcor0 = this.mean_node_corr[i];
+    dcor1 = this.mean_node_corr[i + 1];
     dcor = dcor0 + dfrac * (dcor1 - dcor0);
     return dcor;
   }
@@ -897,10 +894,10 @@ class Swemmoon{
   }
   swi_mean_node(J, pol, offs) {
     var dcor;
-    T = (J-Swe.SwephData.J2000)/36525.0;
-    T2 = T*T;
-    T3 = T*T2;
-    T4 = T2*T2;
+    this.T = (J-Swe.SwephData.J2000)/36525.0;
+    this.T2 = this.T*this.T;
+    this.T3 = this.T*this.T2;
+    this.T4 = this.T2*this.T2;
     /* with elements from swi_moshmoon2(), which are fitted to jpl-ephemeris */
     if (J < Swe.SwephData.MOSHNDEPH_START || J > Swe.SwephData.MOSHNDEPH_END) {
       var s="jd "+J+" outside mean node range "+
@@ -912,7 +909,7 @@ class Swemmoon{
     mean_elements();
     dcor = corr_mean_node(J) * 3600;
     /* longitude */
-    pol[offs] = this.sl.swi_mod2PI((SWELP - NF - dcor) * Swe.SwephData.STR);
+    pol[offs] = this.sl.swi_mod2PI((this.SWELP - this.NF - dcor) * Swe.SwephData.STR);
     /* latitude */
     pol[offs+1] = 0.0;
     /* distance */
@@ -925,16 +922,16 @@ class Swemmoon{
   corr_mean_apog(J) {
     var J0, dJ, dayscty, dcor, dcor0, dcor1, dfrac;
     var i;
-    J0 = CORR_MAPOG_JD_T0GREG; /* 1-jan--13000 greg */
+    J0 = this.CORR_MAPOG_JD_T0GREG; /* 1-jan--13000 greg */
     dayscty = 36524.25; /* days per Gregorian century */
     if (J < Swe.SwephData.JPL_DE431_START) return 0;
     if (J > Swe.SwephData.JPL_DE431_END) return 0;
-    /*if (J > CORR_MAPOG_JD_T1GREG && J < CORR_MAPOG_JD_T2GREG) return 0;*/
+    /*if (J > this.CORR_MAPOG_JD_T1GREG && J < this.CORR_MAPOG_JD_T2GREG) return 0;*/
     dJ = J - J0;
-    i = (int)Math.floor(dJ / dayscty); /* centuries = index of lower correction value */
+    i = Math.floor(dJ / dayscty); /* centuries = index of lower correction value */
     dfrac = (dJ - i * dayscty) / dayscty;
-    dcor0 = mean_apsis_corr[i];
-    dcor1 = mean_apsis_corr[i + 1];
+    dcor0 = this.mean_apsis_corr[i];
+    dcor1 = this.mean_apsis_corr[i + 1];
     dcor = dcor0 + dfrac * (dcor1 - dcor0);
     return dcor;
   }
@@ -949,10 +946,10 @@ class Swemmoon{
   }
   swi_mean_apog(J, pol, offs) {
     var node, dcor;
-    T = (J-Swe.SwephData.J2000)/36525.0;
-    T2 = T*T;
-    T3 = T*T2;
-    T4 = T2*T2;
+    this.T = (J-Swe.SwephData.J2000)/36525.0;
+    this.T2 = this.T*this.T;
+    this.T3 = this.T*this.T2;
+    this.T4 = this.T2*this.T2;
     /* with elements from swi_moshmoon2(), which are fitted to jpl-ephemeris */
     if (J < Swe.SwephData.MOSHNDEPH_START || J > Swe.SwephData.MOSHNDEPH_END) {
       var s="jd "+J+" outside mean apogee range "+
@@ -962,19 +959,19 @@ class Swemmoon{
       return Swe.ERR;
     }
     mean_elements();
-    pol[offs] = this.sl.swi_mod2PI((SWELP - MP) * Swe.SwephData.STR + Math.PI);
+    pol[offs] = this.sl.swi_mod2PI((this.SWELP - this.MP) * Swe.SwephData.STR + Math.PI);
     pol[offs+1] = 0;
     pol[offs+2] = Swe.SwephData.MOON_MEAN_DIST * (1 + Swe.SwephData.MOON_MEAN_ECC) /
                                                  Swe.AUNIT; /* apogee */
-    dcor = corr_mean_apog(J) * SwissData.DEGTORAD;
+    dcor = corr_mean_apog(J) * Swe.SwissData.DEGTORAD;
     pol[offs] = this.sl.swi_mod2PI(pol[offs] - dcor);
     /* apogee is now projected onto ecliptic */
-    node = (SWELP - NF) * Swe.SwephData.STR;
-    dcor = corr_mean_node(J) * SwissData.DEGTORAD;
+    node = (this.SWELP - this.NF) * Swe.SwephData.STR;
+    dcor = corr_mean_node(J) * Swe.SwissData.DEGTORAD;
     node = this.sl.swi_mod2PI(node - dcor);
     pol[offs] = this.sl.swi_mod2PI(pol[offs] - node);
     this.sl.swi_polcart(pol, offs, pol, offs);
-    this.sl.swi_coortrf(pol, offs, pol, offs, -Swe.SwephData.MOON_MEAN_INCL * SwissData.DEGTORAD);
+    this.sl.swi_coortrf(pol, offs, pol, offs, -Swe.SwephData.MOON_MEAN_INCL * Swe.SwissData.DEGTORAD);
     this.sl.swi_cartpol(pol, offs, pol, offs);
     pol[offs] = this.sl.swi_mod2PI(pol[offs] + node);
     return Swe.OK;
@@ -998,8 +995,8 @@ class Swemmoon{
             k = -k; /* make angle factor > 0 */
           }
           /* sin, cos (k*angle) from lookup table */
-          su = ss[m][k-1];
-          cu = cc[m][k-1];
+          su = this.ss[m][k-1];
+          cu = this.cc[m][k-1];
           if( j < 0 ) {
             su = -su; /* negative angle factor */
           }
@@ -1061,18 +1058,18 @@ class Swemmoon{
     var i;
     su = Math.sin(arg);
     cu = Math.cos(arg);
-    ss[k][0] = su;                        /* sin(L) */
-    cc[k][0] = cu;                        /* cos(L) */
+    this.ss[k][0] = su;                        /* sin(L) */
+    this.cc[k][0] = cu;                        /* cos(L) */
     sv = 2.0*su*cu;
     cv = cu*cu - su*su;
-    ss[k][1] = sv;                        /* sin(2L) */
-    cc[k][1] = cv;
+    this.ss[k][1] = sv;                        /* sin(2L) */
+    this.cc[k][1] = cv;
     for( i=2; i<n; i++ ) {
       s =  su*cv + cu*sv;
       cv = cu*cv - su*sv;
       sv = s;
-      ss[k][i] = sv;              /* sin( i+1 L ) */
-      cc[k][i] = cv;
+      this.ss[k][i] = sv;              /* sin( i+1 L ) */
+      this.cc[k][i] = cv;
     }
   }
 
@@ -1100,59 +1097,57 @@ class Swemmoon{
     return( lx );
   }
 
-  swi_mean_lunar_elements(tjd,
-                               DblObj node, DblObj dnode,
-                               DblObj peri, DblObj dperi) {
+  swi_mean_lunar_elements(tjd, node, dnode, peri, dperi) {
     var dcor;
-    T = (tjd - Swe.SwephData.J2000) / 36525.0;
-    T2 = T*T;
-    mean_elements();
-    node.val = this.sl.swe_degnorm((SWELP - NF) * Swe.SwephData.STR * SwissData.RADTODEG);
-    peri.val = this.sl.swe_degnorm((SWELP - MP) * Swe.SwephData.STR * SwissData.RADTODEG);
-    T -= 1.0 / 36525;
-    mean_elements();
-    dnode.val = this.sl.swe_degnorm(node.val - (SWELP-NF) * Swe.SwephData.STR * SwissData.RADTODEG);
+    this.T = (tjd - Swe.SwephData.J2000) / 36525.0;
+    this.T2 = this.T*this.T;
+    this.mean_elements();
+    node.val = this.sl.swe_degnorm((this.SWELP - this.NF) * Swe.SwephData.STR * Swe.SwissData.RADTODEG);
+    peri.val = this.sl.swe_degnorm((this.SWELP - this.MP) * Swe.SwephData.STR * Swe.SwissData.RADTODEG);
+    this.T -= 1.0 / 36525;
+    this.mean_elements();
+    dnode.val = this.sl.swe_degnorm(node.val - (this.SWELP-NF) * Swe.SwephData.STR * Swe.SwissData.RADTODEG);
     dnode.val -= 360;
-    dperi.val = this.sl.swe_degnorm(peri.val - (SWELP-MP) * Swe.SwephData.STR * SwissData.RADTODEG);
-    dcor = corr_mean_node(tjd);
+    dperi.val = this.sl.swe_degnorm(peri.val - (this.SWELP-MP) * Swe.SwephData.STR * Swe.SwissData.RADTODEG);
+    dcor = this.corr_mean_node(tjd);
     node.val = this.sl.swe_degnorm(node.val - dcor);
-    dcor = corr_mean_apog(tjd);
+    dcor = this.corr_mean_apog(tjd);
     peri.val = this.sl.swe_degnorm(peri.val - dcor);
   }
 
 
   mean_elements() {
-    var fracT = T%1.;
+    var fracT = this.T%1.;
     /* Mean anomaly of sun = l' (J. Laskar) */
-    M =  mods3600(129600000.0 * fracT - 3418.961646 * T +  1287104.76154);
-    M += ((((((((
-      1.62e-20 * T
-    - 1.0390e-17 ) * T
-    - 3.83508e-15 ) * T
-    + 4.237343e-13 ) * T
-    + 8.8555011e-11 ) * T
-    - 4.77258489e-8 ) * T
-    - 1.1297037031e-5 ) * T
-    + 1.4732069041e-4 ) * T
-    - 0.552891801772 ) * T2;
+    this.M =  this.mods3600(129600000.0 * fracT - 3418.961646 * this.T +  1287104.76154);
+    this.M += ((((((((
+      1.62e-20 * this.T
+    - 1.0390e-17 ) * this.T
+    - 3.83508e-15 ) * this.T
+    + 4.237343e-13 ) * this.T
+    + 8.8555011e-11 ) * this.T
+    - 4.77258489e-8 ) * this.T
+    - 1.1297037031e-5 ) * this.T
+    + 1.4732069041e-4 ) * this.T
+    - 0.552891801772 ) * this.T2;
 
     /* Mean distance of moon from its ascending node = F */
     /*NF = mods3600((1739527263.0983 - 2.079419901760e-01) * T +335779.55755);*/
-    NF = mods3600(1739232000.0 * fracT + 295263.0983 * T -
-                  2.079419901760e-01 * T + 335779.55755);
+    this.NF = this.mods3600(1739232000.0 * fracT + 295263.0983 * this.T -
+                  2.079419901760e-01 * this.T + 335779.55755);
     /* Mean anomaly of moon = l */
-    MP = mods3600(1717200000.0 * fracT + 715923.4728 * T -
-                  2.035946368532e-01 * T + 485868.28096);
+    this.MP = this.mods3600(1717200000.0 * fracT + 715923.4728 * this.T -
+                  2.035946368532e-01 * this.T + 485868.28096);
     /* Mean elongation of moon = D */
-    D = mods3600(1601856000.0 * fracT + 1105601.4603 * T +
-                 3.962893294503e-01 * T + 1072260.73512);
+    D = this.mods3600(1601856000.0 * fracT + 1105601.4603 * this.T +
+                 3.962893294503e-01 * this.T + 1072260.73512);
     /* Mean longitude of moon, referred to the mean ecliptic and equinox of date */
-    SWELP = mods3600(1731456000.0 * fracT + 1108372.83264 * T - 6.784914260953e-01 * T +  785939.95571);
+    this.SWELP = this.mods3600(1731456000.0 * fracT + 1108372.83264 * this.T - 6.784914260953e-01 * this.T +  785939.95571);
     /* Higher degree secular terms found by least squares fit */
-    NF += ((z[2]*T + z[1])*T + z[0])*T2;
-    MP += ((z[5]*T + z[4])*T + z[3])*T2;
-    D  += ((z[8]*T + z[7])*T + z[6])*T2;
-    SWELP += ((z[11]*T + z[10])*T + z[9])*T2;
+    this.NF += ((this.z[2]*this.T + this.z[1])*this.T + this.z[0])*this.T2;
+    this.MP += ((this.z[5]*this.T + this.z[4])*this.T + this.z[3])*this.T2;
+    D  += ((this.z[8]*this.T + this.z[7])*this.T + this.z[6])*this.T2;
+    this.SWELP += ((this.z[11]*this.T + this.z[10])*this.T + this.z[9])*this.T2;
 
     /* sensitivity of mean elements
      *    delta argument = scale factor times delta amplitude (arcsec)
@@ -1164,40 +1159,40 @@ class Swemmoon{
   
   mean_elements_pl() {
     /* Mean longitudes of planets (Laskar, Bretagnon) */
-    Ve = mods3600( 210664136.4335482 * T + 655127.283046 );
-    Ve += ((((((((
-      -9.36e-023 * T
-     - 1.95e-20 ) * T
-     + 6.097e-18 ) * T
-     + 4.43201e-15 ) * T
-     + 2.509418e-13 ) * T
-     - 3.0622898e-10 ) * T
-     - 2.26602516e-9 ) * T
-     - 1.4244812531e-5 ) * T
-     + 0.005871373088 ) * T2;
-    Ea = mods3600( 129597742.26669231  * T +  361679.214649 );
-    Ea += (((((((( -1.16e-22 * T
-     + 2.976e-19 ) * T
-     + 2.8460e-17 ) * T
-     - 1.08402e-14 ) * T
-     - 1.226182e-12 ) * T
-     + 1.7228268e-10 ) * T
-     + 1.515912254e-7 ) * T
-     + 8.863982531e-6 ) * T
-     - 2.0199859001e-2 ) * T2;
-    Ma = mods3600(  68905077.59284 * T + 1279559.78866 );
-    Ma += (-1.043e-5*T + 9.38012e-3)*T2;
-    Ju = mods3600( 10925660.428608 * T +  123665.342120 );
-    Ju += (1.543273e-5*T - 3.06037836351e-1)*T2;
-    Sa = mods3600( 4399609.65932 * T + 180278.89694 );
-    Sa += (( 4.475946e-8*T - 6.874806E-5 ) * T + 7.56161437443E-1)*T2;
+    this.Ve = this.mods3600( 210664136.4335482 * this.T + 655127.283046 );
+    this.Ve += ((((((((
+      -9.36e-023 * this.T
+     - 1.95e-20 ) * this.T
+     + 6.097e-18 ) * this.T
+     + 4.43201e-15 ) * this.T
+     + 2.509418e-13 ) * this.T
+     - 3.0622898e-10 ) * this.T
+     - 2.26602516e-9 ) * this.T
+     - 1.4244812531e-5 ) * this.T
+     + 0.005871373088 ) * this.T2;
+    this.Ea = this.mods3600( 129597742.26669231  * this.T +  361679.214649 );
+    this.Ea += (((((((( -1.16e-22 * this.T
+     + 2.976e-19 ) * this.T
+     + 2.8460e-17 ) * this.T
+     - 1.08402e-14 ) * this.T
+     - 1.226182e-12 ) * this.T
+     + 1.7228268e-10 ) * this.T
+     + 1.515912254e-7 ) * this.T
+     + 8.863982531e-6 ) * this.T
+     - 2.0199859001e-2 ) * this.T2;
+    this.Ma = this.mods3600(  68905077.59284 * this.T + 1279559.78866 );
+    this.Ma += (-1.043e-5*this.T + 9.38012e-3)*this.T2;
+    this.Ju = this.mods3600( 10925660.428608 * this.T +  123665.342120 );
+    this.Ju += (1.543273e-5*this.T - 3.06037836351e-1)*this.T2;
+    this.Sa = this.mods3600( 4399609.65932 * this.T + 180278.89694 );
+    this.Sa += (( 4.475946e-8*this.T - 6.874806E-5 ) * this.T + 7.56161437443E-1)*this.T2;
   }
   
   /* Calculate geometric coordinates of true interpolated Moon apsides
    */
   swi_intp_apsides(J, pol, ipli) {
     var dd;
-    var rsv[] = new Array(3);
+    var rsv = new Array(3);
     var sNF, sD, sLP, sMP, sM, sVe, sEa, sMa, sJu, sSa, fM, fVe, fEa, fMa, fJu, fSa, cMP, zMP, fNF, fD, fLP;
     var dMP, mLP, mNF, mD, mMP;
     var i, ii, iii, niter = 4;    /* niter: silence compiler warning */
@@ -1212,60 +1207,60 @@ class Swemmoon{
     fMa = 686.9798519/zMP;
     fJu = 4332.589348/zMP;
     fSa = 10759.22722/zMP;
-    T = (J-Swe.SwephData.J2000)/36525.0;
-    T2 = T*T;
-    T4 = T2*T2;
-    mean_elements();
-    mean_elements_pl();
-    sNF = NF;
+    this.T = (J-Swe.SwephData.J2000)/36525.0;
+    this.T2 = this.T*this.T;
+    this.T4 = this.T2*this.T2;
+    this.mean_elements();
+    this.mean_elements_pl();
+    sNF = this.NF;
     sD  = D;
-    sLP = SWELP;
-    sMP = MP;
-    sM  = M ;
-    sVe = Ve;
-    sEa = Ea;
-    sMa = Ma;
-    sJu = Ju;
-    sSa = Sa;
-    sNF = mods3600(NF);
-    sD  = mods3600(D);
-    sLP = mods3600(SWELP);
-    sMP = mods3600(MP);
-    if (ipli == Swe.SwephData.SEI_INTP_PERG) {MP = 0.0; niter = 5;}
-    if (ipli == Swe.SwephData.SEI_INTP_APOG) {MP = 648000.0; niter = 4;}
+    sLP = this.SWELP;
+    sMP = this.MP;
+    sM  = this.M ;
+    sVe = this.Ve;
+    sEa = this.Ea;
+    sMa = this.Ma;
+    sJu = this.Ju;
+    sSa = this.Sa;
+    sNF = this.mods3600(this.NF);
+    sD  = this.mods3600(this.D);
+    sLP = this.mods3600(this.SWELP);
+    sMP = this.mods3600(this.MP);
+    if (ipli == Swe.SwephData.SEI_INTP_PERG) {this.MP = 0.0; niter = 5;}
+    if (ipli == Swe.SwephData.SEI_INTP_APOG) {this.MP = 648000.0; niter = 4;}
     cMP = 0;
     dd = 18000.0;
     for (iii= 0; iii<=niter; iii++) {/**/
-      dMP = sMP - MP;
+      dMP = sMP - this.MP;
       mLP = sLP - dMP;
       mNF = sNF - dMP;
       mD  = sD  - dMP;
       mMP = sMP - dMP;
       for (ii = 0; ii <=2; ii++) {/**/
-        MP = mMP + (ii-1)*dd;       /**/
+        this.MP = mMP + (ii-1)*dd;       /**/
         NF = mNF + (ii-1)*dd/fNF;
         D  = mD  + (ii-1)*dd/fD;
-        SWELP = mLP + (ii-1)*dd/fLP;
-        M  = sM  + (ii-1)*dd/fM ;
-        Ve = sVe + (ii-1)*dd/fVe;
-        Ea = sEa + (ii-1)*dd/fEa;
-        Ma = sMa + (ii-1)*dd/fMa;
-        Ju = sJu + (ii-1)*dd/fJu;
-        Sa = sSa + (ii-1)*dd/fSa;
-        moon1();
-        moon2();
-        moon3();
-        moon4();
+        this.SWELP = mLP + (ii-1)*dd/fLP;
+        this.M  = sM  + (ii-1)*dd/fM ;
+        this.Ve = sVe + (ii-1)*dd/fVe;
+        this.Ea = sEa + (ii-1)*dd/fEa;
+        this.Ma = sMa + (ii-1)*dd/fMa;
+        this.Ju = sJu + (ii-1)*dd/fJu;
+        this.Sa = sSa + (ii-1)*dd/fSa;
+        this.moon1();
+        this.moon2();
+        this.moon3();
+        this.moon4();
         if (ii==1) {
-          for( i=0; i<3; i++ ) pol[i] = moonpol[i];
+          for( i=0; i<3; i++ ) pol[i] = this.moonpol[i];
         }
-        rsv[ii] = moonpol[2];
+        rsv[ii] = this.moonpol[2];
       }
       cMP = (1.5*rsv[0] - 2*rsv[1] + 0.5*rsv[2]) / (rsv[0] + rsv[2] - 2*rsv[1]);/**/
       cMP *= dd;
       cMP = cMP - dd;
       mMP += cMP;
-      MP = mMP;
+      this.MP = mMP;
       dd /= 10;
     }
     return(0);
