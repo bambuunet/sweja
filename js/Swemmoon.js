@@ -3,8 +3,8 @@ class Swemmoon{
   constructor(swed, sl){
     this.swed=swed;
     this.sl=sl;
-    if (this.swed ==undefined) { this.swed =new Swe.SwissData(); }
-    if (this.sl   ==undefined) { this.sl   =new SwissLib(); }
+    if (this.swed ===undefined) { this.swed = Swe.SwissData; }
+    if (this.sl   ===undefined) { this.sl   =new SwissLib(); }
 
 
     /* The following coefficients were calculated by a simultaneous least
@@ -46,7 +46,7 @@ class Swemmoon{
 
     /* Perturbation tables
      */
-    this.this.NLR=118;
+    this.NLR=118;
     this.LR=[
       /*
                      Longitude    Radius

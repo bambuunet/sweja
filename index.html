@@ -23,7 +23,7 @@
 
     <script>
       
-      var jday = 1, jmon = 1, jyear = 2018;
+      var jday = 2, jmon = 1, jyear = 2018;
       var jut = 0.0;
       var SE_GREG_CAL = true;
 
@@ -34,12 +34,11 @@
       var p = Swe.SE_SUN;
       var iflag = Swe.SEFLG_SPEED;
 
-      var x2 = [];
-      var serr = "";
+      var x2 = new Array(6);
 
       var eph = new SwissEph;
-      var iflgret = eph.swe_calc_ut(tjd_ut, p, iflag, x2, serr);
-
+      var iflgret = eph.swe_calc_ut(tjd_ut, p, iflag, x2);
+      console.log("iflgret:"+iflgret);
 
 
       //console.log(a.PNOINT2JPL,SwephJPL)

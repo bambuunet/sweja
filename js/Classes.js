@@ -157,3 +157,37 @@ class SavePositions{
     for(var j=0; j<this.xsaves.length; j++) { this.xsaves[j]=0.0; }
   }
 };
+
+class SidData{
+  constructor(){
+    this.sid_mode = 0.0;
+    this.ayan_t0 = 0.0;
+    this.t0 = 0;
+  }
+
+  clearData(){
+    this.sid_mode = 0.0;
+    this.ayan_t0 = 0.0;
+    this.t0 = 0;
+  }
+};
+
+class TopoData{
+  constructor(){
+    this.geolon = 0.0;
+    this.geolat = 0.0;
+    this.geoalt = 0.0;
+    this.teval = 0.0;
+    this.tjd_ut = 0.0;
+    this.xobs = new Array(6);
+  }
+
+  clearData(){
+    this.geolon = 0.0;
+    this.geolat = 0.0;
+    this.geoalt = 0.0;
+    this.teval = 0.0;
+    this.tjd_ut = 0.0;
+    this.xobs = new Array(6);
+  }
+};

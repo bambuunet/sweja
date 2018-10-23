@@ -12,12 +12,12 @@ class SwissLib{
     this.HORIZONS_TJD0_DPSI_DEPS_IAU1980 = 2437684.5;
 
     this.swed=swed;
-    if (this.swed ==null) { this.swed=new Swe.SwissData(); }
+    if (this.swed ===null || this.swed === undefined) { this.swed= Swe.SwissData; }
 
 
     this.AS2R = (Swe.SwissData.DEGTORAD / 3600.0);
     this.D2PI = Swe.SwephData.TWOPI;
-    this.EPS0 = (84381.406 * AS2R);
+    this.EPS0 = (84381.406 * this.AS2R);
     this.NPOL_PEPS = 4;
     this.NPER_PEPS = 10;
     this.NPOL_PECL = 4;
@@ -313,7 +313,6 @@ class SwissLib{
       0.11,0.00,
     ];
     this.SIDTNARG = 14;
-    /* l    l'   F    D   Om   L_Me L_Ve L_E  L_Ma L_J  L_Sa L_U  L_Ne p_A*/
     this.stfarg = [
        0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
        0,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -495,7 +494,7 @@ class SwissLib{
   swe_cotrans(xpo, oOffs, xpn, nOffs, eps) {
     //引数3つの場合
     if(nOffs === undefined){
-      return this.swe_cotrans(xpo, 0, xpn, 0, eps);
+      return this.swe_cotrans(xpo, 0, oOffs, 0, xpn);
     }
 
     var i;
@@ -544,7 +543,7 @@ class SwissLib{
   swi_coortrf(xpo, oOffs, xpn, nOffs, eps) {
     //引数3つの場合
     if(nOffs === undefined){
-      return this.swi_coortrf(xpo, 0, xpn, 0, eps);
+      return this.swi_coortrf(xpo, 0, oOffs, 0, xpn);
     }
 
     var sineps, coseps;
@@ -565,7 +564,7 @@ class SwissLib{
   swi_coortrf2(xpo, oOffs, xpn, nOffs, sineps, coseps) {
     //引数4つの場合
     if(sineps === undefined){
-      return this.swi_coortrf2(xpo, 0, xpn, 0, sineps, coseps);
+      return this.swi_coortrf2(xpo, 0, oOffs, 0,xpn, nOffs);
     }
     var x=new Array(3);
     x[0] = xpo[0+oOffs];
@@ -581,8 +580,8 @@ class SwissLib{
   }*/
   swi_cartpol(x, xOffs, l, lOffs) {
     //引数4つの場合
-    if(sineps === undefined){
-      return this.swi_cartpol(x, 0, l, 0);
+    if(l === undefined){
+      return this.swi_cartpol(x, 0, xOffs, 0);
     }
     var rxy;
     var ll=new Array(3);
@@ -609,7 +608,7 @@ class SwissLib{
   swi_polcart(l, lOffs, x, xOffs) {
     //引数2つの場合
     if(x === undefined){
-      return this.swi_polcart(l, 0, x, 0);
+      return this.swi_polcart(l, 0, lOffs, 0);
     }
     var xx=new Array(3);
     var cosl1;
@@ -628,22 +627,22 @@ class SwissLib{
   swi_cartpol_sp(x, xOffs, l, lOffs) {
     //引数2つの場合
     if(l === undefined){
-      return this.swi_cartpol_sp(x, 0, l, 0);
+      return this.swi_cartpol_sp(x, 0, xOffs, 0);
     }
     var xx=new Array(6), ll=new Array(6);
     var rxy, coslon, sinlon, coslat, sinlat;
     /* zero position */
     if (x[0+xOffs] == 0 && x[1+xOffs] == 0 && x[2+xOffs] == 0) {
       l[0+lOffs] = l[1+lOffs] = l[3+lOffs] = l[4+lOffs] = 0;
-      l[5+lOffs] = Math.sqrt(square_sum(x, 3+xOffs));
-      swi_cartpol(x, 3+xOffs, l, 0+lOffs);
+      l[5+lOffs] = Math.sqrt(this.square_sum(x, 3+xOffs));
+      this.swi_cartpol(x, 3+xOffs, l, 0+lOffs);
       l[2+lOffs] = 0;
       return;
     }
     /* zero speed */
     if (x[3+xOffs] == 0 && x[4+xOffs] == 0 && x[5+xOffs] == 0) {
       l[3+lOffs] = l[4+lOffs] = l[5+lOffs] = 0;
-      swi_cartpol(x, xOffs, l, lOffs);
+      this.swi_cartpol(x, xOffs, l, lOffs);
       return;
     }
     /* position */
@@ -677,7 +676,7 @@ class SwissLib{
   swi_polcart_sp(l, lOffs, x, xOffs) {
     //引数2つの場合
     if(x === undefined){
-      return this.swi_polcart_sp(l, 0, x, 0);
+      return this.swi_polcart_sp(l, 0, lOffs, 0);
     }
     var sinlon, coslon, sinlat, coslat;
     var xx=new Array(6), rxy, rxyz;
@@ -729,31 +728,31 @@ class SwissLib{
 
   swi_ldp_peps(tjd, dpre, deps) {
     var i;
-    var npol = NPOL_PEPS;
-    var nper = NPER_PEPS;
+    var npol = this.NPOL_PEPS;
+    var nper = this.NPER_PEPS;
     var t, p, q, w, a, s, c;
     t = (tjd - Swe.SwephData.J2000) / 36525.0;
     p = 0;
     q = 0;
     /* periodic terms */
     for (i = 0; i < nper; i++) {
-      w = D2PI * t;
-      a = w / peper[0][i];
+      w = this.D2PI * t;
+      a = w / this.peper[0][i];
       s = Math.sin(a);
       c = Math.cos(a);
-      p += c * peper[1][i] + s * peper[3][i];
-      q += c * peper[2][i] + s * peper[4][i];
+      p += c * this.peper[1][i] + s * this.peper[3][i];
+      q += c * this.peper[2][i] + s * this.peper[4][i];
     }
     /* polynomial terms */
     w = 1;
     for (i = 0; i < npol; i++) {
-      p += pepol[i][0] * w;
-      q += pepol[i][1] * w;
+      p += this.pepol[i][0] * w;
+      q += this.pepol[i][1] * w;
       w *= t;
     }
     /* both to radians */
-    p *= AS2R;
-    q *= AS2R;
+    p *= this.AS2R;
+    q *= this.AS2R;
     /* return */
     if (dpre != null && dpre.length > 0)
       dpre[0] = p;
@@ -764,39 +763,39 @@ class SwissLib{
 
   pre_pecl(tjd, vec) {
     var i;
-    var npol = NPOL_PECL;
-    var nper = NPER_PECL;
+    var npol = this.NPOL_PECL;
+    var nper = this.NPER_PECL;
     var t, p, q, w, a, s, c, z;
     t = (tjd - Swe.SwephData.J2000) / 36525.0;
     p = 0;
     q = 0;
     /* periodic terms */
     for (i = 0; i < nper; i++) {
-      w = D2PI * t;
-      a = w / pqper[0][i];
+      w = this.D2PI * t;
+      a = w / this.pqper[0][i];
       s = Math.sin(a);
       c = Math.cos(a);
-      p += c * pqper[1][i] + s * pqper[3][i];
-      q += c * pqper[2][i] + s * pqper[4][i];
+      p += c * this.pqper[1][i] + s * this.pqper[3][i];
+      q += c * this.pqper[2][i] + s * this.pqper[4][i];
     }
     /* polynomial terms */
     w = 1;
     for (i = 0; i < npol; i++) {
-      p += pqpol[i][0] * w;
-      q += pqpol[i][1] * w;
+      p += this.pqpol[i][0] * w;
+      q += this.pqpol[i][1] * w;
       w *= t;
     }
     /* both to radians */
-    p *= AS2R;
-    q *= AS2R;
+    p *= this.AS2R;
+    q *= this.AS2R;
     /* ecliptic pole vector */
     z = 1 - p * p - q * q;
     if (z < 0)
       z = 0;
     else
       z = Math.sqrt(z);
-    s = Math.sin(EPS0);
-    c = Math.cos(EPS0);
+    s = Math.sin(this.EPS0);
+    c = Math.cos(this.EPS0);
     vec[0] = p;
     vec[1] = - q * c - z * s;
     vec[2] = - q * s + z * c;
@@ -805,29 +804,29 @@ class SwissLib{
   /* precession of the equator */
   pre_pequ(tjd, veq) {
     var i;
-    var npol = NPOL_PEQU;
-    var nper = NPER_PEQU;
+    var npol = this.NPOL_PEQU;
+    var nper = this.NPER_PEQU;
     var t, x, y, w, a, s, c;
     t = (tjd - Swe.SwephData.J2000) / 36525.0;
     x = 0;
     y = 0;
     for (i = 0; i < nper; i++) {
-      w = D2PI * t;
-      a = w / xyper[0][i];
+      w = this.D2PI * t;
+      a = w / this.xyper[0][i];
       s = Math.sin(a);
       c = Math.cos(a);
-      x += c * xyper[1][i] + s * xyper[3][i];
-      y += c * xyper[2][i] + s * xyper[4][i];
+      x += c * this.xyper[1][i] + s * this.xyper[3][i];
+      y += c * this.xyper[2][i] + s * this.xyper[4][i];
     }
     /* polynomial terms */
     w = 1;
     for (i = 0; i < npol; i++) {
-      x += xypol[i][0] * w;
-      y += xypol[i][1] * w;
+      x += this.xypol[i][0] * w;
+      y += this.xypol[i][1] * w;
       w *= t;
     }
-    x *= AS2R;
-    y *= AS2R;
+    x *= this.AS2R;
+    y *= this.AS2R;
     /* equator pole vector */
     veq[0] = x;
     veq[1] = y;
@@ -868,10 +867,10 @@ class SwissLib{
 
     var T, eps;
     var tofs, dofs, t0, t1;
-    var prec_model = swed.astro_models[Swe.SE_MODEL_PREC_LONGTERM];
-    var prec_model_short = swed.astro_models[Swe.SE_MODEL_PREC_SHORTTERM];
-    var jplhor_model = swed.astro_models[Swe.SE_MODEL_JPLHOR_MODE];
-    var jplhora_model = swed.astro_models[Swe.SE_MODEL_JPLHORA_MODE];
+    var prec_model = this.swed.astro_models[Swe.SE_MODEL_PREC_LONGTERM];
+    var prec_model_short = this.swed.astro_models[Swe.SE_MODEL_PREC_SHORTTERM];
+    var jplhor_model = this.swed.astro_models[Swe.SE_MODEL_JPLHOR_MODE];
+    var jplhora_model = this.swed.astro_models[Swe.SE_MODEL_JPLHORA_MODE];
     if (prec_model == 0) prec_model = Swe.SEMOD_PREC_DEFAULT;
     if (prec_model_short == 0) prec_model_short = Swe.SEMOD_PREC_DEFAULT_SHORT;
     if (jplhor_model == 0) jplhor_model = Swe.SEMOD_JPLHOR_DEFAULT;
@@ -882,15 +881,15 @@ class SwissLib{
     /*} else if ((iflag & SEFLG_JPLHOR_APPROX) && !APPROXIMATE_HORIZONS_ASTRODIENST) {*/
     } else if ((iflag & Swe.SEFLG_JPLHOR_APPROX) != 0 && jplhora_model != Swe.SEMOD_JPLHORA_1) {
       eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*Swe.SwissData.DEGTORAD/3600;
-    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_1976 && Math.abs(T) <= PREC_IAU_1976_CTIES ) {
+    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_1976 && Math.abs(T) <= this.PREC_IAU_1976_CTIES ) {
       eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*Swe.SwissData.DEGTORAD/3600;
     } else if (prec_model == Swe.SEMOD_PREC_IAU_1976) {
       eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*Swe.SwissData.DEGTORAD/3600;
-    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_2000 && Math.abs(T) <= PREC_IAU_2000_CTIES ) {
+    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_2000 && Math.abs(T) <= this.PREC_IAU_2000_CTIES ) {
       eps = (((1.813e-3*T-5.9e-4)*T-46.84024)*T+84381.406)*Swe.SwissData.DEGTORAD/3600;
     } else if (prec_model == Swe.SEMOD_PREC_IAU_2000) {
       eps = (((1.813e-3*T-5.9e-4)*T-46.84024)*T+84381.406)*Swe.SwissData.DEGTORAD/3600;
-    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_2006 && Math.abs(T) <= PREC_IAU_2006_CTIES) {
+    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_2006 && Math.abs(T) <= this.PREC_IAU_2006_CTIES) {
       eps =  (((((-4.34e-8 * T -5.76e-7) * T +2.0034e-3) * T -1.831e-4) * T -46.836769) * T + 84381.406) * Swe.SwissData.DEGTORAD / 3600.0; 
     } else if (prec_model == Swe.SEMOD_PREC_IAU_2006) {
       eps =  (((((-4.34e-8 * T -5.76e-7) * T +2.0034e-3) * T -1.831e-4) * T -46.836769) * T + 84381.406) * Swe.SwissData.DEGTORAD / 3600.0; 
@@ -941,10 +940,13 @@ class SwissLib{
   precess_1(R, rOffs, J, direction, prec_method) {
     //引数4つの場合
     if(prec_method === undefined){
-      return this.precess_1(R, 0, J, direction, prec_method);
+      return this.precess_1(R, 0, rOffs, J, direction);
     }
 
-    var T, Z = 0, z = 0, TH = 0;
+    var T = 0;
+    var Z = 0;
+    var z = 0;
+    var TH = 0;
     var i;
     var x = new Array(3);
     var sinth, costh, sinZ, cosZ, sinz, cosz, A, B;
@@ -1012,10 +1014,10 @@ class SwissLib{
   /*precess_2( R, J, iflag, direction, prec_method) {
     return precess_2(R, 0, J, iflag, direction, prec_method);
   }*/
-  precess_2( R, rOffs, J, iflag, direction, prec_method) {
+  precess_2(R, rOffs, J, iflag, direction, prec_method) {
     //引数5つの場合
     if(prec_method === undefined){
-      return this.precess_2(R, 0, J, iflag, direction, prec_method);
+      return this.precess_2(R, 0, rOffs, J, iflag, direction);
     }
     var i;
     var T, z;
@@ -1139,7 +1141,7 @@ class SwissLib{
   precess_3(R, rOffs, J, direction, prec_meth) {
     //引数4つの場合
     if(prec_meth === undefined){
-      return this.precess_3(R, 0, J, direction, prec_meth);
+      return this.precess_3(R, 0, rOffs, J, direction);
     }
 
     var T;
@@ -1176,13 +1178,13 @@ class SwissLib{
   swi_precess(R, rOffs, J, iflag, direction ) {
     //引数4つの場合
     if(direction === undefined){
-      return this.swi_precess(R, 0, J, iflag, direction);
+      return this.swi_precess(R, 0, rOffs, J, iflag);
     }
 
     var T = (J - Swe.SwephData.J2000)/36525.0;
-    var prec_model = swed.astro_models[Swe.SE_MODEL_PREC_LONGTERM];
-    var prec_model_short = swed.astro_models[Swe.SE_MODEL_PREC_SHORTTERM];
-    var jplhor_model = swed.astro_models[Swe.SE_MODEL_JPLHOR_MODE];
+    var prec_model = this.swed.astro_models[Swe.SE_MODEL_PREC_LONGTERM];
+    var prec_model_short = this.swed.astro_models[Swe.SE_MODEL_PREC_SHORTTERM];
+    var jplhor_model = this.swed.astro_models[Swe.SE_MODEL_JPLHOR_MODE];
     if (prec_model == 0) prec_model = Swe.SEMOD_PREC_DEFAULT;
     if (prec_model_short == 0) prec_model_short = Swe.SEMOD_PREC_DEFAULT_SHORT;
     if (jplhor_model == 0) jplhor_model = Swe.SEMOD_JPLHOR_DEFAULT;
@@ -1192,17 +1194,17 @@ class SwissLib{
     if ((iflag & Swe.SEFLG_JPLHOR) != 0 /*&& INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980*/) {
       return this.precess_1(R, rOffs, J, direction, Swe.SEMOD_PREC_IAU_1976);
     /* Use IAU 1976 formula for a few centuries.  */
-    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_1976 && Math.abs(T) <= PREC_IAU_1976_CTIES) {
+    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_1976 && Math.abs(T) <= this.PREC_IAU_1976_CTIES) {
       return this.precess_1(R, rOffs, J, direction, Swe.SEMOD_PREC_IAU_1976);
     } else if (prec_model == Swe.SEMOD_PREC_IAU_1976) {
       return this.precess_1(R, rOffs, J, direction, Swe.SEMOD_PREC_IAU_1976);
     /* Use IAU 2000 formula for a few centuries.  */
-    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_2000 && Math.abs(T) <= PREC_IAU_2000_CTIES) {
+    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_2000 && Math.abs(T) <= this.PREC_IAU_2000_CTIES) {
       return this.precess_1(R, rOffs, J, direction, Swe.SEMOD_PREC_IAU_2000);
     } else if (prec_model == Swe.SEMOD_PREC_IAU_2000) {
       return this.precess_1(R, rOffs, J, direction, Swe.SEMOD_PREC_IAU_2000);
     /* Use IAU 2006 formula for a few centuries.  */
-    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_2006 && Math.abs(T) <= PREC_IAU_2006_CTIES) {
+    } else if (prec_model_short == Swe.SEMOD_PREC_IAU_2006 && Math.abs(T) <= this.PREC_IAU_2006_CTIES) {
       return this.precess_1(R, rOffs, J, direction, Swe.SEMOD_PREC_IAU_2006);
     } else if (prec_model == Swe.SEMOD_PREC_IAU_2006) {
       return this.precess_1(R, rOffs, J, direction, Swe.SEMOD_PREC_IAU_2006);
@@ -1237,7 +1239,7 @@ class SwissLib{
     var i, j, k, k1, m, n;
     var ns=new Array(5);
     var pn;
-    var nut_model = swed.astro_models[Swe.SE_MODEL_NUT];
+    var nut_model = this.swed.astro_models[Swe.SE_MODEL_NUT];
     if (nut_model == 0) nut_model = Swe.SEMOD_NUT_DEFAULT;
     /* Julian centuries from 2000 January 1.5,
      * barycentric dynamical time
@@ -1384,7 +1386,7 @@ class SwissLib{
     var darg, sinarg, cosarg;
     var dpsi = 0, deps = 0;
     var T = (J - Swe.SwephData.J2000 ) / 36525.0;
-    var nut_model = swed.astro_models[Swe.SE_MODEL_NUT];
+    var nut_model = this.swed.astro_models[Swe.SE_MODEL_NUT];
     if (nut_model == 0) nut_model = Swe.SEMOD_NUT_DEFAULT;
     /* luni-solar nutation */
     /* Fundamental arguments, Simon & al. (1994) */
@@ -1395,25 +1397,25 @@ class SwissLib{
                 T*(          0.051635 +
                 T*(        - 0.00024470 ))))) / 3600.0) * Swe.SwissData.DEGTORAD;
     /* Mean anomaly of the Sun */
-    SM = swe_degnorm((1287104.79305 +
+    SM = this.swe_degnorm((1287104.79305 +
                 T*(  129596581.0481 +
                 T*(        - 0.5532 +
                 T*(          0.000136 +
                 T*(        - 0.00001149 ))))) / 3600.0) * Swe.SwissData.DEGTORAD;
     /* Mean argument of the latitude of the Moon. */
-    F   = swe_degnorm(( 335779.526232 +
+    F   = this.swe_degnorm(( 335779.526232 +
                 T*( 1739527262.8478 +
                 T*(       - 12.7512 +
                 T*(       -  0.001037 +
                 T*(          0.00000417 ))))) / 3600.0) * Swe.SwissData.DEGTORAD;
     /* Mean elongation of the Moon from the Sun. */
-    D   = swe_degnorm((1072260.70369 +
+    D   = this.swe_degnorm((1072260.70369 +
                 T*( 1602961601.2090 +
                 T*(        - 6.3706 +
                 T*(          0.006593 +
                 T*(        - 0.00003169 ))))) / 3600.0) * Swe.SwissData.DEGTORAD;
     /* Mean longitude of the ascending node of the Moon. */
-    OM  = swe_degnorm(( 450160.398036 +
+    OM  = this.swe_degnorm(( 450160.398036 +
                 T*(  - 6962890.5431 +
                 T*(          7.4722 +
                 T*(          0.007702 +
@@ -1580,21 +1582,19 @@ class SwissLib{
     if (nut_model == 0) nut_model = Swe.SEMOD_NUT_DEFAULT;
     if (jplhor_model == 0) jplhor_model = Swe.SEMOD_JPLHOR_DEFAULT;
     if (jplhora_model == 0) jplhora_model = Swe.SEMOD_JPLHORA_DEFAULT;
-    /*if ((iflag & SEFLG_JPLHOR) && (jplhor_model & SEMOD_JPLHOR_DAILY_DATA)) {*/
     if ((iflag & Swe.SEFLG_JPLHOR) != 0 /* && INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980*/) {
       this.swi_nutation_iau1980(J, nutlo);
     } else if (nut_model == Swe.SEMOD_NUT_IAU_1980 || nut_model == Swe.SEMOD_NUT_IAU_CORR_1987) {
       swi_nutation_iau1980(J, nutlo);
     } else if (nut_model == Swe.SEMOD_NUT_IAU_2000A || nut_model == Swe.SEMOD_NUT_IAU_2000B) {
       this.swi_nutation_iau2000ab(J, nutlo);
-      /*if ((iflag & SEFLG_JPLHOR_APPROX) && FRAME_BIAS_APPROX_HORIZONS) {*/
-      /*if ((iflag & SEFLG_JPLHOR_APPROX) && !APPROXIMATE_HORIZONS_ASTRODIENST) {*/
+
       if ((iflag & Swe.SEFLG_JPLHOR_APPROX) != 0 && jplhora_model != Swe.SEMOD_JPLHORA_1) {
         nutlo[0] += -41.7750 / 3600.0 / 1000.0 * Swe.SwissData.DEGTORAD;
         nutlo[1] += -6.8192 / 3600.0 / 1000.0 * Swe.SwissData.DEGTORAD;
       }
     }
-    if ((iflag & Swe.SEFLG_JPLHOR) != 0 /* && INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980*/) {
+    if ((iflag & Swe.SEFLG_JPLHOR) != 0 ) {
       n = Math.floor (this.swed.eop_tjd_end - this.swed.eop_tjd_beg + 0.000001);
       J2 = J;
       if (J < this.swed.eop_tjd_beg_horizons)
@@ -1623,8 +1623,8 @@ class SwissLib{
     if (t < 0) {
       t = 0;
       dofs = this.dcor_ra_jpl[0];
-    } else if (t >= NDCOR_RA_JPL - 1) {
-      t = NDCOR_RA_JPL;
+    } else if (t >= this.NDCOR_RA_JPL - 1) {
+      t = this.NDCOR_RA_JPL;
       dofs = this.dcor_ra_jpl[NDCOR_RA_JPL - 1];
     } else {
       t0 = Math.floor( t );
@@ -1711,7 +1711,6 @@ class SwissLib{
     }
   }
 
-  /* GCRS to FK5 */
   swi_icrs2fk5( x, iflag, backward) {
     var xx=new Array(6);
     var rb=new Array(3);
@@ -1793,7 +1792,7 @@ class SwissLib{
     tsid = xs[0] / 15;
     return tsid;
   }
-/*#endif * SIDT_LTERM */
+
 
 
   sidtime_non_polynomial_part(tt) {
@@ -1810,8 +1809,7 @@ class SwissLib{
     delm[3] = this.swe_radnorm(5.198466741 + 7771.3771468121 * tt);
     /* OM Mean longitude of the ascending node of the Moon. */
     delm[4] = this.swe_radnorm(2.18243920 - 33.757045 * tt);
-    /* Planetary longitudes, Mercury through Neptune (Souchay et al. 1999). 
-     * LME, LVE, LEA, LMA, LJU, LSA, LUR, LNE */
+
     delm[5] = this.swe_radnorm(4.402608842 + 2608.7903141574 * tt);
     delm[6] = this.swe_radnorm(3.176146697 + 1021.3285546211 * tt);
     delm[7] = this.swe_radnorm(1.753470314 +  628.3075849991 * tt);
@@ -1866,10 +1864,9 @@ class SwissLib{
       secs -= 0.5;
     }
     secs *= 86400.0;
-    tu = (jd0 - Swe.SwephData.J2000)/36525.0; /* UT1 in centuries after J2000 */
+    tu = (jd0 - Swe.SwephData.J2000)/36525.0;
     if (sidt_model == Swe.SEMOD_SIDT_IERS_CONV_2010) {
-      /*  ERA-based expression for for Greenwich Sidereal Time (GST) based 
-       *  on the IAU 2006 precession */
+
       jdrel = tjd - Swe.SwephData.J2000;
       tt = (tjd + this.sd.getDeltaT(tjd) - Swe.SwephData.J2000) / 36525.0;
       gmst = this.swe_degnorm((0.7790572732640 + 1.00273781191135448 * jdrel) * 360);
@@ -1878,42 +1875,26 @@ class SwissLib{
       gmst = this.swe_degnorm(gmst + dadd);
       /*printf("gmst iers=%f \n", gmst);*/
       gmst = gmst / 15.0 * 3600.0;
-    /* sidt_model == SEMOD_SIDT_PREC_MODEL, older standards according to precession model */
+
     } else if (prec_model_short >= Swe.SEMOD_PREC_IAU_2006) {
       tt = (jd0 + this.sd.getDeltaT(jd0) - Swe.SwephData.J2000)/36525.0; /* TT in centuries after J2000 */
       gmst = (((-0.000000002454*tt - 0.00000199708)*tt - 0.0000002926)*tt + 0.092772110)*tt*tt + 307.4771013*(tt-tu) + 8640184.79447825*tu + 24110.5493771;
-      /* mean solar days per sidereal day at date tu;
-       * for the derivative of gmst, we can assume UT1 =~ TT */
       msday = 1 + ((((-0.000000012270*tt - 0.00000798832)*tt - 0.0000008778)*tt + 0.185544220)*tt + 8640184.79447825)/(86400.*36525.);
       gmst += msday * secs;
-    } else {  /* IAU 1976 formula */
-        /* Greenwich Mean Sidereal Time at 0h UT of date */
+    } else {
       gmst = (( -6.2e-6*tu + 9.3104e-2)*tu + 8640184.812866)*tu + 24110.54841;
-      /* mean solar days per sidereal day at date tu, = 1.00273790934 in 1986 */
       msday = 1.0 + ((-1.86e-5*tu + 0.186208)*tu + 8640184.812866)/(86400.*36525.);
       gmst += msday * secs;
     }
-    /* Local apparent sidereal time at given UT at Greenwich */
+
     eqeq = 240.0 * nut * Math.cos(eps * Swe.SwissData.DEGTORAD);
-    gmst = gmst + eqeq  /* + 240.0*tlong */;
-    /* Sidereal seconds modulo 1 sidereal day */
+    gmst = gmst + eqeq;
     gmst = gmst - 86400.0 * Math.floor( gmst/86400.0 );
-    /* return in hours */
     gmst /= 3600;
     return gmst;
   }
 
 
-  /* sidereal time, without eps and nut as parameters.
-   * tjd must be UT !!!
-   * for more information, see comment with swe_sidtime0()
-   */
-  /**
-  * This calculates the sidereal time from a Julian day number.<p>
-  * @param tjd_ut The Julian day number (in UT)
-  * @return Sidereal time in degrees.
-  * @see #swe_sidtime0(double, double, double)
-  */
   swe_sidtime(tjd_ut) {
     var i;
     var eps, nutlo=new Array(2), tsid;
@@ -1927,9 +1908,6 @@ class SwissLib{
   }
 
 
-  /*swi_gen_filename(sd, ipli) {
-    return swi_gen_filename(sd.getJulDay(), ipli);
-  }*/
   swi_gen_filename(jd, ipli) {
     //jdがSweDateクラスの場合
     if(typeof jd === "object" && jd.constructor === SweDate){
@@ -2146,7 +2124,6 @@ class SwissLib{
     return (dif);
   }
 
-// Well: used by Swetest.java... //#ifndef ASTROLOGY
   swe_difrad2n(p1, p2) {
     var dif;
     dif = this.swe_radnorm(p1 - p2);
@@ -2155,18 +2132,9 @@ class SwissLib{
     }
     return (dif);
   }
-// Well: used by Swetest.java... //#endif /* ASTROLOGY */
 
-//////////////////////////////////////////////////////////////////////////////
-// In this Java port only: ///////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-  /**
-  * This method emulates the C version of atof() allowing <i>any</i> string
-  * to be parsed into a number.
-  */
+
   atof(src) {
-    // atof() (in C) allows extra strings after the number, and even no number
-    // at all, so we have to work around this...
     var idx=0;
     src=src.trim();
     while(idx<src.length() &&
@@ -2180,13 +2148,8 @@ class SwissLib{
     return Double.valueOf(sout).doubleValue();
   }
 
-  /**
-  * This method emulates the C version of atoi() allowing <i>any</i> string
-  * to be parsed into an integer.
-  */
+
   atoi(src) {
-    // atoi() (in C) allows extra strings after the number, and even no number
-    // at all, so we have to work around this...
     var idx=0;
     src=src.trim();
     while(idx<src.length() && Character.isDigit(src.charAt(idx))) {
