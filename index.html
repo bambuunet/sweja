@@ -31,15 +31,30 @@
       var tjd_ut = date.swe_julday(jyear,jmon,jday,jut,SE_GREG_CAL); 
       console.log("tjd_ut:" + tjd_ut);
 
-      var p = Swe.SE_SUN;
-      var iflag = Swe.SEFLG_SPEED;
+      var p = Swe.SE_VENUS;
+      var iflag = 4;
 
       var x2 = new Array(6);
+      x2 = [0,0,0,0,0,0];
 
       var eph = new SwissEph;
+      eph.swe_set_ephe_path(null);
       var iflgret = eph.swe_calc_ut(tjd_ut, p, iflag, x2);
-      console.log("iflgret:"+iflgret);
+      console.log("iflgret:"+iflgret, x2);
+/*
+      var attr = new Array(20);
+      var serr ="";
+      eph.swe_pheno_ut(tjd_ut, p, iflag, attr, serr);
 
+
+      var calc_flag = 0;
+      var geopos = [0,0,0];
+      var atpress = 0;
+      var attemp = 10;
+      var xin = new Array(3);
+      var xaz = new Array(3);
+      eph.swe_azalt(tjd_ut, calc_flag, geopos, atpress, attemp, xin, xaz);
+*/
 
       //console.log(a.PNOINT2JPL,SwephJPL)
     </script>

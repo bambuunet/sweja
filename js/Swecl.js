@@ -7,9 +7,10 @@ class Swecl{
     if (sw===undefined) { this.sw=new SwissEph(); }
     if (sl===undefined) { this.sl=new SwissLib(); }
     if (sm===undefined) { this.sm=new Swemmoon(); }
-    if (swed===undefined) { this.swed = new Swe.SwissData; }
+    if (swed===undefined) { this.swed = Swe.SwissData; }
 
     this.const_lapse_rate = Swe.SwephData.SE_LAPSE_RATE;  /* for refraction */
+    this.sd = new SweDate();
 
     this.DSUN=(1392000000.0 / Swe.AUNIT);
     this.DMOON=(3476300.0 / Swe.AUNIT);
@@ -420,7 +421,7 @@ class Swecl{
                     [3.20, 0.32, 0, 0],     /* Vesta */
                     );
 
-    this.el_node = new Array()(
+    this.el_node = new Array(
       [ 48.330893,  1.1861890,  0.00017587,  0.000000211,], /* Mercury */
       [ 76.679920,  0.9011190,  0.00040665, -0.000000080,], /* Venus   */
       [  0       ,  0        ,  0         ,  0          ,], /* Earth   */
@@ -430,7 +431,7 @@ class Swecl{
       [ 74.005947,  0.5211258,  0.00133982,  0.000018516,], /* Uranus  */
       [131.784057,  1.1022057,  0.00026006, -0.000000636,], /* Neptune */
       );
-    this.el_peri = new Array()(
+    this.el_peri = new Array(
       [ 77.456119,  1.5564775,  0.00029589,  0.000000056,], /* Mercury */
       [131.563707,  1.4022188, -0.00107337, -0.000005315,], /* Venus   */
       [102.937348,  1.7195269,  0.00045962,  0.000000499,], /* Earth   */
@@ -440,7 +441,7 @@ class Swecl{
       [173.005159,  1.4863784,  0.00021450,  0.000000433,], /* Uranus  */
       [ 48.123691,  1.4262677,  0.00037918, -0.000000003,], /* Neptune */
       );
-    this.el_incl = new Array()(
+    this.el_incl = new Array(
       [  7.004986,  0.0018215, -0.00001809,  0.000000053,], /* Mercury */
       [  3.394662,  0.0010037, -0.00000088, -0.000000007,], /* Venus   */
       [  0,         0,          0,           0          ,], /* Earth   */
@@ -450,7 +451,7 @@ class Swecl{
       [  0.773196,  0.0007744,  0.00003749, -0.000000092,], /* Uranus  */
       [  1.769952, -0.0093082, -0.00000708,  0.000000028,], /* Neptune */
       );
-    this.el_ecce = new Array()(
+    this.el_ecce = new Array(
       [  0.20563175,  0.000020406, -0.0000000284, -0.00000000017,], /* Mercury */
       [  0.00677188, -0.000047766,  0.0000000975,  0.00000000044,], /* Venus   */
       [  0.01670862, -0.000042037, -0.0000001236,  0.00000000004,], /* Earth   */
@@ -460,7 +461,7 @@ class Swecl{
       [  0.04629590, -0.000027337,  0.0000000790,  0.00000000025,], /* Uranus  */
       [  0.00898809,  0.000006408, -0.0000000008, -0.00000000005,], /* Neptune */
       );
-    this.el_sema = new Array()(
+    this.el_sema = new Array(
       [  0.387098310,  0.0,  0.0,  0.0,], /* Mercury */
       [  0.723329820,  0.0,  0.0,  0.0,], /* Venus   */
       [  1.000001018,  0.0,  0.0,  0.0,], /* Earth   */
@@ -471,7 +472,7 @@ class Swecl{
       [ 30.110386869, -0.0000001663,  0.00000000069,  0.0,], /* Neptune */
       );
     /* Ratios of mass of Sun to masses of the planets */
-    this.plmass = new Array()(
+    this.plmass = new Array(
         6023600,        /* Mercury */
          408523.5,      /* Venus */
          328900.5,      /* Earth and Moon */
@@ -2465,14 +2466,15 @@ class Swecl{
 
   swe_azalt(tjd_ut, calc_flag, geopos, atpress, attemp, xin, xaz) {
     var i;
-    var x = new Array(6), xra = new Array(3);
+    var x = new Array(6);
+    var xra = new Array(3);
     var armc = this.sl.swe_degnorm(this.sl.swe_sidtime(tjd_ut) * 15 + geopos[0]);
     var mdd, eps_true, tjd_et;
     for (i = 0; i < 2; i++)
       xra[i] = xin[i];
     xra[2] = 1;
     if (calc_flag == Swe.SE_ECL2HOR) {
-          tjd_et = tjd_ut + SweDate.getDeltaT(tjd_ut);
+          tjd_et = tjd_ut + this.sd.getDeltaT(tjd_ut);
       this.sw.swe_calc(tjd_et, Swe.SE_ECL_NUT, 0, x, null);
       eps_true = x[0];
           this.sl.swe_cotrans(xra, 0, xra, 0, -eps_true);
@@ -2491,9 +2493,7 @@ class Swecl{
       /* estimate atmospheric pressure */
       atpress = 1013.25 * Math.pow(1 - 0.0065 * geopos[2] / 288, 5.255);
     }
-    xaz[2] = this.swe_refrac_extended(x[1], geopos[2], atpress, attemp, const_lapse_rate, Swe.SE_TRUE_TO_APP, null);
-    /* xaz[2] = swe_refrac_extended(xaz[2], geopos[2], atpress, attemp, const_lapse_rate, Swe.SE_APP_TO_TRUE, null);*/
-
+    xaz[2] = this.swe_refrac_extended(x[1], geopos[2], atpress, attemp, this.const_lapse_rate, Swe.SE_TRUE_TO_APP, null);
   }
 
   swe_azalt_rev(tjd_ut, calc_flag, geopos, xin, xout) {
@@ -2579,7 +2579,7 @@ class Swecl{
   }
 
   swe_set_lapse_rate(lapse_rate) {
-    const_lapse_rate = lapse_rate;
+    this.const_lapse_rate = lapse_rate;
   }
 
   swe_refrac_extended(inalt, geoalt, atpress, attemp, lapse_rate, calc_flag, dret) {
@@ -2659,9 +2659,6 @@ class Swecl{
   }
 
   calc_astronomical_refr(inalt, atpress, attemp) {
-
-    /* Formula by Sinclair, see article mentioned above, p. 256. Better for
-     * apparent altitudes < 0;  */
     var  r;
     if (inalt > 17.904104638432) { /* for continuous function, instead of '>15' */
       r = 0.97 / Math.tan(inalt * Swe.SwissData.DEGTORAD);
@@ -2673,16 +2670,11 @@ class Swecl{
   }
 
   calc_dip(geoalt, atpress, attemp, lapse_rate) {
-    /* below formula is based on A. Thom, Megalithic lunar observations, 1973 (page 32).
-    * conversion to metric has been done by
-    * V. Reijs, 2000, http://www.iol.ie/~geniet/eng/refract.htm
-    */
     var  krefr = (0.0342 + lapse_rate) / (0.154 * 0.0238);
     var  d = 1-1.8480*krefr*atpress/(273.16+attemp)/(273.16+attemp);
-    /* return -0.03203*sqrt(geoalt)*sqrt(d); */
-    /* double a = acos(1/(1+geoalt/EARTH_RADIUS));*/
     return -180.0/Math.PI * Math.acos(1 / (1 + geoalt / Swe.SwephData.EARTH_RADIUS)) * Math.sqrt(d);
   }
+
   swe_lun_eclipse_how(tjd_ut, ifl, geopos, attr) {
     var  dcore = new Array(10);
     var  lm =  new Array(6), xaz =  new Array(6);
@@ -3282,10 +3274,10 @@ class Swecl{
         fac = attr[3] / (Math.asin(Swe.SwephData.pla_diam[Swe.SE_SUN] / 2.0 /
                                             Swe.AUNIT) * 2 * Swe.SwissData.RADTODEG);
         fac *= fac;
-        attr[4] = this.mag_elem[ipl][0] - 2.5 * log10(fac);
+        attr[4] = this.mag_elem[ipl][0] - 2.5 * this.log10(fac);
       } else if (ipl == Swe.SE_MOON) {
-        /*attr[4] = -21.62 + 5 * log10(384410497.8 / EARTH_RADIUS) / log10(10) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);*/
-        attr[4] = -21.62 + 5 * log10(lbr[2] * Swe.SwephData.AUNIT / Swe.SwephData.EARTH_RADIUS) / log10(10) + 0.026 * Math.abs(attr[0]) + 0.000000004 * Math.pow(attr[0], 4);
+        /*attr[4] = -21.62 + 5 * this.log10(384410497.8 / EARTH_RADIUS) / this.log10(10) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);*/
+        attr[4] = -21.62 + 5 * this.log10(lbr[2] * Swe.SwephData.AUNIT / Swe.SwephData.EARTH_RADIUS) / this.log10(10) + 0.026 * Math.abs(attr[0]) + 0.000000004 * Math.pow(attr[0], 4);
 
         /*printf("1 = %f, 2 = %f\n", mag, mag2);*/
       } else if (ipl == Swe.SE_SATURN) {
@@ -3309,13 +3301,13 @@ class Swecl{
         if (du > 10) {
           du = 360 - du;
         }
-        attr[4] = 5 * log10(lbr2[2] * lbr[2])
+        attr[4] = 5 * this.log10(lbr2[2] * lbr[2])
                     + this.mag_elem[ipl][1] * sinB
                     + this.mag_elem[ipl][2] * sinB * sinB
                     + this.mag_elem[ipl][3] * du
                     + this.mag_elem[ipl][0];
       } else if (ipl < Swe.SE_CHIRON) {
-        attr[4] = 5 * log10(lbr2[2] * lbr[2])
+        attr[4] = 5 * this.log10(lbr2[2] * lbr[2])
                     + this.mag_elem[ipl][1] * attr[0] /100.0
                     + this.mag_elem[ipl][2] * attr[0] * attr[0] / 10000.0
                     + this.mag_elem[ipl][3] * attr[0] * attr[0] * attr[0] / 1000000.0
@@ -3336,9 +3328,9 @@ class Swecl{
           me[0] = this.swed.ast_H;
           me[1] = this.swed.ast_G;
         }
-        attr[4] = 5 * log10(lbr2[2] * lbr[2])
+        attr[4] = 5 * this.log10(lbr2[2] * lbr[2])
             + me[0]
-            - 2.5 * log10((1 - me[1]) * ph1 + me[1] * ph2);
+            - 2.5 * this.log10((1 - me[1]) * ph1 + me[1] * ph2);
       } else { /* ficticious bodies */
         attr[4] = 0;
       }
@@ -3379,8 +3371,8 @@ class Swecl{
     return Swe.OK;
   }
   swe_pheno_ut(tjd_ut, ipl, iflag, attr) {
-    SweDate.swi_set_tid_acc(tjd_ut, iflag, 0);
-    return this.swe_pheno(tjd_ut + SweDate.getDeltaT(tjd_ut), ipl, iflag, attr);
+    this.sd.swi_set_tid_acc(tjd_ut, iflag, 0);
+    return this.swe_pheno(tjd_ut + this.sd.getDeltaT(tjd_ut), ipl, iflag, attr);
   }
 
 

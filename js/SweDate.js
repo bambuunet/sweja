@@ -234,7 +234,7 @@ class SweDate{
   getDeltaT(tjd) {
     if(tjd === undefined){
       if (this.deltatIsValid) { return this.deltaT; }
-      this.deltaT=calc_deltaT(this.getJulDay());
+      this.deltaT=this.calc_deltaT(this.getJulDay());
       this.deltatIsValid=true;
       return this.deltaT;
     }
