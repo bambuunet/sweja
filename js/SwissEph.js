@@ -1310,11 +1310,15 @@ console.log(Swe.SwissData.pldat[3])//Nan
     var retc = Swe.OK;
     var ifno, ibody;
     var flg1, flg2;
-    var xx=new Array(6), dx=new Array(3)
+    var xx = [0,0,0,0,0,0];
+    var dx = [0,0,0];
     var dt, t, dtsave_for_defl;
-    var xobs=new Array(6), xobs2=new Array(6);
-    var xearth=new Array(6), xsun=new Array(6);
-    var xxsp=new Array(6), xxsv=new Array(6);
+    var xobs = [0,0,0,0,0,0];
+    var xobs2 = [0,0,0,0,0,0];
+    var xearth = [0,0,0,0,0,0];
+    var xsun = [0,0,0,0,0,0];
+    var xxsp = [0,0,0,0,0,0];
+    var xxsv = [0,0,0,0,0,0];
     var pedp = Swe.SwissData.pldat[Swe.SwephData.SEI_EARTH];
     var pdp;
     var oe = Swe.SwissData.oec2000;
@@ -1361,6 +1365,8 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
           xx[i] -= Swe.SwissData.pldat[Swe.SwephData.SEI_SUNBARY].x[i];
         }
     }
+console.log(xx);//Nanでない
+
     /************************************
      * observer: geocenter or topocenter
      ************************************/
@@ -1368,8 +1374,7 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
     if ((iflag & Swe.SEFLG_TOPOCTR)!=0) {
       if (Swe.SwissData.topd.teval != pedp.teval
         || pedp.teval == 0) {
-        if (this.swi_get_observer(pedp.teval, iflag | Swe.SEFLG_NONUT, Swe.SwephData.DO_SAVE, xobs)
-                                                               != Swe.OK) {
+        if (this.swi_get_observer(pedp.teval, iflag | Swe.SEFLG_NONUT, Swe.SwephData.DO_SAVE, xobs) != Swe.OK) {
           return Swe.ERR;
         }
       } else {
@@ -1390,20 +1395,12 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
     /*******************************
      * light-time geocentric       *
      *******************************/
-console.log(Swe.SwissData.pldat[3]);//Nanでない
+console.log(xx);//Nanでない
+
     if ((iflag & Swe.SEFLG_TRUEPOS)==0) {
       /* number of iterations - 1 */
       niter = 0;
       if ((iflag & Swe.SEFLG_SPEED)!=0) {
-        /*
-         * Apparent speed is influenced by the fact that dt changes with
-         * motion. This makes a difference of several hundredths of an
-         * arc second. To take this into account, we compute
-         * 1. true position - apparent position at time t - 1.
-         * 2. true position - apparent position at time t.
-         * 3. the difference between the two is the part of the daily motion
-         * that results from the change of dt.
-         */
         for (i = 0; i <= 2; i++) {
           xxsv[i] = xxsp[i] = xx[i] - xx[i+3];
         }
@@ -1416,8 +1413,7 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
             }
           }
           /* new dt */
-          dt = Math.sqrt(this.sl.square_sum(dx)) * Swe.AUNIT / Swe.SwephData.CLIGHT /
-                                                                       86400.0;
+          dt = Math.sqrt(this.sl.square_sum(dx)) * Swe.AUNIT / Swe.SwephData.CLIGHT / 86400.0;
           for (i = 0; i <= 2; i++) {      /* rough apparent position at t-1 */
             xxsp[i] = xxsv[i] - dt * pdp.x[i+3];
           }
@@ -1458,12 +1454,12 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
       if ((iflag & Swe.SEFLG_SPEED)!=0) {
         /* observer position for t(light-time) */
         if ((iflag & Swe.SEFLG_TOPOCTR)!=0) {
-          if (this.swi_get_observer(t, iflag | Swe.SEFLG_NONUT, Swe.SwephData.NO_SAVE, xobs2) !=
-                                                                  Swe.OK) {
+          if (this.swi_get_observer(t, iflag | Swe.SEFLG_NONUT, Swe.SwephData.NO_SAVE, xobs2) != Swe.OK) {
             return Swe.ERR;
           }
           for (i = 0; i <= 5; i++) {
             xobs2[i] += xearth[i];
+console.log(xobs2);//通らない
           }
         } else {
           for (i = 0; i <= 5; i++) {
@@ -1472,7 +1468,8 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
         }
       }
     }
-console.log(Swe.SwissData.pldat[3]);//Nanでない
+console.log(xx);//Nanでない
+
     /*******************************
      * conversion to geocenter     *
      *******************************/
@@ -1482,6 +1479,7 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
       for (i = 0; i <= 5; i++) {
         xx[i] -= xobs[i];
       }
+console.log(xx, xobs);//Nanでない
 
       if ((iflag & Swe.SEFLG_TRUEPOS) == 0 ) {
         /*
@@ -1504,13 +1502,15 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
     /************************************
      * relativistic deflection of light *
      ************************************/
-console.log(Swe.SwissData.pldat[3]);//Nanでない
+console.log(xx);//Nanでない
+
 
     if ((iflag & Swe.SEFLG_TRUEPOS)==0 &&
         (iflag & Swe.SEFLG_NOGDEFL)==0) {
                   /* SEFLG_NOGDEFL is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
       this.swi_deflect_light(xx, 0, dtsave_for_defl, iflag);
     }
+console.log(xx);//Nan !!!
     /**********************************
      * 'annual' aberration of light   *
      **********************************/
@@ -1534,6 +1534,7 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
         xx[i] = 0;
       }
     }
+console.log(xx);//Nan !!!
 
     /* ICRS to J2000 */
     if ((iflag & Swe.SEFLG_ICRS) == 0 && Swe.SwissData.jpldenum >= 403) {
@@ -1543,7 +1544,7 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
     for (i = 0; i <= 5; i++) {
       xxsv[i] = xx[i];
     }
-console.log(Swe.SwissData.pldat[3]);//Nanでない
+
 
     /************************************************
      * precession, equator 2000 -> equator of date *
@@ -1557,7 +1558,7 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
     } else {
       oe = Swe.SwissData.oec2000;
     }
-console.log(Swe.SwissData.pldat[3]);//Nanでない
+console.log(xx);//Nan
     return this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
   }
 
@@ -1573,6 +1574,8 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
     for (i = 0; i <= 5; i++) {
       pdp.xreturn[18+i] = xx[i];
     }
+console.log(Swe.SwissData.pldat[3]);//Nan
+return
     /************************************************
      * transformation to ecliptic.                  *
      * with sidereal calc. this will be overwritten *
@@ -1604,7 +1607,7 @@ console.log(Swe.SwissData.pldat[3]);//Nanでない
       this.sl.swi_polcart_sp(pdp.xreturn, 0, pdp.xreturn, 6);
     }
 console.log(Swe.SwissData.pldat[3]);//Nan
-return
+
     /************************************************
      * transformation to polar coordinates          *
      ************************************************/
@@ -1825,10 +1828,16 @@ console.log(Swe.SwissData.pldat[3]);//Nan
    *              and gravitational light deflection
    * xe           earth's position and speed
    */
-  swi_aberr_light(xx, xe, iflag) {
+  /*swi_aberr_light(xx, xe, iflag) {
     this.swi_aberr_light(xx, 0, xe, iflag);
-  }
+  }*/
   swi_aberr_light(xx, xxOffs, xe, iflag) {
+    if(iflag === undefined){
+      this.swi_aberr_light(xx, 0, xxOffs, xe);
+      return;
+    }
+console.log(xx)
+return
     var i;
     var xxs=new Array(6), v=new Array(6), u=new Array(6), ru;
     var xx2=new Array(6), dx1, dx2;
@@ -1879,15 +1888,21 @@ console.log(Swe.SwissData.pldat[3]);//Nan
    */
   swi_deflect_light(xx, offs, dt, iflag) {
     var i;
-    var xx2=new Array(6);
-    var u=new Array(6), e=new Array(6), q=new Array(6);
+    var xx2 = [0,0,0,0,0,0];
+    var u = [0,0,0,0,0,0];
+    var e = [0,0,0,0,0,0];
+    var q = [0,0,0,0,0,0];
     var ru, re, rq, uq, ue, qe, g1, g2;
-    var xx3=new Array(6), dx1, dx2, dtsp;
-    var xsun=new Array(6), xearth=new Array(6);
+    var xx3 = [0,0,0,0,0,0];
+    var dx1, dx2, dtsp;
+    var xsun = [0,0,0,0,0,0];
+    var xearth = [0,0,0,0,0,0];
     var sina, sin_sunr, meff_fact;
     var pedp = Swe.SwissData.pldat[Swe.SwephData.SEI_EARTH];
     var psdp = Swe.SwissData.pldat[Swe.SwephData.SEI_SUNBARY];
     var iephe = pedp.iephe;
+console.log(xx)//nanでない
+
     for (i = 0; i <= 5; i++) {
       xearth[i] = pedp.x[i];
     }
@@ -1984,6 +1999,7 @@ console.log(Swe.SwissData.pldat[3]);//Nan
         xx[i+3+offs] += dx1 / dtsp;
       }
     } /* endif speed */
+console.log(xx2)//nan!!　★ここから
     /* deflected position */
     for (i = 0; i <= 2; i++) {
       xx[i+offs] = xx2[i];
@@ -2072,8 +2088,7 @@ console.log(Swe.SwissData.pldat[3]);//Nan
             }
           }
           /* new t */
-          dt = Math.sqrt(this.sl.square_sum(dx)) * Swe.AUNIT / Swe.SwephData.CLIGHT /
-                                                                      86400.0;
+          dt = Math.sqrt(this.sl.square_sum(dx)) * Swe.AUNIT / Swe.SwephData.CLIGHT / 86400.0;
           t = pedp.teval - dt;
           /* new position */
           switch(pedp.iephe) {
@@ -2184,8 +2199,7 @@ console.log(Swe.SwissData.pldat[3]);//Nan
     if ((iflag & Swe.SEFLG_TOPOCTR)!=0) {
       if (Swe.SwissData.topd.teval != pdp.teval
         || Swe.SwissData.topd.teval == 0) {
-        if (this.swi_get_observer(pdp.teval, iflag | Swe.SEFLG_NONUT, Swe.SwephData.DO_SAVE, xobs, null) !=
-                                                                 Swe.OK) {
+        if (this.swi_get_observer(pdp.teval, iflag | Swe.SEFLG_NONUT, Swe.SwephData.DO_SAVE, xobs, null) != Swe.OK) {
           return Swe.ERR;
         }
       } else {
@@ -2222,8 +2236,7 @@ console.log(Swe.SwissData.pldat[3]);//Nan
      * light-time                  *
      *******************************/
     if ((iflag & Swe.SEFLG_TRUEPOS) == 0) {
-      dt = Math.sqrt(this.sl.square_sum(xxm)) * Swe.AUNIT /
-                                                   Swe.SwephData.CLIGHT / 86400.0;
+      dt = Math.sqrt(this.sl.square_sum(xxm)) * Swe.AUNIT / Swe.SwephData.CLIGHT / 86400.0;
       t = pdp.teval - dt;
       switch(pdp.iephe) {
 
@@ -2239,8 +2252,7 @@ console.log(Swe.SwissData.pldat[3]);//Nan
           break;
       }
       if ((iflag & Swe.SEFLG_TOPOCTR)!=0) {
-        if (this.swi_get_observer(t, iflag | Swe.SEFLG_NONUT, Swe.SwephData.NO_SAVE, xobs2, null) !=
-                                                                 Swe.OK) {
+        if (this.swi_get_observer(t, iflag | Swe.SEFLG_NONUT, Swe.SwephData.NO_SAVE, xobs2, null) != Swe.OK) {
           return Swe.ERR;
         }
         for (i = 0; i <= 5; i++) {
@@ -3200,11 +3212,6 @@ console.log(tjd, iflag, Swe.SwissData.oec)
       console.error("geographic position has not been set");
       return Swe.ERR;
     }
-    /* geocentric position of observer depends on sidereal time,
-     * which depends on UT.
-     * compute UT from ET. this UT will be slightly different
-     * from the user's UT, but this difference is extremely small.
-     */
     delt = SweDate.getDeltaT(tjd);
     tjd_ut = tjd - delt;
     if (Swe.SwissData.oec.teps == tjd && Swe.SwissData.nut.tnut == tjd) {
@@ -3223,22 +3230,9 @@ console.log(tjd, iflag, Swe.SwissData.oec)
       eps += nutlo[1];
       nut = nutlo[0];
     }
-    /* mean or apparent sidereal time, depending on whether or
-     * not SEFLG_NONUT is set */
+
     sidt = this.sl.swe_sidtime0(tjd_ut, eps, nut);
-    sidt *= 15;   /* in degrees */
-    /* length of position and speed vectors;
-     * the height above sea level must be taken into account.
-     * with the moon, an altitude of 3000 m makes a difference
-     * of about 2 arc seconds.
-     * height is referred to the average sea level. however,
-     * the spheroid (geoid), which is defined by the average
-     * sea level (or rather by all points of same gravitational
-     * potential), is of irregular shape and cannot easily
-     * be taken into account. therefore, we refer height to
-     * the surface of the ellipsoid. the resulting error
-     * is below 500 m, i.e. 0.2 - 0.3 arc seconds with the moon.
-     */
+    sidt *= 15;   
     cosfi = Math.cos(Swe.SwissData.topd.geolat * Swe.SwissData.DEGTORAD);
     sinfi = Math.sin(Swe.SwissData.topd.geolat * Swe.SwissData.DEGTORAD);
     cc= 1 / Math.sqrt(cosfi * cosfi + (1-f) * (1-f) * sinfi * sinfi);
@@ -3258,6 +3252,7 @@ console.log(tjd, iflag, Swe.SwissData.oec)
     /* speed */
     xobs[3] = Swe.SwephData.EARTH_ROT_SPEED;
     xobs[4] = xobs[5] = 0;
+console.log(xobs)
     this.sl.swi_polcart_sp(xobs, xobs);
     /* to AUNIT */
     for (i = 0; i <= 5; i++) {
@@ -3276,9 +3271,7 @@ console.log(tjd, iflag, Swe.SwissData.oec)
     if ((iflag & Swe.SEFLG_SPEED)!=0) {
       this.swi_precess_speed(xobs, tjd, iflag, Swe.SwephData.J_TO_J2000);
     }
-    /* neglect frame bias (displacement of 45cm) */
-    /* ... */
-    /* save */
+
     if (do_save) {
       for (i = 0; i <= 5; i++) {
         Swe.SwissData.topd.xobs[i] = xobs[i];
