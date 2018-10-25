@@ -79,21 +79,26 @@ class SwephMosh{
       [2425977.5, 2425977.5, 48.95, 55.1, 0.31, 280.1, 100, 15], /**/
     ];
 
-    this.venus = new SwemptabVen;
+    this.mer = new SwemptabMer;
+    this.ven = new SwemptabVen;
+    this.ear = new SwemptabEar;
+    this.mar = new SwemptabMar;
+    this.jup = new SwemptabJup;
+    this.sat = new SwemptabSat;
+    this.ura = new SwemptabUra;
+    this.nep = new SwemptabNep;
+    this.plu = new SwemptabPlu;
 
     this.planets = [
-      //SwemptabMer.mer404,
-      this.venus.ven404,
-      this.venus.ven404,
-      this.venus.ven404,
-      this.venus.ven404,
-      /*SwemptabEar.ear404,
-      SwemptabMar.mar404,
-      SwemptabJup.jup404,
-      SwemptabSat.sat404,
-      SwemptabUra.ura404,
-      SwemptabNep.nep404,
-      SwemptabPlu.plu404,*/
+      this.mer.mer404,
+      this.ven.ven404,
+      this.ear.ear404,
+      this.mar.mar404,
+      this.jup.jup404,
+      this.sat.sat404,
+      this.ura.ura404,
+      this.nep.nep404,
+      this.plu.plu404,
     ];
   }
 
@@ -228,7 +233,7 @@ class SwephMosh{
   }
 
 
-  swi_moshplan(tjd, ipli, do_save, xpret, xeret, serr) {
+  swi_moshplan(tjd, ipli, do_save, xpret, xeret) {
     var i;
     var do_earth = false;
     var dx=new Array(3), x2=new Array(3),
@@ -254,15 +259,12 @@ class SwephMosh{
     /* tjd beyond ephemeris limits, give some margin for spped at edge */
     if (tjd < Swe.SwephData.MOSHPLEPH_START - 0.3 ||
         tjd > Swe.SwephData.MOSHPLEPH_END + 0.3) {
-      if (serr != null) {
-        serr.setLength(0);
-        s="jd "+tjd+" outside Moshier planet range "+
-          Swe.SwephData.MOSHPLEPH_START+" .. "+
-          Swe.SwephData.MOSHPLEPH_END+" ";
-        if (serr.length() + s.length() < Swe.SwissData.AS_MAXCH) {
-          serr.append(s);
-        }
-      }
+
+      s="jd "+tjd+" outside Moshier planet range "+
+        Swe.SwephData.MOSHPLEPH_START+" .. "+
+        Swe.SwephData.MOSHPLEPH_END+" ";
+      console.error(s);
+
       return(Swe.ERR);
     }
     /* earth, for geocentric position */

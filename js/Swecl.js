@@ -109,7 +109,6 @@ class Swecl{
 
   log10(x) { return Math.log(x)/this.lnlog; }
 
-
   swe_azalt(tjd_ut, calc_flag, geopos, atpress, attemp, xin, xaz) {
     var i;
     var x = new Array(6);

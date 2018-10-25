@@ -634,7 +634,7 @@ class Swemmoon{
     this.l += -0.187231 * this.cg - 0.127481 * this.sg;
     this.l1 += -319.87 * this.cg - 18.34 * this.sg;
     this.l2 += this.z[16] * this.cg + this.z[17] * this.sg;
-    a = 4.0*this.Ea - 8.0*Ma + 3.0*Ju;
+    a = 4.0*this.Ea - 8.0*this.Ma + 3.0*this.Ju;
     this.g = Swe.SwephData.STR * a;
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
@@ -657,7 +657,7 @@ class Swemmoon{
     this.sg = Math.sin(this.g);
     this.l += 0.352185 * this.cg + 0.705041 * this.sg;
     this.l1 += 1283.59 * this.cg - 586.43 * this.sg;
-    this.g = Swe.SwephData.STR * (2.0*Ju - 5.0*this.Sa);
+    this.g = Swe.SwephData.STR * (2.0*this.Ju - 5.0*this.Sa);
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += -0.034700 * this.cg + 0.160041 * this.sg;
@@ -672,7 +672,7 @@ class Swemmoon{
     /* l3 +=  this.z[24] * sg;                   moshier! l3 not initialized! */
     this.l3 =  this.z[24] * this.sg;
     this.l4 = 0;
-    this.g = Swe.SwephData.STR * (2.0*D - M);
+    this.g = Swe.SwephData.STR * (2.0*this.D - this.M);
     this.sg = Math.sin(this.g);
     this.cg = Math.cos(this.g);
     this.moonpol[2] +=  -0.2655 * this.cg * this.T;
@@ -680,12 +680,12 @@ class Swemmoon{
     this.moonpol[2] +=  -0.1568 * Math.cos( this.g ) * this.T;
     this.g = Swe.SwephData.STR * (this.M + this.MP);
     this.moonpol[2] +=  0.1309 * Math.cos( this.g ) * this.T;
-    this.g = Swe.SwephData.STR * (2.0*(D + M) - this.MP);
+    this.g = Swe.SwephData.STR * (2.0*(this.D + this.M) - this.MP);
     this.sg = Math.sin(this.g);
     this.cg = Math.cos(this.g);
     this.moonpol[2] +=   0.5568 * this.cg * this.T;
     this.l2 += this.moonpol[0];
-    this.g = Swe.SwephData.STR*(2.0*D - this.M - this.MP);
+    this.g = Swe.SwephData.STR*(2.0*this.D - this.M - this.MP);
     this.moonpol[2] +=  -0.1910 * Math.cos( this.g ) * this.T;
     this.moonpol[1] *= this.T;
     this.moonpol[2] *= this.T;
@@ -697,7 +697,7 @@ class Swemmoon{
     this.moonpol[1] +=  -1127. * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.f - this.MP + this.NF - 235353.6); /* 18V - 16E - l + F */
     this.moonpol[1] +=  -1123. * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.Ea + D + 51987.6);
+    this.g = Swe.SwephData.STR*(this.Ea + this.D + 51987.6);
     this.moonpol[1] +=  1303. * Math.sin(this.g);
     this.g = Swe.SwephData.STR*this.SWELP;
     this.moonpol[1] +=  342. * Math.sin(this.g);
@@ -706,32 +706,32 @@ class Swemmoon{
     this.sg = Math.sin(this.g);
     this.l +=  -0.343550 * this.cg - 0.000276 * this.sg;
     this.l1 +=  105.90 * this.cg + 336.53 * this.sg;
-    this.g = Swe.SwephData.STR*(this.f - 2.*D); /* 18V - 16E - 2D */
+    this.g = Swe.SwephData.STR*(this.f - 2.*this.D); /* 18V - 16E - 2D */
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += 0.074668 * this.cg + 0.149501 * this.sg;
     this.l1 += 271.77 * this.cg - 124.20 * this.sg;
-    this.g = Swe.SwephData.STR*(this.f - 2.*D - this.MP);
+    this.g = Swe.SwephData.STR*(this.f - 2.*this.D - this.MP);
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += 0.073444 * this.cg + 0.147094 * this.sg;
     this.l1 += 265.24 * this.cg - 121.16 * this.sg;
-    this.g = Swe.SwephData.STR*(this.f + 2.*D - this.MP);
+    this.g = Swe.SwephData.STR*(this.f + 2.*this.D - this.MP);
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += 0.072844 * this.cg + 0.145829 * this.sg;
     this.l1 += 265.18 * this.cg - 121.29 * this.sg;
-    this.g = Swe.SwephData.STR*(this.f + 2.*(D - this.MP));
+    this.g = Swe.SwephData.STR*(this.f + 2.*(this.D - this.MP));
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += 0.070201 * this.cg + 0.140542 * this.sg;
     this.l1 += 255.36 * this.cg - 116.79 * this.sg;
-    this.g = Swe.SwephData.STR*(this.Ea + D - this.NF);
+    this.g = Swe.SwephData.STR*(this.Ea + this.D - this.NF);
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += 0.288209 * this.cg - 0.025901 * this.sg;
     this.l1 += -63.51 * this.cg - 240.14 * this.sg;
-    this.g = Swe.SwephData.STR*(2.*this.Ea - 3.*Ju + 2.*D - this.MP);
+    this.g = Swe.SwephData.STR*(2.*this.Ea - 3.*this.Ju + 2.*this.D - this.MP);
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += 0.077865 * this.cg + 0.438460 * this.sg;
@@ -746,12 +746,12 @@ class Swemmoon{
     this.sg = Math.sin(this.g);
     this.l += -0.165009 * this.cg + 0.044176 * this.sg;
     this.l1 += 4.67 * this.cg + 201.55 * this.sg;
-    this.g = Swe.SwephData.STR*(a + 2.*D - this.MP);
+    this.g = Swe.SwephData.STR*(a + 2.*this.D - this.MP);
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += -0.133533 * this.cg + 0.041116 * this.sg;
     this.l1 +=  6.95 * this.cg + 187.07 * this.sg;
-    this.g = Swe.SwephData.STR*(a - 2.*D + this.MP);
+    this.g = Swe.SwephData.STR*(a - 2.*this.D + this.MP);
     this.cg = Math.cos(this.g);
     this.sg = Math.sin(this.g);
     this.l += -0.133430 * this.cg + 0.041079 * this.sg;
@@ -761,7 +761,7 @@ class Swemmoon{
     this.sg = Math.sin(this.g);
     this.l += -0.175074 * this.cg + 0.003035 * this.sg;
     this.l1 +=  49.17 * this.cg + 150.57 * this.sg;
-    this.g = Swe.SwephData.STR*(2.*(this.Ea + D - this.MP) - 3.*Ju + 213534.);
+    this.g = Swe.SwephData.STR*(2.*(this.Ea + this.D - this.MP) - 3.*this.Ju + 213534.);
     this.l1 +=  158.4 * Math.sin(this.g);
     this.l1 += this.moonpol[0];
     a = 0.1 * this.T; /* set amplitude scale of 1.0 = 10^-4 arcsec */
@@ -771,27 +771,27 @@ class Swemmoon{
 
   moon2() {
     /* terms in T^0 */
-    this.g = Swe.SwephData.STR*(2*(this.Ea-Ju+D)-MP+648431.172);
+    this.g = Swe.SwephData.STR*(2*(this.Ea-this.Ju+this.D)-this.MP+648431.172);
     this.l += 1.14307 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.Ve-Ea+648035.568);
+    this.g = Swe.SwephData.STR*(this.Ve-this.Ea+648035.568);
     this.l += 0.82155 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(3*(this.Ve-Ea)+2*D-MP+647933.184);
+    this.g = Swe.SwephData.STR*(3*(this.Ve-this.Ea)+2*this.D-this.MP+647933.184);
     this.l += 0.64371 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.Ea-Ju+4424.04);
+    this.g = Swe.SwephData.STR*(this.Ea-this.Ju+4424.04);
     this.l += 0.63880 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.SWELP + this.MP - this.NF + 4.68);
     this.l += 0.49331 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.SWELP - this.MP - this.NF + 4.68);
     this.l += 0.4914 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.SWELP+NF+2.52);
+    this.g = Swe.SwephData.STR*(this.SWELP+this.NF+2.52);
     this.l += 0.36061 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(2.*this.Ve - 2.*this.Ea + 736.2);
     this.l += 0.30154 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(2.*this.Ea - 3.*Ju + 2.*D - 2.*this.MP + 36138.2);
+    this.g = Swe.SwephData.STR*(2.*this.Ea - 3.*this.Ju + 2.*this.D - 2.*this.MP + 36138.2);
     this.l += 0.28282 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(2.*this.Ea - 2.*Ju + 2.*D - 2.*this.MP + 311.0);
+    this.g = Swe.SwephData.STR*(2.*this.Ea - 2.*this.Ju + 2.*this.D - 2.*this.MP + 311.0);
     this.l += 0.24516 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.Ea - this.Ju - 2.*D + this.MP + 6275.88);
+    this.g = Swe.SwephData.STR*(this.Ea - this.Ju - 2.*this.D + this.MP + 6275.88);
     this.l += 0.21117 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(2.*(this.Ea - this.Ma) - 846.36);
     this.l += 0.19444 * Math.sin(this.g);
@@ -799,21 +799,21 @@ class Swemmoon{
     this.l -= 0.18457 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(2.*(this.Ea - this.Ju) - this.MP - 55.8);
     this.l += 0.18256 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.Ea - this.Ju - 2.*D + 6490.08);
+    this.g = Swe.SwephData.STR*(this.Ea - this.Ju - 2.*this.D + 6490.08);
     this.l += 0.16499 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.Ea - 2.*Ju - 212378.4);
+    this.g = Swe.SwephData.STR*(this.Ea - 2.*this.Ju - 212378.4);
     this.l += 0.16427 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea - D) + this.MP + 1122.48);
+    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea - this.D) + this.MP + 1122.48);
     this.l += 0.16088 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.Ve - this.Ea - this.MP + 32.04);
     this.l -= 0.15350 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.Ea - this.Ju - this.MP + 4488.88);
     this.l += 0.14346 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea + D) - this.MP - 8.64);
+    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea + this.D) - this.MP - 8.64);
     this.l += 0.13594 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea - D) + 1319.76);
+    this.g = Swe.SwephData.STR*(2.*(this.Ve - this.Ea - this.D) + 1319.76);
     this.l += 0.13432 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.Ve - this.Ea - 2.*D + this.MP - 56.16);
+    this.g = Swe.SwephData.STR*(this.Ve - this.Ea - 2.*this.D + this.MP - 56.16);
     this.l -= 0.13122 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.Ve - this.Ea + this.MP + 54.36);
     this.l -= 0.12722 * Math.sin(this.g);
@@ -821,15 +821,15 @@ class Swemmoon{
     this.l += 0.12539 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.Ea - this.Ju + this.MP + 4002.12);
     this.l += 0.10994 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(20.*this.Ve - 21.*this.Ea - 2.*D + this.MP - 317511.72);
+    this.g = Swe.SwephData.STR*(20.*this.Ve - 21.*this.Ea - 2.*this.D + this.MP - 317511.72);
     this.l += 0.10652 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(26.*this.Ve - 29.*this.Ea - this.MP + 270002.52);
     this.l += 0.10490 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(3.*this.Ve - 4.*this.Ea + D - this.MP - 322765.56);
+    this.g = Swe.SwephData.STR*(3.*this.Ve - 4.*this.Ea + this.D - this.MP - 322765.56);
     this.l += 0.10386 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.SWELP+648002.556);
     this.B =  8.04508 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.Ea+D+996048.252);
+    this.g = Swe.SwephData.STR*(this.Ea+this.D+996048.252);
     this.B += 1.51021 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.f - this.MP + this.NF + 95554.332);
     this.B += 0.63037 * Math.sin(this.g);
@@ -839,18 +839,18 @@ class Swemmoon{
     this.B +=  0.45587 * Math.sin(this.g);
     this.g = Swe.SwephData.STR*(this.SWELP + this.MP + 2.5);
     this.B +=  -0.41573 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.SWELP - 2.0*NF + 3.2);
+    this.g = Swe.SwephData.STR*(this.SWELP - 2.0*this.NF + 3.2);
     this.B +=  0.32623 * Math.sin(this.g);
-    this.g = Swe.SwephData.STR*(this.SWELP - 2.0*D + 2.5);
+    this.g = Swe.SwephData.STR*(this.SWELP - 2.0*this.D + 2.5);
     this.B +=  0.29855 * Math.sin(this.g);
   }
 
   moon3() {
     /* terms in T^0 */
     this.moonpol[0] = 0.0;
-    this.chewm( this.LR, this.this.NLR, 4, 1, this.moonpol );
+    this.chewm( this.LR, this.NLR, 4, 1, this.moonpol );
     this.chewm( this.MB, this.NMB, 4, 3, this.moonpol );
-    this.l += (((l4 * this.T + this.l3) * this.T + this.l2) * this.T + this.l1) * this.T * 1.0e-5;
+    this.l += (((this.l4 * this.T + this.l3) * this.T + this.l2) * this.T + this.l1) * this.T * 1.0e-5;
     this.moonpol[0] = this.SWELP + this.l + 1.0e-4 * this.moonpol[0];
     this.moonpol[1] = 1.0e-4 * this.moonpol[1] + this.B;
     this.moonpol[2] = 1.0e-4 * this.moonpol[2] + 385000.52899; /* kilometers */
@@ -1097,25 +1097,6 @@ class Swemmoon{
     return( lx );
   }
 
-  swi_mean_lunar_elements(tjd, node, dnode, peri, dperi) {
-    var dcor;
-    this.T = (tjd - Swe.SwephData.J2000) / 36525.0;
-    this.T2 = this.T*this.T;
-    this.mean_elements();
-    node.val = this.sl.swe_degnorm((this.SWELP - this.NF) * Swe.SwephData.STR * Swe.SwissData.RADTODEG);
-    peri.val = this.sl.swe_degnorm((this.SWELP - this.MP) * Swe.SwephData.STR * Swe.SwissData.RADTODEG);
-    this.T -= 1.0 / 36525;
-    this.mean_elements();
-    dnode.val = this.sl.swe_degnorm(node.val - (this.SWELP-NF) * Swe.SwephData.STR * Swe.SwissData.RADTODEG);
-    dnode.val -= 360;
-    dperi.val = this.sl.swe_degnorm(peri.val - (this.SWELP-MP) * Swe.SwephData.STR * Swe.SwissData.RADTODEG);
-    dcor = this.corr_mean_node(tjd);
-    node.val = this.sl.swe_degnorm(node.val - dcor);
-    dcor = this.corr_mean_apog(tjd);
-    peri.val = this.sl.swe_degnorm(peri.val - dcor);
-  }
-
-
   mean_elements() {
     var fracT = this.T%1.;
     /* Mean anomaly of sun = l' (J. Laskar) */
@@ -1139,22 +1120,15 @@ class Swemmoon{
     this.MP = this.mods3600(1717200000.0 * fracT + 715923.4728 * this.T -
                   2.035946368532e-01 * this.T + 485868.28096);
     /* Mean elongation of moon = D */
-    D = this.mods3600(1601856000.0 * fracT + 1105601.4603 * this.T +
+    this.D = this.mods3600(1601856000.0 * fracT + 1105601.4603 * this.T +
                  3.962893294503e-01 * this.T + 1072260.73512);
     /* Mean longitude of moon, referred to the mean ecliptic and equinox of date */
     this.SWELP = this.mods3600(1731456000.0 * fracT + 1108372.83264 * this.T - 6.784914260953e-01 * this.T +  785939.95571);
     /* Higher degree secular terms found by least squares fit */
     this.NF += ((this.z[2]*this.T + this.z[1])*this.T + this.z[0])*this.T2;
     this.MP += ((this.z[5]*this.T + this.z[4])*this.T + this.z[3])*this.T2;
-    D  += ((this.z[8]*this.T + this.z[7])*this.T + this.z[6])*this.T2;
+    this.D  += ((this.z[8]*this.T + this.z[7])*this.T + this.z[6])*this.T2;
     this.SWELP += ((this.z[11]*this.T + this.z[10])*this.T + this.z[9])*this.T2;
-
-    /* sensitivity of mean elements
-     *    delta argument = scale factor times delta amplitude (arcsec)
-     * cos l  9.0019 = mean eccentricity
-     * cos 2D 43.6
-     * cos F  11.2 (latitude term)
-     */
   }
   
   mean_elements_pl() {
@@ -1213,7 +1187,7 @@ class Swemmoon{
     this.mean_elements();
     this.mean_elements_pl();
     sNF = this.NF;
-    sD  = D;
+    sD  = this.D;
     sLP = this.SWELP;
     sMP = this.MP;
     sM  = this.M ;
@@ -1239,7 +1213,7 @@ class Swemmoon{
       for (ii = 0; ii <=2; ii++) {/**/
         this.MP = mMP + (ii-1)*dd;       /**/
         NF = mNF + (ii-1)*dd/fNF;
-        D  = mD  + (ii-1)*dd/fD;
+        this.D  = mD  + (ii-1)*dd/fD;
         this.SWELP = mLP + (ii-1)*dd/fLP;
         this.M  = sM  + (ii-1)*dd/fM ;
         this.Ve = sVe + (ii-1)*dd/fVe;
