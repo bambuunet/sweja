@@ -829,7 +829,8 @@ console.log(Swe.SwissData.pldat[3])//Nanでない
       pdp = Swe.SwissData.pldat[ipli];
       xp = pdp.xreturn;
       retc = this.main_planet(tjd, ipli, epheflag, iflag);
-console.log(Swe.SwissData.pldat[3])//すでにNAN
+console.log(retc)
+
 
       if (retc == Swe.ERR) {
         return this.swecalc_error(x);
@@ -1010,6 +1011,8 @@ console.log(retc)//通らない
       console.error("illegal planet number "+ipl+".");
       return this.swecalc_error(x);
     }
+console.log(iflag)
+
     for (i = 0; i < 24; i++) {
       x[i] = xp[i];
     }
@@ -1510,7 +1513,7 @@ console.log(xx);//Nanでない
                   /* SEFLG_NOGDEFL is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
       this.swi_deflect_light(xx, 0, dtsave_for_defl, iflag);
     }
-console.log(xx);//Nan !!!
+console.log(xx);//Nan でない
     /**********************************
      * 'annual' aberration of light   *
      **********************************/
@@ -1534,7 +1537,7 @@ console.log(xx);//Nan !!!
         xx[i] = 0;
       }
     }
-console.log(xx);//Nan !!!
+console.log(xx);//Nanでない
 
     /* ICRS to J2000 */
     if ((iflag & Swe.SEFLG_ICRS) == 0 && Swe.SwissData.jpldenum >= 403) {
@@ -1558,7 +1561,7 @@ console.log(xx);//Nan !!!
     } else {
       oe = Swe.SwissData.oec2000;
     }
-console.log(xx);//Nan
+console.log(xx);//Nanでない
     return this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
   }
 
@@ -1574,7 +1577,7 @@ console.log(xx);//Nan
     for (i = 0; i <= 5; i++) {
       pdp.xreturn[18+i] = xx[i];
     }
-console.log(Swe.SwissData.pldat[3]);//Nan
+console.log(Swe.SwissData.pldat[3]);//Nanでない
 return
     /************************************************
      * transformation to ecliptic.                  *
@@ -1837,7 +1840,6 @@ console.log(Swe.SwissData.pldat[3]);//Nan
       return;
     }
 console.log(xx)
-return
     var i;
     var xxs=new Array(6), v=new Array(6), u=new Array(6), ru;
     var xx2=new Array(6), dx1, dx2;
@@ -1892,12 +1894,12 @@ return
     var u = [0,0,0,0,0,0];
     var e = [0,0,0,0,0,0];
     var q = [0,0,0,0,0,0];
-    var ru, re, rq, uq, ue, qe, g1, g2;
+    var ru = 0, re = 0, rq = 0, uq = 0, ue = 0, qe = 0, g1 = 0, g2 = 0;
     var xx3 = [0,0,0,0,0,0];
-    var dx1, dx2, dtsp;
+    var dx1 = 0, dx2 = 0, dtsp = 0;
     var xsun = [0,0,0,0,0,0];
     var xearth = [0,0,0,0,0,0];
-    var sina, sin_sunr, meff_fact;
+    var sina = 0, sin_sunr = 0, meff_fact = 0;
     var pedp = Swe.SwissData.pldat[Swe.SwephData.SEI_EARTH];
     var psdp = Swe.SwissData.pldat[Swe.SwephData.SEI_SUNBARY];
     var iephe = pedp.iephe;
@@ -1952,6 +1954,9 @@ console.log(xx)//nanでない
     for (i = 0; i <= 2; i++) {
       xx2[i] = ru * (u[i] + g1/g2 * (uq * e[i] - ue * q[i]));
     }
+console.log(ru ,u ,g1,g2 ,uq ,e , ue , q);
+console.log(xx2)//nan!! 
+
     if ((iflag & Swe.SEFLG_SPEED)!=0) {
       dtsp = -Swe.SwephData.DEFL_SPEED_INTV;
       /* U = planetbary(t-tau) - earthbary(t) = planetgeo */
@@ -1999,7 +2004,8 @@ console.log(xx)//nanでない
         xx[i+3+offs] += dx1 / dtsp;
       }
     } /* endif speed */
-console.log(xx2)//nan!!　★ここから
+console.log(xx2)
+
     /* deflected position */
     for (i = 0; i <= 2; i++) {
       xx[i+offs] = xx2[i];
@@ -3322,11 +3328,14 @@ console.log(xobs)
     return retval;
   }
 
-  dot_prod(x, y) {
+  /*dot_prod(x, y) {
     return x[0]*y[0]+x[1]*y[1]+x[2]*y[2];
-  }
-
+  }*/
   dot_prod(x, y, yOffs) {
+    if(yOffs === undefined){
+      return x[0]*y[0]+x[1]*y[1]+x[2]*y[2];
+    }
+
     return x[0]*y[yOffs]+x[1]*y[1+yOffs]+x[2]*y[2+yOffs];
   }
 };
