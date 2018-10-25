@@ -169,8 +169,6 @@ Swe.SEFLG_MOSEPH=4;
 Swe.SEFLG_DEFAULTEPH=Swe.SEFLG_MOSEPH;
 Swe.SEFLG_EPHMASK=1|2|Swe.SEFLG_MOSEPH;
 Swe.SE_SIDBITS             =256;
-Swe.SE_SIDBIT_ECL_T0       =256;
-Swe.SE_SIDBIT_SSY_PLANE    =512;
 Swe.SE_SIDM_FAGAN_BRADLEY  = 0;
 Swe.SE_SIDM_LAHIRI         = 1;
 Swe.SE_SIDM_DELUCE         = 2;
@@ -189,10 +187,6 @@ Swe.SE_SIDM_ALDEBARAN_15TAU=14;
 Swe.SE_SIDM_HIPPARCHOS     =15;
 Swe.SE_SIDM_SASSANIAN      =16;
 Swe.SE_SIDM_GALCENT_0SAG   =17;
-
-Swe.SE_SIDM_J2000          =18;
-Swe.SE_SIDM_J1900          =19;
-Swe.SE_SIDM_B1950          =20;
 
 Swe.SE_SIDM_SURYASIDDHANTA =21;
 Swe.SE_SIDM_SURYASIDDHANTA_MSUN =22;
@@ -394,9 +388,6 @@ Swe.SE_ECL_OCC_END_DAYLIGHT=16384;   /* occultation ends during the day */
 Swe.SE_ECL_ONE_TRY=32*1024;
 Swe.SE_CALC_RISE          = 1;
 Swe.SE_CALC_SET           = 2;
-Swe.SE_CALC_MTRANSIT      = 4;
-
-Swe.SE_CALC_ITRANSIT      = 8;
 Swe.SE_BIT_DISC_CENTER   = 256;
                                   /* to be or'ed to SE_CALC_RISE/SET
                                    * if rise or set of disc center is

@@ -13,6 +13,10 @@
     <script type="text/javascript" src="js/SweDate.js"></script>
     <script type="text/javascript" src="js/SwissLib.js"></script>
     <script type="text/javascript" src="js/Swemmoon.js"></script>
+
+
+    <script type="text/javascript" src="js/SwemptabVen.js"></script>
+    <script type="text/javascript" src="js/SwephMosh.js"></script>
     
     
     <script type="text/javascript" src="js/Swecl.js"></script>
@@ -27,19 +31,22 @@
       var jut = 0.0;
       var SE_GREG_CAL = true;
 
-      var date = new SweDate;
+      var date = new SweDate(1957,4,13,18+57./60.);
       var tjd_ut = date.swe_julday(jyear,jmon,jday,jut,SE_GREG_CAL); 
       console.log("tjd_ut:" + tjd_ut);
 
       var p = Swe.SE_VENUS;
+      //var p = Swe.SE_MOON;
       var iflag = 4;
+console.log(iflag)
 
       var x2 = new Array(6);
       x2 = [0,0,0,0,0,0];
 
       var eph = new SwissEph;
       eph.swe_set_ephe_path(null);
-      var iflgret = eph.swe_calc_ut(tjd_ut, p, iflag, x2);
+      //eph.swe_set_topo(88.2,43,200);
+      var iflgret = eph.swe_calc(tjd_ut, p, iflag, x2);
       console.log("iflgret:"+iflgret, x2);
 /*
       var attr = new Array(20);

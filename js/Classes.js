@@ -46,6 +46,15 @@ class FileData{
   }
 };
 
+class IDate{
+  constructor(){
+    this.year;
+    this.month;
+    this.day;
+    this.hour;
+  }
+}
+
 class MeffEle{
   constructor(r, m){
     this.r = r;
@@ -77,6 +86,17 @@ class Nut{
   }
 };
 
+class Plantbl{
+  constructor(max_harmonic, max_power_of_t, arg_tbl, lon_tbl, lat_tbl, rad_tbl, distance){
+    this.max_harmonic=max_harmonic;
+    this.max_power_of_t=max_power_of_t;
+    this.arg_tbl=arg_tbl;
+    this.lon_tbl=lon_tbl;
+    this.lat_tbl=lat_tbl;
+    this.rad_tbl=rad_tbl;
+    this.distance=distance;
+  }
+}
 class PlanData{
   constructor(r, m){
     this.x=new Array(6);

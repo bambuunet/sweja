@@ -428,16 +428,6 @@ class SwissLib{
   }
 
 
-  swi_angnorm(x) {
-    if (x < 0.0 ) {
-      return x + Swe.SwephData.TWOPI;
-    } else if (x >= Swe.SwephData.TWOPI) {
-      return x - Swe.SwephData.TWOPI;
-    } else {
-      return x;
-    }
-  }
-
   swi_cross_prod(a, aOffs, b, bOffs, x, xOffs) {
     x[0+xOffs] = a[1+aOffs]*b[2+bOffs] - a[2+aOffs]*b[1+bOffs];
     x[1+xOffs] = a[2+aOffs]*b[0+bOffs] - a[0+aOffs]*b[2+bOffs];
@@ -512,29 +502,6 @@ class SwissLib{
     xpn[  nOffs] = x[0] * Swe.SwissData.RADTODEG;
     xpn[1+nOffs] = x[1] * Swe.SwissData.RADTODEG;
     xpn[2+nOffs] = xpo[2+oOffs];
-  }
-
-
-  swe_cotrans_sp(xpo, xpn, eps) {
-    var i;
-    var x=new Array(6), e = eps * Swe.SwissData.DEGTORAD;
-    for (i = 0; i <= 5; i++)
-      x[i] = xpo[i];
-    x[0] *= Swe.SwissData.DEGTORAD;
-    x[1] *= Swe.SwissData.DEGTORAD;
-    x[2] = 1;     /* avoids problems with polcart(), if x[2] = 0 */
-    x[3] *= Swe.SwissData.DEGTORAD;
-    x[4] *= Swe.SwissData.DEGTORAD;
-    this.swi_polcart_sp(x, x);
-    this.swi_coortrf(x, x, e);
-    this.swi_coortrf(x, 3, x, 3, e);
-    this.swi_cartpol_sp(x, xpn);
-    xpn[0] *= Swe.SwissData.RADTODEG;
-    xpn[1] *= Swe.SwissData.RADTODEG;
-    xpn[2] = xpo[2];
-    xpn[3] *= Swe.SwissData.RADTODEG;
-    xpn[4] *= Swe.SwissData.RADTODEG;
-    xpn[5] = xpo[5];
   }
 
   /*swi_coortrf(xpo, xpn, eps) {
@@ -621,20 +588,14 @@ class SwissLib{
     x[xOffs+2] = xx[2];
   }
 
-  /*swi_cartpol_sp(x, l) {
-    swi_cartpol_sp(x, 0, l, 0);
-  }*/
   swi_cartpol_sp(x, xOffs, l, lOffs) {
-    //引数2つの場合
-    if(l === undefined){
-      return this.swi_cartpol_sp(x, 0, xOffs, 0);
-    }
-    var xx=new Array(6), ll=new Array(6);
+    var xx=new Array(6);
+    var ll=new Array(6);
     var rxy, coslon, sinlon, coslat, sinlat;
     /* zero position */
     if (x[0+xOffs] == 0 && x[1+xOffs] == 0 && x[2+xOffs] == 0) {
       l[0+lOffs] = l[1+lOffs] = l[3+lOffs] = l[4+lOffs] = 0;
-      l[5+lOffs] = Math.sqrt(this.square_sum(x, 3+xOffs));
+      l[5+lOffs] = Math.sqrt(square_sum(x, 3+xOffs));
       this.swi_cartpol(x, 3+xOffs, l, 0+lOffs);
       l[2+lOffs] = 0;
       return;
@@ -654,6 +615,7 @@ class SwissLib{
       ll[0] += Swe.SwephData.TWOPI;
     }
     ll[1] = Math.atan(x[2+xOffs] / rxy);
+
     coslon = x[0+xOffs] / rxy;          /* cos(l[0]); */
     sinlon = x[1+xOffs] / rxy;          /* sin(l[0]); */
     coslat = rxy / ll[2];         /* cos(l[1]); */
@@ -669,6 +631,8 @@ class SwissLib{
     l[1+lOffs] = ll[1];
     l[2+lOffs] = ll[2];
   }
+
+
 
   /*swi_polcart_sp(l, x) {
     swi_polcart_sp(l, 0, x, 0);
@@ -707,22 +671,6 @@ class SwissLib{
     x[0+xOffs] = xx[0];                                 /* return position */
     x[1+xOffs] = xx[1];
     x[2+xOffs] = xx[2];
-  }
-
-  swi_dot_prod_unit( x, y) {
-    var dop = x[0]*y[0]+x[1]*y[1]+x[2]*y[2];
-    var e1 = Math.sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]);
-    var e2 = Math.sqrt(y[0]*y[0]+y[1]*y[1]+y[2]*y[2]);
-    dop /= e1;
-    dop /= e2;
-    if (dop > 1) {
-      dop = 1;
-    }
-    if (dop < -1) {
-      dop = -1;
-    }
-
-    return dop;
   }
 
 
@@ -2028,69 +1976,11 @@ class SwissLib{
     }
   }  /* end split_deg */
 
-  swi_kepler(E, M, ecce) {
-
-    var dE = 1, E0;
-    var x;
-    /* simple formula for small eccentricities */
-    if (ecce < 0.4) {
-      while(dE > 1e-12) {
-        E0 = E;
-        E = M + ecce * Math.sin(E0);
-        dE = Math.abs(E - E0);
-      }
-    /* complicated formula for high eccentricities */
-    } else {
-      while(dE > 1e-12) {
-        E0 = E;
-        /*
-         * Alois 21-jul-2000: workaround an optimizer problem in gcc
-         * swi_mod2PI sees very small negative argument e-322 and returns +2PI;
-         * we avoid swi_mod2PI for small x.
-         */
-        x = (M + ecce * Math.sin(E0) - E0) / (1 - ecce * Math.cos(E0));
-        dE = Math.abs(x);
-        if (dE < 1e-2) {
-          E = E0 + x;
-        } else {
-          E = swi_mod2PI(E0 + x);
-          dE = Math.abs(E - E0);
-        }
-      }
-    }
-    return E;
-  }
-
   swe_set_astro_models(imodel) {
     //int *pmodel = &(swed.astro_models[0]);
     //memcpy(pmodel, imodel, SEI_NMODELS * sizeof(int32));
     this.swed.astro_models = imodel;
   }
-
-  swi_FK4_FK5(xp, tjd) {
-
-    if (xp[0] == 0 && xp[1] == 0 && xp[2] == 0) {
-      return;
-    }
-    this.swi_cartpol(xp, xp);
-    /* according to Expl.Suppl., p. 167f. */
-    xp[0] += (0.035 + 0.085 * (tjd - Swe.SwephData.B1950) / 36524.2198782) / 3600 * 15 * Swe.SwissData.DEGTORAD;
-    xp[3] += (0.085 / 36524.2198782) / 3600 * 15 * Swe.SwissData.DEGTORAD;
-    this.swi_polcart(xp, xp);
-  }
-
-  swi_FK5_FK4( xp, tjd) {
-
-    if (xp[0] == 0 && xp[1] == 0 && xp[2] == 0) {
-      return;
-    }
-    this.swi_cartpol(xp, xp);
-    /* according to Expl.Suppl., p. 167f. */
-    xp[0] -= (0.035 + 0.085 * (tjd - Swe.SwephData.B1950) / 36524.2198782) / 3600 * 15 * Swe.SwissData.DEGTORAD;
-    xp[3] -= (0.085 / 36524.2198782) / 3600 * 15 * Swe.SwissData.DEGTORAD;
-    this.swi_polcart(xp, xp);
-  }
-
 
   swi_strcpy(to, from) {
     return from;
@@ -2120,15 +2010,6 @@ class SwissLib{
     dif = this.swe_degnorm(p1 - p2);
     if (dif  >= 180.0) {
       return (dif - 360.0);
-    }
-    return (dif);
-  }
-
-  swe_difrad2n(p1, p2) {
-    var dif;
-    dif = this.swe_radnorm(p1 - p2);
-    if (dif  >= Swe.SwephData.TWOPI / 2) {
-      return (dif - Swe.SwephData.TWOPI);
     }
     return (dif);
   }
