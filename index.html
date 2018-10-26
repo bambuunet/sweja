@@ -27,6 +27,8 @@
     
     <script type="text/javascript" src="js/Swecl.js"></script>
     <script type="text/javascript" src="js/SwissEph.js"></script>
+
+   <script type="text/javascript" src="js/AstroCalculator.js"></script> 
     <title>swejs</title>
   </head>
   <body>
@@ -42,9 +44,13 @@
       console.log("tjd_ut:" + tjd_ut);
 
       var p = Swe.SE_PLUTO;
-      var p = Swe.SE_SUN;
+      var p = Swe.SE_SATURN;
+      var p = Swe.SE_MERCURY;
+      //var p = Swe.SE_SUN;
+      //var p = Swe.SE_JUPITER
       //var p = Swe.SE_MOON;
-      var iflag = 4;
+      //var p = Swe.SE_EARTH; 
+      var iflag = 260;
 
       var x2 = new Array(6);
 
@@ -59,6 +65,10 @@
       console.log("iflgret:"+iflgret, x2);
       var elapsed_ms = new Date().getTime() - start_ms;
       console.log('処理時間：' + elapsed_ms);
+
+
+
+      eph.swe_houses(tjd_ut, geolat, eps, hsys, cusp, ascmc);
 
       //console.log(a.PNOINT2JPL,SwephJPL)
     </script>

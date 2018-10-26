@@ -358,128 +358,6 @@ class SwissEph{
     return this.sl.swe_degnorm(-x[0]);
   }
 
-
-  swe_get_planet_name(ipl) {
-    var s="";
-    var i;
-    var retc;
-    var xp=new double[6];
-    /* function calls for Pluto with asteroid number 134340
-     * are treated as calls for Pluto as main body SE_PLUTO */
-    if (ipl == SweConst.SE_AST_OFFSET + 134340) {
-      ipl = SweConst.SE_PLUTO;
-    }
-    if (ipl != 0 && ipl == swed.i_saved_planet_name) {
-      s=swed.saved_planet_name;
-      return s;
-    }
-    switch(ipl) {
-      case SweConst.SE_SUN:
-        s = SwephData.SE_NAME_SUN;
-        break;
-      case SweConst.SE_MOON:
-        s = SwephData.SE_NAME_MOON;
-        break;
-      case SweConst.SE_MERCURY:
-        s = SwephData.SE_NAME_MERCURY;
-        break;
-      case SweConst.SE_VENUS:
-        s = SwephData.SE_NAME_VENUS;
-        break;
-      case SweConst.SE_MARS:
-        s = SwephData.SE_NAME_MARS;
-        break;
-      case SweConst.SE_JUPITER:
-        s = SwephData.SE_NAME_JUPITER;
-        break;
-      case SweConst.SE_SATURN:
-        s = SwephData.SE_NAME_SATURN;
-        break;
-      case SweConst.SE_URANUS:
-        s = SwephData.SE_NAME_URANUS;
-        break;
-      case SweConst.SE_NEPTUNE:
-        s = SwephData.SE_NAME_NEPTUNE;
-        break;
-      case SweConst.SE_PLUTO:
-        s = SwephData.SE_NAME_PLUTO;
-        break;
-      case SweConst.SE_MEAN_NODE:
-        s = SwephData.SE_NAME_MEAN_NODE;
-        break;
-      case SweConst.SE_TRUE_NODE:
-        s = SwephData.SE_NAME_TRUE_NODE;
-        break;
-      case SweConst.SE_MEAN_APOG:
-        s = SwephData.SE_NAME_MEAN_APOG;
-        break;
-      case SweConst.SE_OSCU_APOG:
-        s = SwephData.SE_NAME_OSCU_APOG;
-        break;
-      case SweConst.SE_INTP_APOG: 
-        s = SwephData.SE_NAME_INTP_APOG;
-        break;  
-      case SweConst.SE_INTP_PERG: 
-        s = SwephData.SE_NAME_INTP_PERG;
-        break;  
-      case SweConst.SE_EARTH:
-        s = SwephData.SE_NAME_EARTH;
-        break;
-      case SweConst.SE_CHIRON:
-      case SweConst.SE_AST_OFFSET + SwephData.MPC_CHIRON:
-        s = SwephData.SE_NAME_CHIRON;
-        break;
-      case SweConst.SE_PHOLUS:
-      case SweConst.SE_AST_OFFSET + SwephData.MPC_PHOLUS:
-        s = SwephData.SE_NAME_PHOLUS;
-        break;
-      case SweConst.SE_CERES:
-      case SweConst.SE_AST_OFFSET + SwephData.MPC_CERES:
-        s = SwephData.SE_NAME_CERES;
-        break;
-      case SweConst.SE_PALLAS:
-      case SweConst.SE_AST_OFFSET + SwephData.MPC_PALLAS:
-        s = SwephData.SE_NAME_PALLAS;
-        break;
-      case SweConst.SE_JUNO:
-      case SweConst.SE_AST_OFFSET + SwephData.MPC_JUNO:
-        s = SwephData.SE_NAME_JUNO;
-        break;
-      case SweConst.SE_VESTA:
-      case SweConst.SE_AST_OFFSET + SwephData.MPC_VESTA:
-        s = SwephData.SE_NAME_VESTA;
-        break;
-      default:
-        /* fictitious planets */
-        if (ipl >= SweConst.SE_FICT_OFFSET && ipl <= SweConst.SE_FICT_MAX) {
-          return this.smosh.swi_get_fict_name(ipl - SweConst.SE_FICT_OFFSET, s);
-        }
-        /* asteroids */
-        if (ipl > SweConst.SE_AST_OFFSET) {
-          /* if name is already available */
-          if (ipl == this.swed.fidat[SwephData.SEI_FILE_ANY_AST].ipl[0]) {
-            s=swed.fidat[SwephData.SEI_FILE_ANY_AST].astnam;
-          /* else try to get it from ephemeris file */
-          } else {
-            s=(ipl - SweConst.SE_AST_OFFSET)+": not found";
-          }
-          if (s.charAt(0) == '?' || Character.isDigit(s.charAt(1))) {
-            var ipli = (int) (ipl - SweConst.SE_AST_OFFSET), iplf = 0;
-          }
-        } else  {
-          i = ipl;
-          s=""+i;
-        }
-        break;
-      // End of default
-    } // End of switch()
-    if (s.length() < 80) {
-      swed.i_saved_planet_name = ipl;
-      swed.saved_planet_name = s;
-    }
-    return s;
-  }
-
   swe_get_ayanamsa_name(isidmode) {
     isidmode %= SweConst.SE_SIDBITS;
     if (isidmode < SwissData.SE_NSIDM_PREDEF)
@@ -530,8 +408,6 @@ class SwissEph{
     }
     return this.sc.swe_refrac_extended(inalt, geoalt, atpress, lapse_rate, attemp, calc_flag, dret);
   }
-
-
 
   swe_rise_trans(tjd_ut, ipl, starname, epheflag, rsmi, geopos, atpress, attemp, tret) {
     if (this.sc===null) {

@@ -380,17 +380,13 @@ class SweDate{
   }
 
   checkDate() {
-
     var cd = checkDate(this.year, this.month, this.day, this.hour);
-
     return cd;
   }
 
 
   checkDate(year, month, day) {
-
     var cd = checkDate(year, month, day, 0.0);
-
     return cd;
   }
 
@@ -402,26 +398,33 @@ class SweDate{
     return (dt.year==year && dt.month==month && dt.day==day);
   }
 
-  /**
-  * Makes the date to be a valid date.
-  */
   makeValidDate() {
-
     var jd=this.swe_julday(this.year,this.month,this.day,this.hour,this.SE_GREG_CAL);
     var dt=this.swe_revjul(jd,this.SE_GREG_CAL);
     this.year=dt.year;
     this.month=dt.month;
     this.day=dt.day;
     this.hour=dt.hour;
-
   }
 
   getGregorianChange() {
-
     return this.jdCO;
   }
 
   setGregorianChange(year, month, day) {
+    //引数が1つの場合
+    if(month === undefined){
+      var newJDCO = year;
+
+      this.jdCO = newJDCO;
+      this.calType = (this.jd>=this.jdCO?this.SE_GREG_CAL:this.SE_JUL_CAL);
+      var dt = this.swe_revjul(this.jd,this.calType);
+      this.year = dt.year;
+      this.month = dt.month;
+      this.day = dt.day;
+      this.hour = dt.hour;
+      return;
+    }
 
     this.year = year;
     this.month = month;
@@ -436,59 +439,36 @@ class SweDate{
     this.jdCO = this.swe_julday(year, month, day, 0., this.SE_GREG_CAL);
     this.jd = this.swe_julday(this.year, this.month, this.day, this.hour,
                          this.calType);
-
   }
 
-  /**
-  * Changes the date of the start of the Gregorian calendar system.
-  * This method will keep the julian day number and change year,
-  * month and day of the date of this SweDate object if required.
-  * @param newJDCO The julian day number, on which the Gregorian calendar
-  * came into effect.
-  */
-  setGregorianChange(newJDCO) {
-
-    this.jdCO = newJDCO;
-    this.calType = (this.jd>=this.jdCO?this.SE_GREG_CAL:this.SE_JUL_CAL);
-    var dt = this.swe_revjul(this.jd,this.calType);
-    this.year = dt.year;
-    this.month = dt.month;
-    this.day = dt.day;
-    this.hour = dt.hour;
-
-  }
-  // End of access to private variables ////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-
-  /**
-  * Returns the tidal acceleration used in calculations of delta T.<br>
-  * Was <code>double swe_get_tid_acc()</code> in the original
-  * C sources.
-  * @return Tidal acceleration
-  */
   getGlobalTidalAcc() {
     return this.tid_acc;
   }
 
-  swe_set_tid_acc(t_acc) {
-    this.setGlobalTidalAcc(t_acc);
-  }
-
-  setGlobalTidalAcc(t_acc) {
-    if (t_acc == Swe.SE_TIDAL_AUTOMATIC) {
-      this.tid_acc = Swe.SE_TIDAL_DEFAULT;
-      this.is_tid_acc_manual = false;
+  swi_set_tid_acc(tjd_ut, iflag, denum) {
+    //引数が1つの場合
+    if(iflag === undefined){
+      this.setGlobalTidalAcc(t_acc);
       return;
     }
-    this.tid_acc = t_acc;
-    this.is_tid_acc_manual = true;
-  }
-
-  swi_set_tid_acc(tjd_ut, iflag, denum) {
     this.setGlobalTidalAcc(tjd_ut, iflag, denum);
   }
 
   setGlobalTidalAcc(tjd_ut, iflag, denum) {
+    //引数が1つの場合
+    if(iflag === undefined){
+      var t_acc = tjd_ut;
+
+      if (t_acc == Swe.SE_TIDAL_AUTOMATIC) {
+        this.tid_acc = Swe.SE_TIDAL_DEFAULT;
+        this.is_tid_acc_manual = false;
+        return;
+      }
+      this.tid_acc = t_acc;
+      this.is_tid_acc_manual = true;
+      return;
+    }
+
     var xx = new Array(6);
     var tjd_et;
     var retval = 0;
