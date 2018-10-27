@@ -533,7 +533,7 @@ class SwissLib{
       return this.swi_coortrf2(xpo, 0, oOffs, 0, xpn, nOffs);
     }
 
-    console.log("swi_coortrf2() xpo:"+xpo+", oOffs:"+oOffs+", xpn:"+xpn+", nOffs:"+nOffs+", sineps:"+sineps+", coseps:"+coseps);
+    console.log("swi_coortrf2() xpo:, oOffs:"+oOffs+", xpn:, nOffs:"+nOffs+", sineps:"+sineps+", coseps:"+coseps);
 
     var x=[0,0,0];
     x[0] = xpo[0+oOffs];
@@ -542,6 +542,7 @@ class SwissLib{
     xpn[0+nOffs] = x[0];
     xpn[1+nOffs] = x[1];
     xpn[2+nOffs] = x[2];
+    return;
   }
 
   /*swi_cartpol(x, l) {

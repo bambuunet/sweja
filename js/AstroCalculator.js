@@ -62,7 +62,7 @@ class AstroCalculator{
 
   getPlanetPosition(){
     var ret = {};
-    var iflag = Swe.SEFLG_MOSEPH;//|Swe.SEFLG_SPEED;//|Swe.SEFLG_SIDEREAL;
+    var iflag = Swe.SEFLG_MOSEPH|Swe.SEFLG_SPEED;//|Swe.SEFLG_SIDEREAL;
     var ret_matrix = new Array(6);
 
     for(var planet in this.planets){
