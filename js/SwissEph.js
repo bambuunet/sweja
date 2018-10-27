@@ -137,6 +137,7 @@ class SwissEph{
   };
 
   _calc(tjd, ipl, iflag, xx){
+    console.log("_calc()");
     var i, j;
     var iflgcoor;
     var iflgsave = iflag;
@@ -190,12 +191,6 @@ class SwissEph{
 
     var xsOffset=0;
     xs=sd.xsaves;
-    if ((iflag & Swe.SEFLG_EQUATORIAL) != 0) {
-      xsOffset=12;
-    }
-    if ((iflag & Swe.SEFLG_XYZ)!=0) {
-      xsOffset+=6;
-    }
     if (ipl == Swe.SE_ECL_NUT) {
       i = 4;
     } else {
@@ -211,20 +206,6 @@ class SwissEph{
       for (j = 3; j < 6; j++) { x[j] = xs[j+xsOffset]; }
     }
 
-    if ((iflag & Swe.SEFLG_RADIANS)!=0) {
-      if (ipl == Swe.SE_ECL_NUT) {
-        for (j = 0; j < 4; j++)
-          x[j] *= Swe.SwissData.DEGTORAD;
-      } else {
-        for (j = 0; j < 2; j++)
-          x[j] *= Swe.SwissData.DEGTORAD;
-        if ((iflag & (Swe.SEFLG_SPEED3 | Swe.SEFLG_SPEED))!=0) {
-          for (j = 3; j < 5; j++)
-            x[j] *= Swe.SwissData.DEGTORAD;
-        }
-      }  
-    } 
-
     for (i = 0; i <= 5; i++) {
       xx[i] = x[i];
     }
@@ -233,6 +214,7 @@ class SwissEph{
       iflag = iflag & ~Swe.SEFLG_DEFAULTEPH;
     }
 
+    console.log("_calc() end");
     return iflag;
   };
 
@@ -514,7 +496,7 @@ class SwissEph{
 
 
   swecalc(tjd, ipl, iflag, x) {
-    console.log("swecalc()")
+    console.log("swecalc()");
     var i;
     var ipli, ipli_ast, ifno;
     var retc;
@@ -626,7 +608,6 @@ class SwissEph{
       pdp = Swe.SwissData.pldat[ipli];
       xp = pdp.xreturn;
       retc = this.main_planet(tjd, ipli, epheflag, iflag);
-
 
       if (retc == Swe.ERR) {
         return this.swecalc_error(x);
@@ -788,16 +769,32 @@ class SwissEph{
         return Swe.ERR;
       }
       while (true) {
-
         retc = this.main_planet(tjd, Swe.SwephData.SEI_EARTH, epheflag, iflag);
         if (retc == Swe.ERR) {
           return this.swecalc_error(x);
         }
 
         iflag = Swe.SwissData.pldat[Swe.SwephData.SEI_EARTH].xflgs;
+        return swecalc_error(x);
 
-        return this.swecalc_error(x);
+        retc = this.app_pos_etc_plan_osc(ipl, ipli, iflag);
+        if (retc == Swe.ERR) {
+          return this.swecalc_error(x);
+        }
+
+        if (retc == Swe.SwephData.NOT_AVAILABLE ||
+            retc == Swe.SwephData.BEYOND_EPH_LIMITS) {
+          if (epheflag != Swe.SEFLG_MOSEPH) {
+            iflag = (iflag & ~Swe.SEFLG_EPHMASK) | Swe.SEFLG_MOSEPH;
+            epheflag = SweConst.SEFLG_MOSEPH;
+            continue;
+          } else{
+            return this.swecalc_error(x);
+          }
+        }
+        break;
       }
+
     /***********************************************
      * invalid body number                         *
      ***********************************************/
@@ -809,6 +806,7 @@ class SwissEph{
     for (i = 0; i < 24; i++) {
       x[i] = xp[i];
     }
+    console.log("swecalc() end")
     return(iflag);
   }
 
@@ -879,6 +877,7 @@ class SwissEph{
         return Swe.ERR;
       }
     }
+    console.log("main_planet() end")
     return Swe.OK;
   }
 
@@ -1053,7 +1052,7 @@ class SwissEph{
   }
 
   app_pos_etc_plan(ipli, iflag) {
-    console.log("app_pos_etc_plan()")
+    console.log("app_pos_etc_plan()");
     var i, j, niter;
     var retc = Swe.OK;
     var ifno, ibody;
@@ -1296,10 +1295,15 @@ class SwissEph{
     } else {
       oe = Swe.SwissData.oec2000;
     }
-    return this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
+
+    var ret = this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
+    console.log("app_pos_etc_plan() end");
+    return ret;
   }
 
   app_pos_rest(pdp, iflag, xx, x2000, oe) {
+    console.log("app_pos_rest()");
+
     var i;
     /************************************************
      * nutation                                     *
@@ -1362,6 +1366,8 @@ class SwissEph{
 
     pdp.xflgs = iflag;
     pdp.iephe = iflag & Swe.SEFLG_EPHMASK;
+
+    console.log("app_pos_rest() end");
     return Swe.OK;
   }
 
@@ -1403,6 +1409,8 @@ class SwissEph{
     this.sl.swi_polcart_sp(xx, xOffs, xx, xOffs);
     this.sl.swi_coortrf2(xx, xOffs, xx, xOffs, -oe.seps, oe.ceps);
     this.sl.swi_coortrf2(xx, 3+xOffs, xx, 3+xOffs, -oe.seps, oe.ceps);
+
+    console.log("swi_precess_speed() end")
   }
 
 
@@ -1629,6 +1637,7 @@ class SwissEph{
   }
 
   app_pos_etc_sun(iflag) {
+    console.log("app_pos_etc_sun()");
     var i, j, niter, retc = Swe.OK;
     var flg1, flg2;
     var xx=new Array(6), xxsv=new Array(6), dx=new Array(3), dt, t = 0;
@@ -1780,10 +1789,14 @@ class SwissEph{
       oe = Swe.SwissData.oec;
     } else
       oe = Swe.SwissData.oec2000;
-    return this.app_pos_rest(pedp, iflag, xx, xxsv, oe);
+
+    var ret = this.app_pos_rest(pedp, iflag, xx, xxsv, oe);
+    console.log("app_pos_etc_sun() end");
+    return ret;
   }
 
   app_pos_etc_moon(iflag) {
+    console.log("app_pos_etc_moon()");
     var i;
     var flg1, flg2;
     var xx=new Array(6), xxsv=new Array(6), xobs=new Array(6),
@@ -1940,10 +1953,14 @@ class SwissEph{
     } else {
       oe = Swe.SwissData.oec2000;
     }
-    return this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
+
+    var ret = this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
+    console.log("app_pos_etc_moon() end");
+    return ret;
   }
 
   app_pos_etc_mean(ipl, iflag) {
+    console.log("app_pos_etc_mean()");
     var i;
     var flg1, flg2;
     var xx=new Array(6), xxsv=new Array(6);
@@ -1983,7 +2000,10 @@ class SwissEph{
     } else {
       oe = Swe.SwissData.oec;
     }
-    return this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
+
+    var ret =  this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
+    console.log("app_pos_etc_mean() end");
+    return ret
   }
 
   rot_back(ipli) {
@@ -2450,35 +2470,17 @@ class SwissEph{
     /*printf("%.10f, %.10f, %.10f, %.10f\n", xx[0] /DEGTORAD, xx[1] / DEGTORAD, xx [2], xx[3] /DEGTORAD);*/
     /* equatorial cartesian */
     this.sl.swi_coortrf2(ndp.xreturn, 6, ndp.xreturn, 18, -oe.seps, oe.ceps);
-    if ((iflag & Swe.SEFLG_SPEED) != 0)
+    if ((iflag & Swe.SEFLG_SPEED) != 0){
       this.sl.swi_coortrf2(ndp.xreturn, 9, ndp.xreturn, 21, -oe.seps, oe.ceps);
+    }
     ndp.teval = tjd;
     ndp.xflgs = iflag;
     ndp.iephe = iflag & Swe.SEFLG_EPHMASK;
     if ((iflag & Swe.SEFLG_SIDEREAL) != 0) {
-
       this.sl.swi_cartpol_sp(ndp.xreturn, 6, ndp.xreturn, 0); 
       ndp.xreturn[0] -= this.swe_get_ayanamsa(ndp.teval) * Swe.SwissData.DEGTORAD;
       this.sl.swi_polcart_sp(ndp.xreturn, 0, ndp.xreturn, 6); 
       this.sl.swi_cartpol_sp(ndp.xreturn, 18, ndp.xreturn, 12);
-
-    } else if ((iflag & Swe.SEFLG_J2000) != 0) {
-      /* node and apogee are referred to t; 
-       * the ecliptic position must be transformed to J2000 */
-      for (i = 0; i <= 5; i++){
-        x[i] = ndp.xreturn[18+i];
-      }
-      /* precess to J2000 */
-      this.sl.swi_precess(x, tjd, iflag, Swe.SwephData.J_TO_J2000);
-      if ((iflag & Swe.SEFLG_SPEED) != 0)
-        this.swi_precess_speed(x, tjd, iflag, Swe.SwephData.J_TO_J2000);
-      for (i = 0; i <= 5; i++)
-        ndp.xreturn[18+i] = x[i];
-      this.sl.swi_cartpol_sp(ndp.xreturn, 18, ndp.xreturn, 12);
-      this.sl.swi_coortrf2(ndp.xreturn, 18, ndp.xreturn, 6, Swe.SwissData.oec2000.seps, Swe.SwissData.oec2000.ceps);
-      if ((iflag & Swe.SEFLG_SPEED) != 0)
-        this.sl.swi_coortrf2(ndp.xreturn, 21, ndp.xreturn, 9, Swe.SwissData.oec2000.seps, Swe.SwissData.oec2000.ceps);
-      this.sl.swi_cartpol_sp(ndp.xreturn, 6, ndp.xreturn, 0);
     }
     /********************** 
      * radians to degrees *

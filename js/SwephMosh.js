@@ -307,7 +307,6 @@ class SwephMosh{
     if (ipli == Swe.SwephData.SEI_EARTH) {
       xp = xe;
     } else {
-console.log("a")
       /* other planet */
       /* if planet has already been computed, return */
       if (tjd == pdp.teval && pdp.iephe == Swe.SEFLG_MOSEPH) {

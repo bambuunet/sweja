@@ -67,7 +67,6 @@ class AstroCalculator{
 
     for(var planet in this.planets){
       this.swe.calc(this.julian_utc, this.planets[planet], iflag, ret_matrix);
-      console.log(ret_matrix);
       ret[planet] = {
         longitude: ret_matrix[0],
         latitude: ret_matrix[1],

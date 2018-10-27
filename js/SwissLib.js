@@ -362,13 +362,6 @@ class SwissLib{
   }
 
 
-
-//////////////////////////////////////////////////////////////////////////////
-// Public methods: ///////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////
-  /*square_sum(x) {
-    return x[0]*x[0]+x[1]*x[1]+x[2]*x[2];
-  }*/
   square_sum(x, offset) {
     if(offset === undefined){
       return x[0]*x[0]+x[1]*x[1]+x[2]*x[2];
@@ -376,13 +369,6 @@ class SwissLib{
     return x[offset]*x[offset]+x[1+offset]*x[1+offset]+x[2+offset]*x[2+offset];
   }
 
-
-
-  /* Reduce x modulo 360 degrees
-   */
-  /**
-  * Normalizes a double to the range of 0.0 &gt;= x &lt; 360.0.
-  */
   swe_degnorm(x) {
     var y;
     y = x%360.0;
@@ -533,8 +519,7 @@ class SwissLib{
       return this.swi_coortrf2(xpo, 0, oOffs, 0, xpn, nOffs);
     }
 
-    console.log("swi_coortrf2() xpo:, oOffs:"+oOffs+", xpn:, nOffs:"+nOffs+", sineps:"+sineps+", coseps:"+coseps);
-    console.log(xpo);
+    console.log("swi_coortrf2() xpo:"+xpo+", oOffs:"+oOffs+", xpn:"+xpn+", nOffs:"+nOffs+", sineps:"+sineps+", coseps:"+coseps);
 
     var x=[0,0,0];
     x[0] = xpo[0+oOffs];
@@ -596,6 +581,7 @@ class SwissLib{
   }
 
   swi_cartpol_sp(x, xOffs, l, lOffs) {
+    console.log("swi_cartpol_sp()");
     var xx=[0,0,0,0,0,0];
     var ll=[0,0,0,0,0,0];
     var rxy, coslon, sinlon, coslat, sinlat;
@@ -649,12 +635,14 @@ class SwissLib{
     if(x === undefined){
       return this.swi_polcart_sp(l, 0, lOffs, 0);
     }
+
+    console.log("swi_polcart_sp()")
     var sinlon, coslon, sinlat, coslat;
     var xx=[0,0,0,0,0,0], rxy, rxyz;
     /* zero speed */
     if (l[3+lOffs] == 0 && l[4+lOffs] == 0 && l[5+lOffs] == 0) {
       x[3+xOffs] = x[4+xOffs] = x[5+xOffs] = 0;
-      swi_polcart(l, lOffs, x, xOffs);
+      this.swi_polcart(l, lOffs, x, xOffs);
       return;
     }
     /* position */
@@ -678,10 +666,13 @@ class SwissLib{
     x[0+xOffs] = xx[0];                                 /* return position */
     x[1+xOffs] = xx[1];
     x[2+xOffs] = xx[2];
+
+    return;
   }
 
 
   swi_ldp_peps(tjd, dpre, deps) {
+    console.log("swi_ldp_peps()");
     var i;
     var npol = this.NPOL_PEPS;
     var nper = this.NPER_PEPS;
