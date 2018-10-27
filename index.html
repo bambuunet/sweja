@@ -34,41 +34,22 @@
   <body>
 
     <script>
+      var a = new AstroCalculator({
+        year: 1985,
+        month: 7,
+        day: 2,
+        timezone_hour: 9,
+      });
       
-      var jday = 2, jmon = 7, jyear = 1985;
-      var jut = 0.0;
-      var SE_GREG_CAL = true;
-
-      var date = new SweDate(1957,4,15,18+57./60.);
-      var tjd_ut = date.swe_julday(jyear,jmon,jday,jut,SE_GREG_CAL); 
-      console.log("tjd_ut:" + tjd_ut);
-
-      var p = Swe.SE_PLUTO;
-      var p = Swe.SE_SATURN;
-      var p = Swe.SE_MERCURY;
-      //var p = Swe.SE_SUN;
-      //var p = Swe.SE_JUPITER
-      //var p = Swe.SE_MOON;
-      //var p = Swe.SE_EARTH; 
-      var iflag = 260;
-
-      var x2 = new Array(6);
-
-      var eph = new SwissEph;
-      eph.swe_set_ephe_path(null);
-      var aya = eph.swe_get_ayanamsa(tjd_ut);
-      console.log(aya)
-      //eph.swe_set_topo(88.2,43,200);
-
       var start_ms = new Date().getTime();
-      var iflgret = eph.swe_calc(tjd_ut, p, iflag, x2);
-      console.log("iflgret:"+iflgret, x2);
+      var p = a.getPlanetPosition();
+      console.log(p);
       var elapsed_ms = new Date().getTime() - start_ms;
       console.log('処理時間：' + elapsed_ms);
 
 
 
-      eph.swe_houses(tjd_ut, geolat, eps, hsys, cusp, ascmc);
+      //eph.swe_houses(tjd_ut, geolat, eps, hsys, cusp, ascmc);
 
       //console.log(a.PNOINT2JPL,SwephJPL)
     </script>

@@ -419,8 +419,7 @@ class SwissLib{
   }
 
   swi_mod2PI(x) {
-    var y;
-    y = x%Swe.SwephData.TWOPI;
+    var y = x%Swe.SwephData.TWOPI;
     if( y < 0.0 ) {
       y += Swe.SwephData.TWOPI;
     }
@@ -488,7 +487,7 @@ class SwissLib{
     }
 
     var i;
-    var x=new Array(6), e = eps * Swe.SwissData.DEGTORAD;
+    var x=[0,0,0,0,0,0], e = eps * Swe.SwissData.DEGTORAD;
     for(i = 0; i <= 1; i++)
       x[i] = xpo[i+oOffs];
     x[0] *= Swe.SwissData.DEGTORAD;
@@ -514,7 +513,7 @@ class SwissLib{
     }
 
     var sineps, coseps;
-    var x=new Array(3);
+    var x=[0,0,0];
     sineps = Math.sin(eps);
     coseps = Math.cos(eps);
     x[0] = xpo[oOffs];
@@ -531,9 +530,12 @@ class SwissLib{
   swi_coortrf2(xpo, oOffs, xpn, nOffs, sineps, coseps) {
     //引数4つの場合
     if(sineps === undefined){
-      return this.swi_coortrf2(xpo, 0, oOffs, 0,xpn, nOffs);
+      return this.swi_coortrf2(xpo, 0, oOffs, 0, xpn, nOffs);
     }
-    var x=new Array(3);
+
+    console.log("swi_coortrf2() xpo:"+xpo+", oOffs:"+oOffs+", xpn:"+xpn+", nOffs:"+nOffs+", sineps:"+sineps+", coseps:"+coseps);
+
+    var x=[0,0,0];
     x[0] = xpo[0+oOffs];
     x[1] = xpo[1+oOffs] * coseps + xpo[2+oOffs] * sineps;
     x[2] = -xpo[1+oOffs] * sineps + xpo[2+oOffs] * coseps;
@@ -551,7 +553,7 @@ class SwissLib{
       return this.swi_cartpol(x, 0, xOffs, 0);
     }
     var rxy;
-    var ll=new Array(3);
+    var ll=[0,0,0];
     if (x[0+xOffs] == 0 && x[1+xOffs] == 0 && x[2+xOffs] == 0) {
       l[0+lOffs] = l[1+lOffs] = l[2+lOffs] = 0;
       return;
@@ -577,7 +579,7 @@ class SwissLib{
     if(x === undefined){
       return this.swi_polcart(l, 0, lOffs, 0);
     }
-    var xx=new Array(3);
+    var xx=[0,0,0];
     var cosl1;
     cosl1 = Math.cos(l[lOffs+1]);
     xx[0] = l[lOffs+2] * cosl1 * Math.cos(l[lOffs]);
@@ -589,8 +591,8 @@ class SwissLib{
   }
 
   swi_cartpol_sp(x, xOffs, l, lOffs) {
-    var xx=new Array(6);
-    var ll=new Array(6);
+    var xx=[0,0,0,0,0,0];
+    var ll=[0,0,0,0,0,0];
     var rxy, coslon, sinlon, coslat, sinlat;
     /* zero position */
     if (x[0+xOffs] == 0 && x[1+xOffs] == 0 && x[2+xOffs] == 0) {
@@ -643,7 +645,7 @@ class SwissLib{
       return this.swi_polcart_sp(l, 0, lOffs, 0);
     }
     var sinlon, coslon, sinlat, coslat;
-    var xx=new Array(6), rxy, rxyz;
+    var xx=[0,0,0,0,0,0], rxy, rxyz;
     /* zero speed */
     if (l[3+lOffs] == 0 && l[4+lOffs] == 0 && l[5+lOffs] == 0) {
       x[3+xOffs] = x[4+xOffs] = x[5+xOffs] = 0;
@@ -788,7 +790,7 @@ class SwissLib{
 
   /* precession matrix */
   pre_pmat(tjd, rp) {
-    var peqr = new Array(3), pecl = new Array(3), v = new Array(3), w, eqx = new Array(3);
+    var peqr = [0,0,0], pecl = [0,0,0], v = [0,0,0], w, eqx = [0,0,0];
     /*equator pole */
     this.pre_pequ(tjd, peqr);
     /* ecliptic pole */
@@ -896,7 +898,7 @@ class SwissLib{
     var z = 0;
     var TH = 0;
     var i;
-    var x = new Array(3);
+    var x = [0,0,0];
     var sinth, costh, sinZ, cosZ, sinz, cosz, A, B;
     if( J == Swe.SwephData.J2000 ) {
 
@@ -970,7 +972,7 @@ class SwissLib{
     var i;
     var T, z;
     var eps, sineps, coseps;
-    var x = new Array(3);
+    var x = [0,0,0];
     // double *p; Pointer to double[], using pn to point to index in array instead
     var pn = 0;
     var A, B, pA, W;
@@ -1093,7 +1095,7 @@ class SwissLib{
     }
 
     var T;
-    var x = new Array(3), pmat = new Array(9);
+    var x = [0,0,0], pmat = new Array(9);
     var i, j;
     if( J == Swe.SwephData.J2000 ) 
       return(0);
@@ -1128,6 +1130,7 @@ class SwissLib{
     if(direction === undefined){
       return this.swi_precess(R, 0, rOffs, J, iflag);
     }
+    console.log("swi_precess() R:"+R+", rOffs:"+rOffs+", J:"+J+", iflag:"+iflag+", direction:"+direction);
 
     var T = (J - Swe.SwephData.J2000)/36525.0;
     var prec_model = this.swed.astro_models[Swe.SE_MODEL_PREC_LONGTERM];
@@ -1460,7 +1463,8 @@ class SwissLib{
 
   bessel(v, n, t) {
     var i, iy, k;
-    var ans, p, B, d = new Array(6);
+    var ans, p, B;
+    var d = [0,0,0,0,0,0];
     if (t <= 0) {
       ans = v[0]; 
 //      goto done;
@@ -1591,10 +1595,11 @@ class SwissLib{
 
   /* GCRS to J2000 */
   swi_bias( x, tjd, iflag, backward) {
-    var xx=new Array(6);
-    var rb=new Array(3);
+    console.log("swi_bias() x:"+x+", tjd:"+tjd+", iflag:"+iflag+", backward:"+backward);
+    var xx=[0,0,0,0,0,0];
+    var rb=[0,0,0];
     for(var i=0; i<3; i++){
-      rb[i] = new Array(3).fill(0.0);
+      rb[i] = [0,0,0];
     }
     var i;
     var bias_model = this.swed.astro_models[Swe.SE_MODEL_BIAS];
@@ -1660,10 +1665,10 @@ class SwissLib{
   }
 
   swi_icrs2fk5( x, iflag, backward) {
-    var xx=new Array(6);
-    var rb=new Array(3);
+    var xx=[0,0,0,0,0,0];
+    var rb=[0,0,0];
     for(var i=0; i<3; i++){
-      rb[i] = new Array(3).fill(0.0);
+      rb[i] = [0,0,0];
     }
     var i;
     rb[0][0] = +0.9999999999999928;
@@ -1701,7 +1706,11 @@ class SwissLib{
 
   sidtime_long_term(tjd_ut, eps, nut) {
     var tsid = 0, tjd_et;
-    var dlon, xs = new Array(6), xobl = new Array(6), dhour, nutlo = new Array(2);
+    var dlon;
+    var xs = [0,0,0,0,0,0];
+    var xobl = [0,0,0,0,0,0];
+    var dhour;
+    var nutlo = [0,0];
     var dlt = Swe.SwephData.AUNIT / Swe.SwephData.CLIGHT / 86400.0;
     var t, t2, t3, t4, t5, t6;
     eps *= Swe.SwissData.RADTODEG;
@@ -2010,6 +2019,15 @@ class SwissLib{
     dif = this.swe_degnorm(p1 - p2);
     if (dif  >= 180.0) {
       return (dif - 360.0);
+    }
+    return (dif);
+  }
+
+  swe_difrad2n(p1, p2) {
+    var dif;
+    dif = this.swe_radnorm(p1 - p2);
+    if (dif  >= Swe.SwephData.TWOPI / 2) {
+      return (dif - Swe.SwephData.TWOPI);
     }
     return (dif);
   }

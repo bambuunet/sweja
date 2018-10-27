@@ -866,7 +866,6 @@ class Swemmoon{
     this.B = this.moonpol[1];
   }
 
-
   corr_mean_node(J) {
     var J0, dJ, dayscty, dcor, dcor0, dcor1, dfrac;
     var i;
@@ -884,15 +883,11 @@ class Swemmoon{
     return dcor;
   }
 
-  /* mean lunar node
-   * J            julian day
-   * pol          return array for position and velocity
-   *              (polar coordinates of ecliptic of date)
-   */
-  swi_mean_node(J, pol) {
-    return swi_mean_node(J, pol, 0);
-  }
   swi_mean_node(J, pol, offs) {
+    if(offs === undefined){
+      return this.swi_mean_node(J, pol, 0);
+    }
+
     var dcor;
     this.T = (J-Swe.SwephData.J2000)/36525.0;
     this.T2 = this.T*this.T;
@@ -906,8 +901,8 @@ class Swemmoon{
       console.error(s);
       return Swe.ERR;
     }
-    mean_elements();
-    dcor = corr_mean_node(J) * 3600;
+    this.mean_elements();
+    dcor = this.corr_mean_node(J) * 3600;
     /* longitude */
     pol[offs] = this.sl.swi_mod2PI((this.SWELP - this.NF - dcor) * Swe.SwephData.STR);
     /* latitude */
@@ -936,15 +931,11 @@ class Swemmoon{
     return dcor;
   }
 
-  /* mean lunar apogee ('dark moon', 'lilith')
-   * J            julian day
-   * pol          return array for position
-   *              (polar coordinates of ecliptic of date)
-   */
-  swi_mean_apog(J, pol) {
-    return swi_mean_apog(J, pol, 0);
-  }
   swi_mean_apog(J, pol, offs) {
+    if(offs === undefined){
+      return this.swi_mean_apog(J, pol, 0);
+    }
+
     var node, dcor;
     this.T = (J-Swe.SwephData.J2000)/36525.0;
     this.T2 = this.T*this.T;
@@ -958,16 +949,15 @@ class Swemmoon{
       console.error(s);
       return Swe.ERR;
     }
-    mean_elements();
+    this.mean_elements();
     pol[offs] = this.sl.swi_mod2PI((this.SWELP - this.MP) * Swe.SwephData.STR + Math.PI);
     pol[offs+1] = 0;
-    pol[offs+2] = Swe.SwephData.MOON_MEAN_DIST * (1 + Swe.SwephData.MOON_MEAN_ECC) /
-                                                 Swe.AUNIT; /* apogee */
-    dcor = corr_mean_apog(J) * Swe.SwissData.DEGTORAD;
+    pol[offs+2] = Swe.SwephData.MOON_MEAN_DIST * (1 + Swe.SwephData.MOON_MEAN_ECC) / Swe.AUNIT; /* apogee */
+    dcor = this.corr_mean_apog(J) * Swe.SwissData.DEGTORAD;
     pol[offs] = this.sl.swi_mod2PI(pol[offs] - dcor);
     /* apogee is now projected onto ecliptic */
     node = (this.SWELP - this.NF) * Swe.SwephData.STR;
-    dcor = corr_mean_node(J) * Swe.SwissData.DEGTORAD;
+    dcor = this.corr_mean_node(J) * Swe.SwissData.DEGTORAD;
     node = this.sl.swi_mod2PI(node - dcor);
     pol[offs] = this.sl.swi_mod2PI(pol[offs] - node);
     this.sl.swi_polcart(pol, offs, pol, offs);

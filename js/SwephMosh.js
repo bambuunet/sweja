@@ -104,9 +104,13 @@ class SwephMosh{
 
 
   swi_moshplan2 (J, iplm, pobj) {
+    console.log("swi_moshplan2() J:"+J+", iplm:"+iplm+", pobj:"+pobj);
+
     var i, j, k, m, k1, ip, np, nt;
-    var p; var pOff=0;
-    var pl, pb, pr; var plOff=0, pbOff=0, prOff=0;
+    var p;
+    var pOff=0;
+    var pl, pb, pr;
+    var plOff=0, pbOff=0, prOff=0;
     var su, cu, sv, cv, T;
     var t, sl, sb, sr;
     var plan = this.planets[iplm];
@@ -132,8 +136,6 @@ class SwephMosh{
 
     for (;;)
       {
-        /* argument of sine and cosine */
-        /* Number of periodic arguments. */
         np = p[pOff++];
         if (np < 0) {
           break;
@@ -232,12 +234,14 @@ class SwephMosh{
     return Swe.OK;
   }
 
-
   swi_moshplan(tjd, ipli, do_save, xpret, xeret) {
+    console.log("swi_moshplan() tjd:"+tjd+", ipli:"+ipli+", do_save:"+do_save+", xpret:"+xpret+", xeret:"+xeret);
     var i;
     var do_earth = false;
-    var dx=new Array(3), x2=new Array(3),
-           xxe=new Array(6), xxp=new Array(6);
+    var dx=[0,0,0];
+    var x2=[0,0,0];
+    var xxe=[0,0,0,0,0,0];
+    var xxp=[0,0,0,0,0,0];
     var xp, xe;
     var dt;
     var s;
@@ -340,7 +344,7 @@ class SwephMosh{
 
 
   sscc (k, arg, n) {
-
+    console.log("sscc() k:"+k+", arg:"+arg+", n:"+n)
     var cu, su, cv, sv, s;
     var i;
 
@@ -364,7 +368,7 @@ class SwephMosh{
 
 
   embofs_mosh(tjd, xemb) {
-
+    console.log("embofs_mosh()")
     var T, M, a, L, B, p;
     var smp, cmp, s2mp, c2mp, s2d, c2d, sf, cf;
     var s2f, sx, cx, xyz=new Array(6);

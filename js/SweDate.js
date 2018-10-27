@@ -234,13 +234,13 @@ class SweDate{
   getDeltaT(tjd) {
     if(tjd === undefined){
       if (this.deltatIsValid) { return this.deltaT; }
-      this.deltaT=this.calc_deltaT(this.getJulDay());
-      this.deltatIsValid=true;
+
+      this.deltaT = this.calc_deltaT(this.getJulDay());
+      this.deltatIsValid = true;
       return this.deltaT;
     }
 
-    var sdt = this.calc_deltaT(tjd);
-    return sdt;
+    return this.calc_deltaT(tjd);
   }
 
   getDate(jd) {
@@ -445,12 +445,11 @@ class SweDate{
     return this.tid_acc;
   }
 
+  swe_set_tid_acc(t_acc) {
+    this.setGlobalTidalAcc(t_acc);
+  }
+
   swi_set_tid_acc(tjd_ut, iflag, denum) {
-    //引数が1つの場合
-    if(iflag === undefined){
-      this.setGlobalTidalAcc(t_acc);
-      return;
-    }
     this.setGlobalTidalAcc(tjd_ut, iflag, denum);
   }
 

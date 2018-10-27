@@ -1,6 +1,5 @@
 class SwissEph{
   constructor(){
-    
     this.swed = Swe.SwissData;
     this.sl = new SwissLib(this.swed);
     this.sc = null;
@@ -123,29 +122,32 @@ class SwissEph{
   };
 
   swe_calc(tjd, ipl, iflag, xx) {
+    console.log("swe_calc() "+"tjd:"+tjd+", ipl:"+ipl+", iflag:"+iflag+", xx:"+xx);
     var ret = 0;
     try {
       ret = this._calc(tjd, ipl, iflag, xx);
     } catch (e) {
       console.error(e);
     }
+    console.log("swe_calc() return:"+ret);
     return ret;
   };
 
   calc(jdET, ipl, iflag, xx){
-    return this._calc(jdET, ipl, iflag, xx);
+    console.log("calc() "+"jdET:"+jdET+", ipl:"+ipl+", iflag:"+iflag+", xx:"+xx);
+    var ret = this._calc(jdET, ipl, iflag, xx);
+    return ret;
   };
 
   _calc(tjd, ipl, iflag, xx){
+    console.log("_calc() "+"tjd:"+tjd+", ipl:"+ipl+", iflag:"+iflag+", xx:"+xx);
     var i, j;
     var iflgcoor;
     var iflgsave = iflag;
     var epheflag;
     var sd = new SavePositions();
-    var x = new Array(6);
-    var xs = new Array();
-    var x0 = new Array(24);
-    var x2 = new Array(24);
+    var x = [0,0,0,0,0,0];
+    var xs;
     var dt;
 
     if (ipl == Swe.SE_AST_OFFSET + 134340) {
@@ -233,10 +235,12 @@ class SwissEph{
       iflag = iflag & ~Swe.SEFLG_DEFAULTEPH;
     }
 
+    console.log("_calc() return:"+iflag);
     return iflag;
   };
 
   free_planets() {
+    console.log("free_planets()");
     var i;
     try {
       /* free planets data space */
@@ -260,7 +264,8 @@ class SwissEph{
     }
   }
 
-  swe_close() {
+  init() {
+    console.log("init()");
     var i;
     this.free_planets();
     Swe.SwissData.oec.clearData();
@@ -268,7 +273,6 @@ class SwissEph{
     Swe.SwissData.nut.clearData();
     Swe.SwissData.nut2000.clearData();
     Swe.SwissData.nutv.clearData();
-    // memset((void *) &Swe.SwissData.astro_models, SEI_NMODELS, sizeof(int32));
     for(var a = 0; a < Swe.SwephData.SEI_NMODELS; a++) {
       Swe.SwissData.astro_models[a] = 0;
     }
@@ -287,32 +291,13 @@ class SwissEph{
     Swe.SwissData.deps = null;
   }
 
-  swe_set_ephe_path(path) {
-    var i, iflag;
-    var s="";
-    var xx = new Array(6);
-    Swe.SwissData.ephe_path_is_set=true;
-    /* close all open files and delete all planetary data */
-    this.swe_close();
-    if (path == null || path === undefined || path.length() == 0) {
-      s=Swe.SE_EPHE_PATH;
-    } else if (path.length() <= Swe.SwissData.AS_MAXCH-1-13) {
-      s=path;
-    } else {
-      s=Swe.SE_EPHE_PATH;
+  swe_set_sid_mode(sid_mode, t0, ayan_t0) {
+    console.log("swe_set_sid_mode() sid_mode:"+sid_mode+", t0:"+t0+", ayan_t0:"+ayan_t0);
+    if(t0 === undefined){
+      this.swe_set_sid_mode(sid_mode, 0, 0);
+      return;
     }
 
-    Swe.SwissData.ephepath=s;
-  }
-
-  load_dpsi_deps() {
-  }
-
-  swe_set_sid_mode(sid_mode) {
-    this.swe_set_sid_mode(sid_mode, 0, 0);
-  }
-
-  swe_set_sid_mode(sid_mode, t0, ayan_t0) {
     if (sid_mode < 0) sid_mode = 0;
 
     var sip = Swe.SwissData.sidd;
@@ -333,6 +318,8 @@ class SwissEph{
   }
 
   swe_get_ayanamsa(tjd_et) {
+    console.log("swe_get_ayanamsa() tjd_et:"+tjd_et);
+
     var x=new Array(6), eps;
     var sip = Swe.SwissData.sidd;
     if (!Swe.SwissData.ayana_is_set) {
@@ -355,31 +342,32 @@ class SwissEph{
     /* subtract initial value of ayanamsa */
     x[0] = x[0] * Swe.SwissData.RADTODEG - sip.ayan_t0;
     /* get ayanamsa */
-    return this.sl.swe_degnorm(-x[0]);
+
+    var ret = this.sl.swe_degnorm(-x[0]);
+    console.log("swe_get_ayanamsa() return:"+ret);
+    return ret;
   }
 
   swe_get_ayanamsa_name(isidmode) {
-    isidmode %= SweConst.SE_SIDBITS;
-    if (isidmode < SwissData.SE_NSIDM_PREDEF)
-      return SwissData.ayanamsa_name[isidmode];
+    console.log("swe_get_ayanamsa_name() isidmode:"+isidmode);
+    isidmode %= Swe.SE_SIDBITS;
+    if (isidmode < Swe.SwissData.SE_NSIDM_PREDEF)
+      return Swe.SwissData.ayanamsa_name[isidmode];
     return null;
   }
 
   swe_set_topo(geolon, geolat, geoalt) {
-
+    console.log("swe_set_topo() geolon:"+geolon+", geolat:"+geolat+", geoalt:"+geoalt);
     this.swed.topd.geolon = geolon;
     this.swed.topd.geolat = geolat;
     this.swed.topd.geoalt = geoalt;
     this.swed.geopos_is_set = true;
-    /* to force new calculation of observer position vector */
     this.swed.topd.teval = 0;
-    /* to force new calculation of light-time etc.
-     */
     this.swi_force_app_pos_etc();
   }
 
-
-  swe_azalt(tjd_ut, calc_flag, geopos, atpress, attemp, xin, xaz) {
+  swe_azalt(tjd_ut, calc_flag, geopos, atpress, attemp, xin, xaz){
+    console.log("swe_azalt() tjd_ut:"+tjd_ut+", calc_flag:"+calc_flag+", geopos:"+geopos+", atpress:"+atpress+", attemp:"+attemp+", xin:"+xin+", xaz:"+xaz);
     if (this.sc===null) {
       this.sc=new Swecl(this, this.sl, this.sm, this.swed);
     }
@@ -388,6 +376,7 @@ class SwissEph{
 
 
   swe_azalt_rev(tjd_ut, calc_flag, geopos, xin, xout) {
+    console.log("swe_azalt_rev() tjd_ut:"+tjd_ut+", calc_flag:"+calc_flag+", geopos:"+geopos+", xin:"+xin+", xout:"+xout);
     if (this.sc===null) {
       this.sc=new Swecl(this, this.sl, this.sm, this.swed);
     }
@@ -396,10 +385,14 @@ class SwissEph{
 
 
   swe_refrac(inalt, atpress, attemp, calc_flag) {
+    console.log("swe_refrac() inalt:"+inalt+", atpress:"+atpress+", attemp:"+attemp+", calc_flag:"+calc_flag);
     if (this.sc===null) {
       this.sc=new Swecl(this, this.sl, this.sm, this.swed);
     }
-    return this.sc.swe_refrac(inalt, atpress, attemp, calc_flag);
+    
+    var ret = this.sc.swe_refrac(inalt, atpress, attemp, calc_flag);
+    console.log("swe_refrac() return:"+ret);
+    return ret;
   }
 
   swe_refrac_extended(inalt, geoalt, atpress, lapse_rate, attemp, calc_flag, dret) {
@@ -512,8 +505,8 @@ class SwissEph{
     return Swe.ERR;
   }
 
-
   swecalc(tjd, ipl, iflag, x) {
+    console.log("swecalc() "+"tjd:"+tjd+", ipl:"+ipl+", iflag:"+iflag+", x:"+x);
     var i;
     var ipli, ipli_ast, ifno;
     var retc;
@@ -717,8 +710,7 @@ class SwissEph{
       ndp.teval = tjd;
       ndp.xflgs = -1;
       /* lighttime etc. */
-      if ((retc = this.app_pos_etc_mean(Swe.SwephData.SEI_MEAN_APOG, iflag)) !=
-                                                                  Swe.OK) {
+      if ((retc = this.app_pos_etc_mean(Swe.SwephData.SEI_MEAN_APOG, iflag)) != Swe.OK) {
         return this.swecalc_error(x);
       }
 
@@ -817,10 +809,13 @@ class SwissEph{
     for (i = 0; i < 24; i++) {
       x[i] = xp[i];
     }
-    return(iflag);
+
+    console.log("swecalc() return:"+iflag);
+    return iflag;
   }
 
   moshier_moon(tjd, do_save, xpmret) {
+    console.log("moshier_moon() tjd:"+tjd+", do_save:"+do_save+", xpmret:"+xpmret);
     var retc = this.sm.swi_moshmoon(tjd, do_save, null);/**/
     if (retc == Swe.ERR) {
       return Swe.ERR;
@@ -843,13 +838,8 @@ class SwissEph{
     return Swe.ERR;
   }
 
-
-
   sweph_moon(tjd, ipli, iflag) {
-    var retc;
-
-        retc = sweplan(tjd, ipli, Swe.SwephData.SEI_FILE_MOON, iflag, Swe.SwephData.DO_SAVE,
-                        null, null, null, null);
+    var retc = this.sweplan(tjd, ipli, Swe.SwephData.SEI_FILE_MOON, iflag, Swe.SwephData.DO_SAVE, null, null, null, null);
     if (retc == Swe.ERR) {
       return Swe.ERR;
     }
@@ -868,66 +858,36 @@ class SwissEph{
   }
 
   main_planet(tjd, ipli, epheflag, iflag){
-    var retc;
-    var calc_swieph=false;
-    var calc_moshier=false;
+    console.log("main_planet() tjd:"+tjd+", ipli:"+ipli+", epheflag:"+epheflag+", iflag:"+iflag);
+    var retc; 
 
-    if (calc_swieph) {
-      /* compute barycentric planet (+ earth, sun, moon) */
-      retc = this.sweplan(tjd, ipli, Swe.SwephData.SEI_FILE_PLANET, iflag, Swe.SwephData.DO_SAVE,
-                     null, null, null, null);
-      if (retc == Swe.ERR) {
-        return Swe.ERR;
-      }
-      if (retc == Swe.SwephData.NOT_AVAILABLE) {
-        return Swe.ERR;
-      }
-      if (!calc_moshier) {
-        /* geocentric, lighttime etc. */
-        if (ipli == Swe.SwephData.SEI_SUN) {
-          retc = this.app_pos_etc_sun(iflag)/**/;
-        } else {
-          retc = this.app_pos_etc_plan(ipli, iflag);
-        }
-        if (retc == Swe.ERR) {
-          return Swe.ERR;
-        }
-        /* if sweph file for t(lighttime) not found, switch to moshier */
-        if (retc == Swe.SwephData.NOT_AVAILABLE) {
-          return Swe.ERR;
-        }
-      } // Swe.SEFLG_SWIEPH
-    } // !calc_moshier
-
-    if (epheflag == Swe.SEFLG_MOSEPH || calc_moshier) {
-
-      retc = this.smosh.swi_moshplan(tjd, ipli, Swe.SwephData.DO_SAVE, null, null);
-      if (retc == Swe.ERR) {
-        return Swe.ERR;
-      }
-      if (ipli == Swe.SwephData.SEI_SUN) {
-        retc = this.app_pos_etc_sun(iflag);
-      } else {
-        retc = this.app_pos_etc_plan(ipli, iflag);
-      }
-      if (retc == Swe.ERR) {
-        return Swe.ERR;
-      }
+    retc = this.smosh.swi_moshplan(tjd, ipli, Swe.SwephData.DO_SAVE, null, null);
+    if (retc == Swe.ERR) {
+      return Swe.ERR;
     }
+    if (ipli == Swe.SwephData.SEI_SUN) {
+      retc = this.app_pos_etc_sun(iflag);
+    } else {
+      retc = this.app_pos_etc_plan(ipli, iflag);
+    }
+    if (retc == Swe.ERR) {
+      return Swe.ERR;
+    }
+
     return Swe.OK;
   }
 
-  sweplan(tjd, ipli, ifno, iflag, do_save,
-              xpret, xperet, xpsret,
-              xpmret) {
+  sweplan(tjd, ipli, ifno, iflag, do_save, xpret, xperet, xpsret, xpmret) {
     var i, retc;
     var do_earth = false, do_moon = false, do_sunbary = false;
     var pdp = Swe.SwissData.pldat[ipli];
     var pebdp = Swe.SwissData.pldat[Swe.SwephData.SEI_EMB];
     var psbdp = Swe.SwissData.pldat[Swe.SwephData.SEI_SUNBARY];
     var pmdp = Swe.SwissData.pldat[Swe.SwephData.SEI_MOON];
-    var xxp=new Array(6), xxm=new Array(6),
-           xxs=new Array(6), xxe=new Array(6);
+    var xxp=[0,0,0,0,0,0];
+    var xxm=[0,0,0,0,0,0];
+    var xxs=[0,0,0,0,0,0];
+    var xxe=[0,0,0,0,0,0];
     var xp, xpe, xpm, xps;
     var speedf1, speedf2;
     /* xps (barycentric sun) may be necessary because some planets on sweph
@@ -962,10 +922,11 @@ class SwissEph{
       xpm = xxm;
     }
     speedf2 = iflag & Swe.SEFLG_SPEED;
+
     /* barycentric sun */
     if (do_sunbary) {
       speedf1 = psbdp.xflgs & Swe.SEFLG_SPEED;
-        retc = sweph(tjd, Swe.SwephData.SEI_SUNBARY, Swe.SwephData.SEI_FILE_PLANET, iflag,
+        retc = this.sweph(tjd, Swe.SwephData.SEI_SUNBARY, Swe.SwephData.SEI_FILE_PLANET, iflag,
                      null, do_save, xps);/**/
         if (retc != Swe.OK) {
           return(retc);
@@ -979,7 +940,7 @@ class SwissEph{
     /* moon */
     if (do_moon) {
       speedf1 = pmdp.xflgs & Swe.SEFLG_SPEED;
-        retc = sweph(tjd, Swe.SwephData.SEI_MOON, Swe.SwephData.SEI_FILE_MOON, iflag, null,
+        retc = this.sweph(tjd, Swe.SwephData.SEI_MOON, Swe.SwephData.SEI_FILE_MOON, iflag, null,
                      do_save, xpm);
         if (retc == Swe.ERR) {
           return(retc);
@@ -995,8 +956,7 @@ class SwissEph{
     /* barycentric earth */
     if (do_earth) {
       speedf1 = pebdp.xflgs & Swe.SEFLG_SPEED;
-        retc = sweph(tjd, Swe.SwephData.SEI_EMB, Swe.SwephData.SEI_FILE_PLANET, iflag, null,
-                     do_save, xpe);
+        retc = this.sweph(tjd, Swe.SwephData.SEI_EMB, Swe.SwephData.SEI_FILE_PLANET, iflag, null, do_save, xpe);
         if (retc != Swe.OK) {
           return(retc);
         }
@@ -1088,6 +1048,7 @@ class SwissEph{
   }
 
   app_pos_etc_plan(ipli, iflag) {
+    console.log("app_pos_etc_plan() ipli:"+ipli+", iflag:"+iflag);
     var i, j, niter;
     var retc = Swe.OK;
     var ifno, ibody;
@@ -1317,7 +1278,6 @@ class SwissEph{
       xxsv[i] = xx[i];
     }
 
-
     /************************************************
      * precession, equator 2000 -> equator of date *
      ************************************************/
@@ -1334,6 +1294,7 @@ class SwissEph{
   }
 
   app_pos_rest(pdp, iflag, xx, x2000, oe) {
+    console.log("app_pos_rest() pdp:"+pdp+", iflag:"+iflag+", xx:"+xx+", x2000:"+x2000+", oe:"+oe)
     var i;
     /************************************************
      * nutation                                     *
@@ -1401,9 +1362,11 @@ class SwissEph{
 
   swi_precess_speed(xx, xOffs, t, iflag, direction) {
     if(direction === undefined){
-      this.swi_precess_speed(xx, xOffs, 0, t, iflag);
+      this.swi_precess_speed(xx, 0, xOffs, t, iflag);
       return;
     }
+
+    console.log("swi_precess_speed() xx:"+xx+", xOffs:"+xOffs+", t:"+t+", iflag:"+iflag+", direction:"+direction);
 
     var oe;
     var fac, dpre = new Array(1), dpre2 = new Array(1);
@@ -1494,9 +1457,15 @@ class SwissEph{
       this.swi_aberr_light(xx, 0, xxOffs, xe);
       return;
     }
+
+    console.log("swi_aberr_light() xx:"+xx+", xxOffs:"+xxOffs+", xe:"+xe+", iflag:"+iflag)
     var i;
-    var xxs=new Array(6), v=new Array(6), u=new Array(6), ru;
-    var xx2=new Array(6), dx1, dx2;
+    var xxs=[0,0,0,0,0,0];
+    var v=[0,0,0,0,0,0];
+    var u=[0,0,0,0,0,0];
+    var ru;
+    var xx2=[0,0,0,0,0,0];
+    var dx1, dx2;
     var b_1, f1, f2;
     var v2;
     var intv = Swe.SwephData.PLAN_SPEED_INTV;
@@ -1504,6 +1473,7 @@ class SwissEph{
       u[i] = xxs[i] = xx[i+xxOffs];
     }
     ru = Math.sqrt(this.sl.square_sum(u));
+console.log(xxs, xx)
     for (i = 0; i <= 2; i++) {
       v[i] = xe[i+3] / 24.0 / 3600.0 / Swe.SwephData.CLIGHT * Swe.AUNIT;
     }
@@ -1514,6 +1484,7 @@ class SwissEph{
     for (i = 0; i <= 2; i++) {
       xx[i+xxOffs] = (b_1*xx[i+xxOffs] + f2*ru*v[i]) / (1.0 + f1);
     }
+
     if ((iflag & Swe.SEFLG_SPEED)!=0) {
       /* correction of speed
        * the influence of aberration on apparent velocity can
@@ -1659,13 +1630,19 @@ class SwissEph{
   }
 
   app_pos_etc_sun(iflag) {
+    console.log("app_pos_etc_sun()")
     var i, j, niter, retc = Swe.OK;
     var flg1, flg2;
-    var xx=new Array(6), xxsv=new Array(6), dx=new Array(3), dt, t = 0;
-    var xearth=new Array(6), xsun=new Array(6), xobs=new Array(6);
-    var pedp = Swe.SwissData.pldat[Swe.SwephData.SEI_EARTH];
-    var psdp = Swe.SwissData.pldat[Swe.SwephData.SEI_SUNBARY];
-    var oe = Swe.SwissData.oec2000;
+    var xx=[0,0,0,0,0,0];
+    var xxsv=[0,0,0,0,0,0];
+    var dx=[0,0,0];
+    var dt, t = 0;
+    var xearth=[0,0,0,0,0,0];
+    var xsun=[0,0,0,0,0,0];
+    var xobs=[0,0,0,0,0,0];
+    var pedp = this.swed.pldat[Swe.SwephData.SEI_EARTH];
+    var psdp = this.swed.pldat[Swe.SwephData.SEI_SUNBARY];
+    var oe = this.swed.oec2000;
     /* if the same conversions have already been done for the same
      * date, then return */
     flg1 = iflag & ~Swe.SEFLG_EQUATORIAL & ~Swe.SEFLG_XYZ;
@@ -1675,32 +1652,7 @@ class SwissEph{
       pedp.iephe = iflag & Swe.SEFLG_EPHMASK;
       return Swe.OK;
     }
-    /************************************
-     * observer: geocenter or topocenter
-     ************************************/
-    /* if topocentric position is wanted  */
-    if ((iflag & Swe.SEFLG_TOPOCTR)!=0) {
-      if (Swe.SwissData.topd.teval != pedp.teval
-        || Swe.SwissData.topd.teval == 0) {
-        if (this.swi_get_observer(pedp.teval, iflag | Swe.SEFLG_NONUT, Swe.SwephData.DO_SAVE, xobs)
-                                                              != Swe.OK) {
-          return Swe.ERR;
-        }
-      } else {
-        for (i = 0; i <= 5; i++) {
-          xobs[i] = Swe.SwissData.topd.xobs[i];
-        }
-      }
-      /* barycentric position of observer */
-      for (i = 0; i <= 5; i++) {
-        xobs[i] = xobs[i] + pedp.x[i];
-      }
-    } else {
-      /* barycentric position of geocenter */
-      for (i = 0; i <= 5; i++) {
-        xobs[i] = pedp.x[i];
-      }
-    }
+
     /***************************************
      * true heliocentric position of earth *
      ***************************************/
@@ -1714,11 +1666,11 @@ class SwissEph{
         xx[i] = xobs[i] - psdp.x[i];
       }
     }
+
     /*******************************
      * light-time                  *
      *******************************/
     if ((iflag & Swe.SEFLG_TRUEPOS)==0) {
-
       if (
           (iflag & Swe.SEFLG_HELCTR)!=0 ||
           (iflag & Swe.SEFLG_BARYCTR)!=0) {
@@ -1740,30 +1692,44 @@ class SwissEph{
             }
           }
           /* new t */
-          dt = Math.sqrt(this.sl.square_sum(dx)) * Swe.AUNIT / Swe.SwephData.CLIGHT / 86400.0;
+          dt = SMath.sqrt(sl.square_sum(dx)) * Swe.AUNIT / SwephData.CLIGHT /
+                                                                      86400.0;
           t = pedp.teval - dt;
           /* new position */
           switch(pedp.iephe) {
             /* if geocentric sun, new sun at t'
              * if heliocentric or barycentric earth, new earth at t' */
 
+            case Swe.SEFLG_MOSEPH:
+              if ((iflag & Swe.SEFLG_HELCTR)!=0 ||
+                  (iflag & Swe.SEFLG_BARYCTR)!=0) {
+                retc = smosh.swi_moshplan(t, SwephData.SEI_EARTH,
+                                          SwephData.NO_SAVE, xearth, xearth,
+                                          serr);
+              }
+              /* with moshier there is no barycentric sun */
+              break;
+
             default:
               retc = Swe.ERR;
               break;
           }
           if (retc != Swe.OK) {
+
             return(retc);
           }
         }
         /* apparent heliocentric earth */
         for (i = 0; i <= 5; i++) {
           xx[i] = xearth[i];
-          if ((iflag & Swe.SEFLG_BARYCTR)==0) {
+          if ((iflag & SweConst.SEFLG_BARYCTR)==0) {
             xx[i] -= xsun[i];
           }
         }
       }
     }
+
+
     if ((iflag & Swe.SEFLG_SPEED)==0) {
       for (i = 3; i <= 5; i++) {
         xx[i] = 0;
@@ -1778,6 +1744,7 @@ class SwissEph{
         xx[i] = -xx[i];
       }
     }
+
     /**********************************
      * 'annual' aberration of light   *
      **********************************/
@@ -1786,15 +1753,18 @@ class SwissEph{
                 /* SEFLG_NOABERR is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
       this.swi_aberr_light(xx, xobs, iflag);
     }
+console.log(xx, xobs, psdp)
+return
     if ((iflag & Swe.SEFLG_SPEED) == 0) {
       for (i = 3; i <= 5; i++) {
         xx[i] = 0;
       }
     }
     /* ICRS to J2000 */
-    if ((iflag & Swe.SEFLG_ICRS) == 0 && Swe.SwissData.jpldenum >= 403) {
+    if ((iflag & Swe.SEFLG_ICRS) == 0 && this.swed.jpldenum >= 403) {
       this.sl.swi_bias(xx, t, iflag, false);
-    }/**/
+    }
+
     /* save J2000 coordinates; required for sidereal positions */
     for (i = 0; i <= 5; i++) {
       xxsv[i] = xx[i];
@@ -1807,22 +1777,30 @@ class SwissEph{
       if ((iflag & Swe.SEFLG_SPEED)!=0) {
         this.swi_precess_speed(xx, pedp.teval, iflag, Swe.SwephData.J2000_TO_J);/**/
       }
-      oe = Swe.SwissData.oec;
-    } else
-      oe = Swe.SwissData.oec2000;
+      oe = this.swed.oec;
+    } else{
+      oe = this.swed.oec2000;
+    }
+
     return this.app_pos_rest(pedp, iflag, xx, xxsv, oe);
   }
 
   app_pos_etc_moon(iflag) {
+
     var i;
     var flg1, flg2;
-    var xx=new Array(6), xxsv=new Array(6), xobs=new Array(6),
-           xxm=new Array(6), xs=new Array(6), xe=new Array(6),
-           xobs2=new Array(6), dt;
-    var pedp = Swe.SwissData.pldat[Swe.SwephData.SEI_EARTH];
-    var psdp = Swe.SwissData.pldat[Swe.SwephData.SEI_SUNBARY];
-    var pdp = Swe.SwissData.pldat[Swe.SwephData.SEI_MOON];
-    var oe = Swe.SwissData.oec;
+    var xx=[0,0,0,0,0,0];
+    var xxsv=[0,0,0,0,0,0];
+    var xobs=[0,0,0,0,0,0];
+    var xxm=[0,0,0,0,0,0];
+    var xs=[0,0,0,0,0,0];
+    var xe=[0,0,0,0,0,0];
+    var xobs2=[0,0,0,0,0,0];
+    var dt;
+    var pedp = this.swed.pldat[Swe.SwephData.SEI_EARTH];
+    var psdp = this.swed.pldat[Swe.SwephData.SEI_SUNBARY];
+    var pdp = this.swed.pldat[Swe.SwephData.SEI_MOON];
+    var oe = this.swed.oec;
     var t = 0;
     var retc;
     /* if the same conversions have already been done for the same
@@ -1848,41 +1826,8 @@ class SwissEph{
     /*******************************
      * observer
      *******************************/
-    if ((iflag & Swe.SEFLG_TOPOCTR)!=0) {
-      if (Swe.SwissData.topd.teval != pdp.teval
-        || Swe.SwissData.topd.teval == 0) {
-        if (this.swi_get_observer(pdp.teval, iflag | Swe.SEFLG_NONUT, Swe.SwephData.DO_SAVE, xobs, null) != Swe.OK) {
-          return Swe.ERR;
-        }
-      } else {
-        for (i = 0; i <= 5; i++) {
-          xobs[i] = Swe.SwissData.topd.xobs[i];
-        }
-      }
-      for (i = 0; i <= 5; i++) {
-        xxm[i] -= xobs[i];
-      }
-      for (i = 0; i <= 5; i++) {
-        xobs[i] += pedp.x[i];
-      }
-    } else if ((iflag & Swe.SEFLG_BARYCTR)!=0) {
-      for (i = 0; i <= 5; i++) {
-        xobs[i] = 0;
-      }
-      for (i = 0; i <= 5; i++) {
-        xxm[i] += pedp.x[i];
-      }
-    } else if ((iflag & Swe.SEFLG_HELCTR)!=0) {
-      for (i = 0; i <= 5; i++) {
-        xobs[i] = psdp.x[i];
-      }
-      for (i = 0; i <= 5; i++) {
-        xxm[i] += pedp.x[i] - psdp.x[i];
-      }
-    } else {
-      for (i = 0; i <= 5; i++) {
-        xobs[i] = pedp.x[i];
-      }
+    for (i = 0; i <= 5; i++) {
+      xobs[i] = pedp.x[i];
     }
     /*******************************
      * light-time                  *
@@ -1891,7 +1836,6 @@ class SwissEph{
       dt = Math.sqrt(this.sl.square_sum(xxm)) * Swe.AUNIT / Swe.SwephData.CLIGHT / 86400.0;
       t = pdp.teval - dt;
       switch(pdp.iephe) {
-
         case Swe.SEFLG_MOSEPH:
           /* this method results in an error of a milliarcsec in speed */
           for (i = 0; i <= 2; i++) {
@@ -1951,7 +1895,7 @@ class SwissEph{
       }
     }
     /* ICRS to J2000 */
-    if ((iflag & Swe.SEFLG_ICRS) == 0 && Swe.SwissData.jpldenum >= 403) {
+    if ((iflag & Swe.SEFLG_ICRS) == 0 && this.swed.jpldenum >= 403) {
       this.sl.swi_bias(xx, t, iflag, false);
     }/**/
     /* save J2000 coordinates; required for sidereal positions */
@@ -1963,21 +1907,23 @@ class SwissEph{
      ************************************************/
     if ((iflag & Swe.SEFLG_J2000) == 0) {
       this.sl.swi_precess(xx, pdp.teval, iflag, Swe.SwephData.J2000_TO_J);
+
       if ((iflag & Swe.SEFLG_SPEED)!=0) {
         this.swi_precess_speed(xx, pdp.teval, iflag, Swe.SwephData.J2000_TO_J);
       }
-      oe = Swe.SwissData.oec;
+      oe = this.swed.oec;
     } else {
-      oe = Swe.SwissData.oec2000;
+      oe = this.swed.oec2000;
     }
     return this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
   }
 
   app_pos_etc_mean(ipl, iflag) {
+    console.log("app_pos_etc_mean()")
     var i;
     var flg1, flg2;
     var xx=new Array(6), xxsv=new Array(6);
-    var pdp = Swe.SwissData.nddat[ipl];
+    var pdp = this.swed.nddat[ipl];
     var oe;
     /* if the same conversions have already been done for the same
      * date, then return */
@@ -1993,8 +1939,8 @@ class SwissEph{
     }
     /* cartesian equatorial coordinates */
     this.sl.swi_polcart_sp(xx, xx);
-    this.sl.swi_coortrf2(xx, xx, -Swe.SwissData.oec.seps, Swe.SwissData.oec.ceps);
-    this.sl.swi_coortrf2(xx, 3, xx, 3, -Swe.SwissData.oec.seps, Swe.SwissData.oec.ceps);
+    this.sl.swi_coortrf2(xx, xx, -this.swed.oec.seps, this.swed.oec.ceps);
+    this.sl.swi_coortrf2(xx, 3, xx, 3, -this.swedoec.seps, this.swed.oec.ceps);
     if ((iflag & Swe.SEFLG_SPEED)==0) {
       for (i = 3; i <= 5; i++) {
         xx[i] = 0;
@@ -2009,29 +1955,32 @@ class SwissEph{
       if ((iflag & Swe.SEFLG_SPEED)!=0) {
         this.swi_precess_speed(xx, pdp.teval, iflag, Swe.SwephData.J_TO_J2000);
       }
-      oe = Swe.SwissData.oec2000;
+      oe = this.swed.oec2000;
     } else {
-      oe = Swe.SwissData.oec;
+      oe = this.swed.oec;
     }
     return this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
   }
 
   rot_back(ipli) {
+    console.log("rot_back()")
     var i;
     var t, tdiff;
     var qav, pav, dn;
     var omtild, com, som, cosih2;
     var x = new Array(Swe.SwephData.MAXORD+1);
     for(var i=0; i<Swe.SwephData.MAXORD+1; i++){
-      x[i] = new Array(3).fill(0.0);
+      x[i] = [0,0,0];
     }
-    var uix=new Array(3), uiy=new Array(3), uiz=new Array(3);
+    var uix=[0,0,0];
+    var uiy=[0,0,0];
+    var uiz=[0,0,0];
     var xrot, yrot, zrot;
     var chcfx;
     var refepx;
-    var seps2000 = Swe.SwissData.oec2000.seps;
-    var ceps2000 = Swe.SwissData.oec2000.ceps;
-    var pdp = Swe.SwissData.pldat[ipli];
+    var seps2000 = this.swed.oec2000.seps;
+    var ceps2000 = this.swed.oec2000.ceps;
+    var pdp = this.swed.pldat[ipli];
     var nco = pdp.ncoe;
     var chcfyOffs;
     var chcfzOffs;
@@ -2121,6 +2070,9 @@ class SwissEph{
   }
 
   nut_matrix(nu, oe) {
+    console.log("nut_matrix() "+"nu:Nut, oe:Epsilon");
+    console.log(nu)
+    console.log(oe)
     var psi, eps;
     var sinpsi, cospsi, sineps, coseps, sineps0, coseps0;
     psi = nu.nutlo[0];
@@ -2143,6 +2095,7 @@ class SwissEph{
   }
 
   lunar_osc_elem(tjd, ipl, iflag) {
+    console.log("lunar_osc_elem() tjd:"+tjd+", ipl:"+ipl+", iflag:"+iflag);
     var i, j, istart;
     var epheflag = Swe.SEFLG_DEFAULTEPH;
     var retc = Swe.ERR;
@@ -2153,32 +2106,34 @@ class SwissEph{
     var a, b;
     var xpos = new Array(3);
     for(var i=0; i<3; i++){
-      xpos[i] = new Array(6).fill(0.0);
+      xpos[i] = [0,0,0,0,0,0];
     }
     var xx = new Array(3);
     for(var i=0; i<3; i++){
-      xx[i] = new Array(6).fill(0.0);
+      xx[i] = [0,0,0,0,0,0];
     }
     var xxa = new Array(3);
     for(var i=0; i<3; i++){
-      xxa[i] = new Array(6).fill(0.0);
+      xxa[i] = [0,0,0,0,0,0];
     }
-    var xnorm=new Array(6), r=new Array(6);
+
+    var xnorm=[0,0,0,0,0,0];
+    var r=[0,0,0,0,0,0];
     var rxy, rxyz, t, dt, fac, sgn;
     var sinnode, cosnode, sinincl, cosincl, sinu, cosu, sinE, cosE;
     var uu, ny, sema, ecce, Gmsm, c2, v2, pp;
     var speedf1, speedf2;
-    var sip = Swe.SwissData.sidd;
+    var sip = this.swed.sidd;
     var oectmp=null;
     if ((iflag & Swe.SEFLG_SIDEREAL)!=0) {
       this.calc_epsilon(sip.t0, iflag, oectmp);
       oe = oectmp;
     } else if ((iflag & Swe.SEFLG_J2000)!=0) {
-      oe = Swe.SwissData.oec2000;
+      oe = this.swed.oec2000;
     } else
-      oe = Swe.SwissData.oec;
+      oe = this.swed.oec;
 
-    ndp = Swe.SwissData.nddat[ipl];
+    ndp = this.swed.nddat[ipl];
     /* if elements have already been computed for this date, return
      * if speed flag has been turned on, recompute */
     flg1 = iflag & ~Swe.SEFLG_EQUATORIAL & ~Swe.SEFLG_XYZ;
@@ -2202,26 +2157,43 @@ class SwissEph{
     }
     /* there may be a moon of wrong ephemeris in save area
      * force new computation: */
-    Swe.SwissData.pldat[Swe.SwephData.SEI_MOON].teval = 0;
+    this.swed.pldat[Swe.SwephData.SEI_MOON].teval = 0;
     if ((iflag & Swe.SEFLG_SPEED)!=0) {
       istart = 0;
     } else {
       istart = 2;
     }
 
-    do {
-      switch(epheflag) {
-
+    switch(epheflag) {
+      case Swe.SEFLG_MOSEPH:
+        /* with moshier moon, we need a greater speed_intv, because here the
+         * node and apogee oscillate wildly within small intervals */
+        speed_intv = Swe.SwephData.NODE_CALC_INTV_MOSH;
+        for (i = istart; i <= 2; i++) {
+          if (i == 0) {
+            t = tjd - speed_intv;
+          } else if (i == 1) {
+            t = tjd + speed_intv;
+          } else {
+            t = tjd;
+          }
+          retc = this.sm.swi_moshmoon(t, Swe.SwephData.NO_SAVE, xpos[i]);
+          if (retc == Swe.ERR) {
+            return(retc);
+          }
+          retc = this.swi_plan_for_osc_elem(iflag|Swe.SEFLG_SPEED, t, xpos[i]); 
+        }
+        break;
       default:
         break;
-    }
+
   } while (retc == Swe.SwephData.NOT_AVAILABLE || retc == Swe.SwephData.BEYOND_EPH_LIMITS);
 
     /*********************************************
      * node with speed                           *
      *********************************************/
     /* node is always needed, even if apogee is wanted */
-    ndnp = Swe.SwissData.nddat[Swe.SwephData.SEI_TRUE_NODE];
+    ndnp = this.swed.nddat[Swe.SwephData.SEI_TRUE_NODE];
     /* three nodes */
     for (i = istart; i <= 2; i++) {
       if (Math.abs(xpos[i][5]) < 1e-15) {
@@ -2249,7 +2221,7 @@ class SwissEph{
      * apogee with speed                                        *
      * must be computed anyway to get the node's distance       *
      ************************************************************/
-    ndap = Swe.SwissData.nddat[Swe.SwephData.SEI_OSCU_APOG];
+    ndap = this.swed.nddat[Swe.SwephData.SEI_OSCU_APOG];
     Gmsm = Swe.SwephData.GEOGCONST * (1 + 1 / Swe.SwephData.EARTH_MOON_MRAT) /
                            Swe.AUNIT/Swe.AUNIT/Swe.AUNIT*86400.0*86400.0;
     /* three apogees */
@@ -2286,6 +2258,7 @@ class SwissEph{
       xxa[i][0] = this.sl.swi_mod2PI(uu - ny + Math.PI);
       xxa[i][1] = 0;                      /* latitude */
       xxa[i][2] = sema * (1 + ecce);      /* distance */
+
       /* transformation to ecliptic coordinates */
       this.sl.swi_polcart(xxa[i], xxa[i]);
       this.sl.swi_coortrf2(xxa[i], xxa[i], -sinincl, cosincl);
@@ -2333,12 +2306,12 @@ class SwissEph{
      * light-time is already contained in lunar positions.
      * now compute polar and equatorial coordinates:
      **********************************************************************/
-      var  x=new Array(6);
+    var x=[0,0,0,0,0,0];
     for (var j = 0; j <= 1; j++) {
       if (j == 0) {
-        ndp = Swe.SwissData.nddat[Swe.SwephData.SEI_TRUE_NODE];
+        ndp = this.swed.nddat[Swe.SwephData.SEI_TRUE_NODE];
       } else {
-        ndp = Swe.SwissData.nddat[Swe.SwephData.SEI_OSCU_APOG];
+        ndp = this.swed.nddat[Swe.SwephData.SEI_OSCU_APOG];
       }
 //  memset((void *) ndp.xreturn, 0, 24 * sizeof(double));
       for(var z=0; z<ndp.xreturn.length; z++) { ndp.xreturn[z]=0.0; }
@@ -2373,10 +2346,10 @@ class SwissEph{
 
       if ((iflag & Swe.SEFLG_NONUT) == 0) {
         this.sl.swi_coortrf2(ndp.xreturn, 18, ndp.xreturn, 18, -Swe.SwissData.nut.snut,
-                        Swe.SwissData.nut.cnut);
+                        this.swed.nut.cnut);
         if ((iflag & Swe.SEFLG_SPEED)!=0) {
           this.sl.swi_coortrf2(ndp.xreturn, 21, ndp.xreturn, 21, -Swe.SwissData.nut.snut,
-                          Swe.SwissData.nut.cnut);
+                          this.swed.nut.cnut);
         }
       }
       /* polar equatorial */
@@ -2390,10 +2363,10 @@ class SwissEph{
        **********************/
       /*if (!(iflag & SEFLG_RADIANS)) {*/
         for (i = 0; i < 2; i++) {
-          ndp.xreturn[i] *= Swe.SwissData.RADTODEG;              /* ecliptic */
-          ndp.xreturn[i+3] *= Swe.SwissData.RADTODEG;
-          ndp.xreturn[i+12] *= Swe.SwissData.RADTODEG;   /* equator */
-          ndp.xreturn[i+15] *= Swe.SwissData.RADTODEG;
+          ndp.xreturn[i] *= this.swed.RADTODEG;              /* ecliptic */
+          ndp.xreturn[i+3] *= this.swed.RADTODEG;
+          ndp.xreturn[i+12] *= this.swed.RADTODEG;   /* equator */
+          ndp.xreturn[i+15] *= this.swed.RADTODEG;
         }
         ndp.xreturn[0] = this.sl.swe_degnorm(ndp.xreturn[0]);
         ndp.xreturn[12] = this.sl.swe_degnorm(ndp.xreturn[12]);
@@ -2405,6 +2378,7 @@ class SwissEph{
   /* lunar osculating elements, i.e.
    */ 
   intp_apsides(tjd, ipl, iflag) {
+    console.log("intp_apsides()")
     var i;
     var flg1, flg2;
     var ndp;
@@ -2428,9 +2402,9 @@ class SwissEph{
     }
 // TM - end of inclusion //////////////////////////////////////////////////////////
 
-    oe = Swe.SwissData.oec;
-    nut = Swe.SwissData.nut;
-    ndp = Swe.SwissData.nddat[ipl];
+    oe = this.swed.oec;
+    nut = this.swed.nut;
+    ndp = this.swed.nddat[ipl];
     /* if same calculation was done before, return
      * if speed flag has been turned on, recompute */
     flg1 = iflag & ~Swe.SEFLG_EQUATORIAL & ~Swe.SEFLG_XYZ;
@@ -2488,7 +2462,7 @@ class SwissEph{
     if ((iflag & Swe.SEFLG_SIDEREAL) != 0) {
 
       this.sl.swi_cartpol_sp(ndp.xreturn, 6, ndp.xreturn, 0); 
-      ndp.xreturn[0] -= this.swe_get_ayanamsa(ndp.teval) * Swe.SwissData.DEGTORAD;
+      ndp.xreturn[0] -= this.swe_get_ayanamsa(ndp.teval) * this.swed.DEGTORAD;
       this.sl.swi_polcart_sp(ndp.xreturn, 0, ndp.xreturn, 6); 
       this.sl.swi_cartpol_sp(ndp.xreturn, 18, ndp.xreturn, 12);
 
@@ -2505,9 +2479,9 @@ class SwissEph{
       for (i = 0; i <= 5; i++)
         ndp.xreturn[18+i] = x[i];
       this.sl.swi_cartpol_sp(ndp.xreturn, 18, ndp.xreturn, 12);
-      this.sl.swi_coortrf2(ndp.xreturn, 18, ndp.xreturn, 6, Swe.SwissData.oec2000.seps, Swe.SwissData.oec2000.ceps);
+      this.sl.swi_coortrf2(ndp.xreturn, 18, ndp.xreturn, 6, this.swed.oec2000.seps, this.swed.oec2000.ceps);
       if ((iflag & Swe.SEFLG_SPEED) != 0)
-        this.sl.swi_coortrf2(ndp.xreturn, 21, ndp.xreturn, 9, Swe.SwissData.oec2000.seps, Swe.SwissData.oec2000.ceps);
+        this.sl.swi_coortrf2(ndp.xreturn, 21, ndp.xreturn, 9, this.swed.oec2000.seps, this.swed.oec2000.ceps);
       this.sl.swi_cartpol_sp(ndp.xreturn, 6, ndp.xreturn, 0);
     }
     /********************** 
@@ -2515,10 +2489,10 @@ class SwissEph{
      **********************/
     /*if ((iflag & Swe.SEFLG_RADIANS)==0) {*/
     for (i = 0; i < 2; i++) {
-      ndp.xreturn[i] *= Swe.SwissData.RADTODEG;   /* ecliptic */
-      ndp.xreturn[i+3] *= Swe.SwissData.RADTODEG;
-      ndp.xreturn[i+12] *= Swe.SwissData.RADTODEG;  /* equator */
-      ndp.xreturn[i+15] *= Swe.SwissData.RADTODEG;
+      ndp.xreturn[i] *= this.swed.RADTODEG;   /* ecliptic */
+      ndp.xreturn[i+3] *= this.swed.RADTODEG;
+      ndp.xreturn[i+12] *= this.swed.RADTODEG;  /* equator */
+      ndp.xreturn[i+15] *= this.swed.RADTODEG;
     }
     ndp.xreturn[0] = this.sl.swe_degnorm(ndp.xreturn[0]);
     ndp.xreturn[12] = this.sl.swe_degnorm(ndp.xreturn[12]);
@@ -2527,14 +2501,15 @@ class SwissEph{
   }
 
   swi_plan_for_osc_elem(iflag, tjd, xx) {
+    console.log("swi_plan_for_osc_elem()")
     var i;
     var x=new Array(6);
     var nuttmp=new Nut();
     var nutp = nuttmp;   /* dummy assign, to silence gcc warning */
-    var oe = Swe.SwissData.oec;
+    var oe = this.swed.oec;
     var oectmp=new Epsilon();
     /* ICRS to J2000 */
-    if ((iflag & Swe.SEFLG_ICRS)==0 && Swe.SwissData.jpldenum >= 403) {
+    if ((iflag & Swe.SEFLG_ICRS)==0 && this.swed.jpldenum >= 403) {
       this.sl.swi_bias(xx, tjd, iflag, false);
     }/**/
     /************************************************
@@ -2542,7 +2517,7 @@ class SwissEph{
      * attention: speed vector has to be rotated,   *
      * but daily precession 0.137" may not be added!*/
 
-    var sip = Swe.SwissData.sidd;
+    var sip = this.swed.sidd;
     /* For sidereal calculation we need node refered*
      * to ecliptic of t0 of ayanamsa                *
      ************************************************/
@@ -2557,17 +2532,17 @@ class SwissEph{
       this.sl.swi_precess(xx, tjd, iflag, Swe.SwephData.J2000_TO_J);
       this.sl.swi_precess(xx, 3, tjd, iflag, Swe.SwephData.J2000_TO_J);
       /* epsilon */
-      if (tjd == Swe.SwissData.oec.teps) {
-        oe = Swe.SwissData.oec;
+      if (tjd == this.swed.oec.teps) {
+        oe = this.swed.oec;
       } else if (tjd == Swe.SwephData.J2000) {
-        oe = Swe.SwissData.oec2000;
+        oe = this.swed.oec2000;
       } else {
         this.calc_epsilon(tjd, iflag, oectmp);
         oe = oectmp;
       }
 
     } else {      /* if SEFLG_J2000 */
-      oe = Swe.SwissData.oec2000;
+      oe = this.swed.oec2000;
     }
     /************************************************
      * nutation                                     *
@@ -2575,12 +2550,12 @@ class SwissEph{
      * added 'speed' of nutation                    *
      ************************************************/
     if ((iflag & Swe.SEFLG_NONUT) == 0) {
-      if (tjd == Swe.SwissData.nut.tnut) {
-        nutp = Swe.SwissData.nut;
+      if (tjd == this.swed.nut.tnut) {
+        nutp = this.swed.nut;
       } else if (tjd == Swe.SwephData.J2000) {
-        nutp = Swe.SwissData.nut2000;
-      } else if (tjd == Swe.SwissData.nutv.tnut) {
-        nutp = Swe.SwissData.nutv;
+        nutp = this.swed.nut2000;
+      } else if (tjd == this.swed.nutv.tnut) {
+        nutp = this.swed.nutv;
       } else {
         nutp = nuttmp;
         this.sl.swi_nutation(tjd, iflag, nutp.nutlo);
@@ -2644,18 +2619,19 @@ class SwissEph{
 
 
   swi_check_ecliptic(tjd, iflag) {
-    if (Swe.SwissData.oec2000.teps != Swe.SwephData.J2000) {
-      this.calc_epsilon(Swe.SwephData.J2000, iflag, Swe.SwissData.oec2000);
+    console.log("swi_check_ecliptic() "+"tjd:"+tjd+", iflag:"+iflag);
+    if (this.swed.oec2000.teps != Swe.SwephData.J2000) {
+      this.calc_epsilon(Swe.SwephData.J2000, iflag, this.swed.oec2000);
     }
     if (tjd == Swe.SwephData.J2000) {
-      Swe.SwissData.oec.teps = Swe.SwissData.oec2000.teps;
-      Swe.SwissData.oec.eps = Swe.SwissData.oec2000.eps;
-      Swe.SwissData.oec.seps = Swe.SwissData.oec2000.seps;
-      Swe.SwissData.oec.ceps = Swe.SwissData.oec2000.ceps;
+      this.swed.oec.teps = this.swed.oec2000.teps;
+      this.swed.oec.eps = this.swed.oec2000.eps;
+      this.swed.oec.seps = this.swed.oec2000.seps;
+      this.swed.oec.ceps = this.swed.oec2000.ceps;
       return;
     }
-    if (Swe.SwissData.oec.teps != tjd || tjd == 0) {
-      this.calc_epsilon(tjd, iflag, Swe.SwissData.oec);
+    if (this.swed.oec.teps != tjd || tjd == 0) {
+      this.calc_epsilon(tjd, iflag, this.swed.oec);
     }
   }
 
@@ -2663,72 +2639,54 @@ class SwissEph{
    * if speed flag has been turned on since last computation,
    * nutation is recomputed */
   swi_check_nutation(tjd, iflag) {
+    console.log("swi_check_nutation() "+"tjd:"+tjd+", iflag:"+iflag);
     var speedf1, speedf2;
     var t;
     speedf1 = this.chck_nut_nutflag & Swe.SEFLG_SPEED;
     speedf2 = iflag & Swe.SEFLG_SPEED;
     if ((iflag & Swe.SEFLG_NONUT) == 0
-          && (tjd != Swe.SwissData.nut.tnut || tjd == 0
+          && (tjd != this.swed.nut.tnut || tjd == 0
           || ((speedf1==0) && (speedf2!=0)))) {
-      this.sl.swi_nutation(tjd, iflag, Swe.SwissData.nut.nutlo);
-      Swe.SwissData.nut.tnut = tjd;
-      Swe.SwissData.nut.snut = Math.sin(Swe.SwissData.nut.nutlo[1]);
-      Swe.SwissData.nut.cnut = Math.cos(Swe.SwissData.nut.nutlo[1]);
+      this.sl.swi_nutation(tjd, iflag, this.swed.nut.nutlo);
+      this.swed.nut.tnut = tjd;
+      this.swed.nut.snut = Math.sin(this.swed.nut.nutlo[1]);
+      this.swed.nut.cnut = Math.cos(this.swed.nut.nutlo[1]);
       this.chck_nut_nutflag = iflag;
-      this.nut_matrix(Swe.SwissData.nut, Swe.SwissData.oec);
+      this.nut_matrix(this.swed.nut, this.swed.oec);
       if ((iflag & Swe.SEFLG_SPEED)!=0) {
         /* once more for 'speed' of nutation, which is needed for
          * planetary speeds */
         t = tjd - Swe.SwephData.NUT_SPEED_INTV;
-        this.sl.swi_nutation(t, iflag, Swe.SwissData.nutv.nutlo);
-        Swe.SwissData.nutv.tnut = t;
-        Swe.SwissData.nutv.snut = Math.sin(Swe.SwissData.nutv.nutlo[1]);
-        Swe.SwissData.nutv.cnut = Math.cos(Swe.SwissData.nutv.nutlo[1]);
-        this.nut_matrix(Swe.SwissData.nutv, Swe.SwissData.oec);
+        this.sl.swi_nutation(t, iflag, this.swed.nutv.nutlo);
+        this.swed.nutv.tnut = t;
+        this.swed.nutv.snut = Math.sin(this.swed.nutv.nutlo[1]);
+        this.swed.nutv.cnut = Math.cos(this.swed.nutv.nutlo[1]);
+        this.nut_matrix(this.swed.nutv, this.swed.oec);
       }
     }
   }
 
   plaus_iflag(iflag, ipl, tjd) {
     var epheflag = 0;
-    var jplhor_model = Swe.SwissData.astro_models[Swe.SE_MODEL_JPLHOR_MODE];
-    var jplhora_model = Swe.SwissData.astro_models[Swe.SE_MODEL_JPLHORA_MODE];
+    var jplhor_model = this.swed.astro_models[Swe.SE_MODEL_JPLHOR_MODE];
+    var jplhora_model = this.swed.astro_models[Swe.SE_MODEL_JPLHORA_MODE];
     if (jplhor_model == 0) jplhor_model = Swe.SEMOD_JPLHOR_DEFAULT;
     if (jplhora_model == 0) jplhora_model = Swe.SEMOD_JPLHORA_DEFAULT;
 
-    /* either Horizons mode or simplified Horizons mode, not both */
-    if ((iflag & Swe.SEFLG_JPLHOR) != 0)
-      iflag &= ~Swe.SEFLG_JPLHOR_APPROX;
-    /* if topocentric bit, turn helio- and barycentric bits off;
-     * also turn JPL Horizons mode off */
-    if ((iflag & Swe.SEFLG_TOPOCTR)!=0) {
-      iflag = iflag & ~(Swe.SEFLG_HELCTR | Swe.SEFLG_BARYCTR);
-      iflag = iflag & ~(Swe.SEFLG_JPLHOR | Swe.SEFLG_JPLHOR_APPROX);
-    }
-    /* if heliocentric bit, turn aberration and deflection off */
-    if ((iflag & Swe.SEFLG_HELCTR)!=0) {
-      iflag |= Swe.SEFLG_NOABERR | Swe.SEFLG_NOGDEFL;
-                                              /*iflag |= SEFLG_TRUEPOS;*/
-    }
-    /* same, if barycentric bit */
-    if ((iflag & Swe.SEFLG_BARYCTR)!=0) {
-      iflag |= Swe.SEFLG_NOABERR | Swe.SEFLG_NOGDEFL;
-                                              /*iflag |= SEFLG_TRUEPOS;*/
-    }
-    /* if no_precession bit is set, set also no_nutation bit */
-    if ((iflag & Swe.SEFLG_J2000)!=0) {
-      iflag |= Swe.SEFLG_NONUT;
-    }
-    /* if truepos is set, turn off grav. defl. and aberration */
-    if ((iflag & Swe.SEFLG_TRUEPOS)!=0) {
-      iflag |= (Swe.SEFLG_NOGDEFL | Swe.SEFLG_NOABERR);
-    }
+    var validFlags=Swe.SEFLG_EPHMASK+
+                   Swe.SEFLG_SPEED+
+                   Swe.SEFLG_SIDEREAL;
+    iflag &= validFlags;
 
     /* if sidereal bit is set, set also no_nutation bit *
      * also turn JPL Horizons mode off */
     if ((iflag & Swe.SEFLG_SIDEREAL)!=0) {
       iflag |= Swe.SEFLG_NONUT;
       iflag = iflag & ~(Swe.SEFLG_JPLHOR | Swe.SEFLG_JPLHOR_APPROX);
+    }
+
+    if ((iflag & Swe.SEFLG_MOSEPH)!=0) {
+      epheflag = Swe.SEFLG_MOSEPH;
     }
 
     if (epheflag == 0) {
@@ -2742,31 +2700,7 @@ class SwissEph{
       iflag = iflag & ~(Swe.SEFLG_JPLHOR | Swe.SEFLG_JPLHOR_APPROX);
     if (ipl >= Swe.SE_FICT_OFFSET && ipl <= Swe.SE_FICT_MAX)
       iflag = iflag & ~(Swe.SEFLG_JPLHOR | Swe.SEFLG_JPLHOR_APPROX);
-    if ((iflag & Swe.SEFLG_JPLHOR) != 0) {
-      if (Swe.SwissData.eop_dpsi_loaded <= 0 
-         || ((tjd < Swe.SwissData.eop_tjd_beg || tjd > Swe.SwissData.eop_tjd_end)
-         && jplhor_model != Swe.SEMOD_JPLHOR_EXTENDED_1800)) {
 
-        switch (Swe.SwissData.eop_dpsi_loaded) {
-          case 0:
-            console.error("you did not call swe_set_jpl_file(); default to SEFLG_JPLHOR_APPROX");
-            break;
-          case -1:
-            console.error("file eop_1962_today.txt not found; default to SEFLG_JPLHOR_APPROX");
-            break;
-          case -2:
-            console.error("file eop_1962_today.txt corrupt; default to SEFLG_JPLHOR_APPROX");
-            break;
-          case -3:
-            console.error("file eop_finals.txt corrupt; default to SEFLG_JPLHOR_APPROX");
-            break;
-        }
-        iflag &= ~Swe.SEFLG_JPLHOR;
-        iflag |= Swe.SEFLG_JPLHOR_APPROX;
-      }
-    }
-    if ((iflag & Swe.SEFLG_JPLHOR) != 0)
-      iflag |= Swe.SEFLG_ICRS;
     if ((iflag & Swe.SEFLG_JPLHOR_APPROX) != 0 && jplhora_model != Swe.SEMOD_JPLHORA_1)
       iflag |= Swe.SEFLG_ICRS;
     return iflag;
@@ -2775,33 +2709,35 @@ class SwissEph{
   swi_force_app_pos_etc() {
     var i;
     for (i = 0; i < Swe.SwephData.SEI_NPLANETS; i++) {
-      Swe.SwissData.pldat[i].xflgs = -1;
+      this.swed.pldat[i].xflgs = -1;
     }
     for (i = 0; i < Swe.SwephData.SEI_NNODE_ETC; i++) {
-      Swe.SwissData.nddat[i].xflgs = -1;
+      this.swed.nddat[i].xflgs = -1;
     }
     for (i = 0; i < Swe.SE_NPLANETS; i++) {
-      Swe.SwissData.savedat[i].tsave = 0;
-      Swe.SwissData.savedat[i].iflgsave = -1;
+      this.swed.savedat[i].tsave = 0;
+      this.swed.savedat[i].iflgsave = -1;
     }
   }
 
   swi_get_observer(tjd, iflag, do_save, xobs) {
+    console.log("swi_get_observer() tjd:"+tjd+", iflag:"+iflag+", do_save:"+do_save+", xobs:"+xobs);
     var i;
-    var sidt, delt, tjd_ut, eps, nut, nutlo=new Array(2);
+    var sidt, delt, tjd_ut, eps, nut, nutlo=[0,0];
     var f = Swe.SwephData.EARTH_OBLATENESS;
     var re = Swe.SwephData.EARTH_RADIUS;
     var cosfi, sinfi, cc, ss, cosl, sinl, h;
-    if (!Swe.SwissData.geopos_is_set) {
+    if (!this.swed.geopos_is_set) {
       console.error("geographic position has not been set");
       return Swe.ERR;
     }
-    delt = SweDate.getDeltaT(tjd);
+    var sd = new SweDate;
+    delt = sd.getDeltaT(tjd);
     tjd_ut = tjd - delt;
-    if (Swe.SwissData.oec.teps == tjd && Swe.SwissData.nut.tnut == tjd) {
-      eps = Swe.SwissData.oec.eps;
-      nutlo[1] = Swe.SwissData.nut.nutlo[1];
-      nutlo[0] = Swe.SwissData.nut.nutlo[0];
+    if (this.swed.oec.teps == tjd && this.swed.nut.tnut == tjd) {
+      eps = this.swed.oec.eps;
+      nutlo[1] = this.swed.nut.nutlo[1];
+      nutlo[0] = this.swed.nut.nutlo[0];
     } else {
       eps = this.sl.swi_epsiln(tjd, iflag);
       if ((iflag & Swe.SEFLG_NONUT)==0) {
@@ -2817,17 +2753,17 @@ class SwissEph{
 
     sidt = this.sl.swe_sidtime0(tjd_ut, eps, nut);
     sidt *= 15;   
-    cosfi = Math.cos(Swe.SwissData.topd.geolat * Swe.SwissData.DEGTORAD);
-    sinfi = Math.sin(Swe.SwissData.topd.geolat * Swe.SwissData.DEGTORAD);
+    cosfi = Math.cos(this.swed.topd.geolat * this.swed.DEGTORAD);
+    sinfi = Math.sin(this.swed.topd.geolat * this.swed.DEGTORAD);
     cc= 1 / Math.sqrt(cosfi * cosfi + (1-f) * (1-f) * sinfi * sinfi);
     ss= (1-f) * (1-f) * cc;
     /* neglect polar motion (displacement of a few meters), as long as 
      * we use the earth ellipsoid */
     /* ... */
     /* add sidereal time */
-    cosl = Math.cos((Swe.SwissData.topd.geolon + sidt) * Swe.SwissData.DEGTORAD);
-    sinl = Math.sin((Swe.SwissData.topd.geolon + sidt) * Swe.SwissData.DEGTORAD);
-    h = Swe.SwissData.topd.geoalt;
+    cosl = Math.cos((this.swed.topd.geolon + sidt) * this.swed.DEGTORAD);
+    sinl = Math.sin((this.swed.topd.geolon + sidt) * this.swed.DEGTORAD);
+    h = this.swed.topd.geoalt;
     xobs[0] = (re * cc + h) * cosfi * cosl;
     xobs[1] = (re * cc + h) * cosfi * sinl;
     xobs[2] = (re * ss + h) * sinfi;
@@ -2843,9 +2779,9 @@ class SwissEph{
     }
     /* subtract nutation, set backward flag */
     if ((iflag & Swe.SEFLG_NONUT)==0) {
-      this.sl.swi_coortrf2(xobs, xobs, -Swe.SwissData.nut.snut, Swe.SwissData.nut.cnut);
+      this.sl.swi_coortrf2(xobs, xobs, -this.swed.nut.snut, this.swed.nut.cnut);
       if ((iflag & Swe.SEFLG_SPEED)!=0) {
-        this.sl.swi_coortrf2(xobs, 3, xobs, 3, -Swe.SwissData.nut.snut, Swe.SwissData.nut.cnut);
+        this.sl.swi_coortrf2(xobs, 3, xobs, 3, -this.swed.nut.snut, this.swed.nut.cnut);
       }
       this.swi_nutate(xobs, 0, iflag, true);
     }
@@ -2857,10 +2793,10 @@ class SwissEph{
 
     if (do_save) {
       for (i = 0; i <= 5; i++) {
-        Swe.SwissData.topd.xobs[i] = xobs[i];
+        this.swed.topd.xobs[i] = xobs[i];
       }
-      Swe.SwissData.topd.teval = tjd;
-      Swe.SwissData.topd.tjd_ut = tjd_ut;  /* -> save area */
+      this.swed.topd.teval = tjd;
+      this.swed.topd.tjd_ut = tjd_ut;  /* -> save area */
     }
     return Swe.OK;
   }
