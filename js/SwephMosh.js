@@ -134,100 +134,99 @@ class SwephMosh{
     sb = 0.0;
     sr = 0.0;
 
-    for (;;)
-      {
-        np = p[pOff++];
-        if (np < 0) {
-          break;
-        }
-        if (np == 0) {                       /* It is a polynomial term.  */
-            nt = p[pOff++];
-            /* Longitude polynomial. */
-            cu = pl[plOff++];
-            for (ip = 0; ip < nt; ip++)
-              {
-                cu = cu * T + pl[plOff++];
-              }
-            sl +=  this.sm.mods3600 (cu);
-            /* Latitude polynomial. */
-            cu = pb[pbOff++];
-            for (ip = 0; ip < nt; ip++)
-              {
-                cu = cu * T + pb[pbOff++];
-              }
-            sb += cu;
-            /* Radius polynomial. */
-            cu = pr[prOff++];
-            for (ip = 0; ip < nt; ip++)
-              {
-                cu = cu * T + pr[prOff++];
-              }
-            sr += cu;
-            continue;
-          }
-        k1 = 0;
-        cv = 0.0;
-        sv = 0.0;
-        for (ip = 0; ip < np; ip++)
-          {
-            /* What harmonic.  */
-            j = p[pOff++];
-            /* Which planet.  */
-            m = p[pOff++] - 1;
-            if (j!=0) {
-                k = j;
-                if (j < 0) {
-                  k = -k;
-                }
-                k -= 1;
-                su = this.ss[m][k];    /* sin(k*angle) */
-                if (j < 0) {
-                  su = -su;
-                }
-                cu = this.cc[m][k];
-                if (k1 == 0) {               /* set first angle */
-                    sv = su;
-                    cv = cu;
-                    k1 = 1;
-                  }
-                else
-                  {               /* combine angles */
-                    t = su * cv + cu * sv;
-                    cv = cu * cv - su * sv;
-                    sv = t;
-                  }
-              }
-          }
-        /* Highest power of T.  */
-        nt = p[pOff++];
-        /* Longitude. */
-        cu = pl[plOff++];
-        su = pl[plOff++];
-        for (ip = 0; ip < nt; ip++)
-          {
-            cu = cu * T + pl[plOff++];
-            su = su * T + pl[plOff++];
-          }
-        sl += cu * cv + su * sv;
-        /* Latitiude. */
-        cu = pb[pbOff++];
-        su = pb[pbOff++];
-        for (ip = 0; ip < nt; ip++)
-          {
-            cu = cu * T + pb[pbOff++];
-            su = su * T + pb[pbOff++];
-          }
-        sb += cu * cv + su * sv;
-        /* Radius. */
-        cu = pr[prOff++];
-        su = pr[prOff++];
-        for (ip = 0; ip < nt; ip++)
-          {
-            cu = cu * T + pr[prOff++];
-            su = su * T + pr[prOff++];
-          }
-        sr += cu * cv + su * sv;
+    while(true){
+      np = p[pOff++];
+      if (np < 0) {
+        break;
       }
+      if (np == 0) {                       /* It is a polynomial term.  */
+          nt = p[pOff++];
+          /* Longitude polynomial. */
+          cu = pl[plOff++];
+          for (ip = 0; ip < nt; ip++)
+            {
+              cu = cu * T + pl[plOff++];
+            }
+          sl +=  this.sm.mods3600 (cu);
+          /* Latitude polynomial. */
+          cu = pb[pbOff++];
+          for (ip = 0; ip < nt; ip++)
+            {
+              cu = cu * T + pb[pbOff++];
+            }
+          sb += cu;
+          /* Radius polynomial. */
+          cu = pr[prOff++];
+          for (ip = 0; ip < nt; ip++)
+            {
+              cu = cu * T + pr[prOff++];
+            }
+          sr += cu;
+          continue;
+        }
+      k1 = 0;
+      cv = 0.0;
+      sv = 0.0;
+      for (ip = 0; ip < np; ip++)
+        {
+          /* What harmonic.  */
+          j = p[pOff++];
+          /* Which planet.  */
+          m = p[pOff++] - 1;
+          if (j!=0) {
+              k = j;
+              if (j < 0) {
+                k = -k;
+              }
+              k -= 1;
+              su = this.ss[m][k];    /* sin(k*angle) */
+              if (j < 0) {
+                su = -su;
+              }
+              cu = this.cc[m][k];
+              if (k1 == 0) {               /* set first angle */
+                  sv = su;
+                  cv = cu;
+                  k1 = 1;
+                }
+              else
+                {               /* combine angles */
+                  t = su * cv + cu * sv;
+                  cv = cu * cv - su * sv;
+                  sv = t;
+                }
+            }
+        }
+      /* Highest power of T.  */
+      nt = p[pOff++];
+      /* Longitude. */
+      cu = pl[plOff++];
+      su = pl[plOff++];
+      for (ip = 0; ip < nt; ip++)
+        {
+          cu = cu * T + pl[plOff++];
+          su = su * T + pl[plOff++];
+        }
+      sl += cu * cv + su * sv;
+      /* Latitiude. */
+      cu = pb[pbOff++];
+      su = pb[pbOff++];
+      for (ip = 0; ip < nt; ip++)
+        {
+          cu = cu * T + pb[pbOff++];
+          su = su * T + pb[pbOff++];
+        }
+      sb += cu * cv + su * sv;
+      /* Radius. */
+      cu = pr[prOff++];
+      su = pr[prOff++];
+      for (ip = 0; ip < nt; ip++)
+        {
+          cu = cu * T + pr[prOff++];
+          su = su * T + pr[prOff++];
+        }
+      sr += cu * cv + su * sv;
+    }
     pobj[0] = Swe.SwephData.STR * sl;
     pobj[1] = Swe.SwephData.STR * sb;
     pobj[2] = Swe.SwephData.STR * plan.distance * sr + plan.distance;
@@ -308,6 +307,7 @@ class SwephMosh{
     if (ipli == Swe.SwephData.SEI_EARTH) {
       xp = xe;
     } else {
+console.log("a")
       /* other planet */
       /* if planet has already been computed, return */
       if (tjd == pdp.teval && pdp.iephe == Swe.SEFLG_MOSEPH) {

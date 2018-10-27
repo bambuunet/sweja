@@ -514,6 +514,7 @@ class SwissEph{
 
 
   swecalc(tjd, ipl, iflag, x) {
+    console.log("swecalc()")
     var i;
     var ipli, ipli_ast, ifno;
     var retc;
@@ -592,15 +593,6 @@ class SwissEph{
       if ((retc = this.app_pos_etc_moon(iflag))!=Swe.OK) {
         return this.swecalc_error(x); // retc may be wrong with sidereal calculation
       }
-    /**********************************************
-     * barycentric sun                            *
-     * (SWISSEPH ephemerises)        *
-     **********************************************/
-    } else if (ipl == Swe.SE_SUN &&
-      ((iflag & Swe.SEFLG_BARYCTR)!=0)) {
-
-      ipli = Swe.SwephData.SEI_SUN; /* = SEI_EARTH ! */
-      xp = pedp.xreturn;
 
     } else if (ipl == Swe.SE_SUN 
       || ipl == Swe.SE_MERCURY
@@ -868,39 +860,12 @@ class SwissEph{
   }
 
   main_planet(tjd, ipli, epheflag, iflag){
+    console.log("main_planet()")
     var retc;
     var calc_swieph=false;
     var calc_moshier=false;
 
-    if (calc_swieph) {
-      /* compute barycentric planet (+ earth, sun, moon) */
-      retc = this.sweplan(tjd, ipli, Swe.SwephData.SEI_FILE_PLANET, iflag, Swe.SwephData.DO_SAVE,
-                     null, null, null, null);
-      if (retc == Swe.ERR) {
-        return Swe.ERR;
-      }
-      if (retc == Swe.SwephData.NOT_AVAILABLE) {
-        return Swe.ERR;
-      }
-      if (!calc_moshier) {
-        /* geocentric, lighttime etc. */
-        if (ipli == Swe.SwephData.SEI_SUN) {
-          retc = this.app_pos_etc_sun(iflag)/**/;
-        } else {
-          retc = this.app_pos_etc_plan(ipli, iflag);
-        }
-        if (retc == Swe.ERR) {
-          return Swe.ERR;
-        }
-        /* if sweph file for t(lighttime) not found, switch to moshier */
-        if (retc == Swe.SwephData.NOT_AVAILABLE) {
-          return Swe.ERR;
-        }
-      } // Swe.SEFLG_SWIEPH
-    } // !calc_moshier
-
     if (epheflag == Swe.SEFLG_MOSEPH || calc_moshier) {
-
       retc = this.smosh.swi_moshplan(tjd, ipli, Swe.SwephData.DO_SAVE, null, null);
       if (retc == Swe.ERR) {
         return Swe.ERR;
@@ -1088,6 +1053,7 @@ class SwissEph{
   }
 
   app_pos_etc_plan(ipli, iflag) {
+    console.log("app_pos_etc_plan()")
     var i, j, niter;
     var retc = Swe.OK;
     var ifno, ibody;
@@ -1401,9 +1367,10 @@ class SwissEph{
 
   swi_precess_speed(xx, xOffs, t, iflag, direction) {
     if(direction === undefined){
-      this.swi_precess_speed(xx, xOffs, 0, t, iflag);
+      this.swi_precess_speed(xx, 0, xOffs, t, iflag);
       return;
     }
+    console.log("swi_precess_speed()");
 
     var oe;
     var fac, dpre = new Array(1), dpre2 = new Array(1);
@@ -1494,9 +1461,11 @@ class SwissEph{
       this.swi_aberr_light(xx, 0, xxOffs, xe);
       return;
     }
+
+    console.log("swi_aberr_light()");
     var i;
-    var xxs=new Array(6), v=new Array(6), u=new Array(6), ru;
-    var xx2=new Array(6), dx1, dx2;
+    var xxs=[0,0,0,0,0,0], v=[0,0,0,0,0,0], u=[0,0,0,0,0,0], ru;
+    var xx2=[0,0,0,0,0,0], dx1, dx2;
     var b_1, f1, f2;
     var v2;
     var intv = Swe.SwephData.PLAN_SPEED_INTV;
@@ -1539,6 +1508,7 @@ class SwissEph{
 
 
   swi_deflect_light(xx, offs, dt, iflag) {
+    console.log("swi_deflect_light()")
     var i;
     var xx2 = [0,0,0,0,0,0];
     var u = [0,0,0,0,0,0];
@@ -2644,6 +2614,7 @@ class SwissEph{
 
 
   swi_check_ecliptic(tjd, iflag) {
+    console.log("swi_check_ecliptic()");
     if (Swe.SwissData.oec2000.teps != Swe.SwephData.J2000) {
       this.calc_epsilon(Swe.SwephData.J2000, iflag, Swe.SwissData.oec2000);
     }
@@ -2663,6 +2634,7 @@ class SwissEph{
    * if speed flag has been turned on since last computation,
    * nutation is recomputed */
   swi_check_nutation(tjd, iflag) {
+    console.log("swi_check_nutation()");
     var speedf1, speedf2;
     var t;
     speedf1 = this.chck_nut_nutflag & Swe.SEFLG_SPEED;
@@ -2787,7 +2759,7 @@ class SwissEph{
   }
 
   swi_get_observer(tjd, iflag, do_save, xobs) {
-    console.log("swi_get_observer()");
+    console.log("swi_get_observer");
     var i;
     var sidt, delt, tjd_ut, eps, nut, nutlo=new Array(2);
     var f = Swe.SwephData.EARTH_OBLATENESS;

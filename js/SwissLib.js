@@ -534,6 +534,7 @@ class SwissLib{
     }
 
     console.log("swi_coortrf2() xpo:, oOffs:"+oOffs+", xpn:, nOffs:"+nOffs+", sineps:"+sineps+", coseps:"+coseps);
+    console.log(xpo);
 
     var x=[0,0,0];
     x[0] = xpo[0+oOffs];
@@ -580,6 +581,8 @@ class SwissLib{
     if(x === undefined){
       return this.swi_polcart(l, 0, lOffs, 0);
     }
+
+    console.log("swi_polcart() l:"+l+", x:"+x);
     var xx=[0,0,0];
     var cosl1;
     cosl1 = Math.cos(l[lOffs+1]);
@@ -589,6 +592,7 @@ class SwissLib{
     x[xOffs] = xx[0];
     x[xOffs+1] = xx[1];
     x[xOffs+2] = xx[2];
+    return;
   }
 
   swi_cartpol_sp(x, xOffs, l, lOffs) {
