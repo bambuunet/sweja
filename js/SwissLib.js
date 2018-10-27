@@ -625,8 +625,6 @@ class SwissLib{
     l[2+lOffs] = ll[2];
   }
 
-
-
   /*swi_polcart_sp(l, x) {
     swi_polcart_sp(l, 0, x, 0);
   }*/

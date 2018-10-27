@@ -5,7 +5,7 @@ class SwephMosh{
     this.swed  = swed;
     if (this.sl   ==null) { this.sl   =new SwissLib(); }
     if (this.sw   ==null) { this.sw   =new SwissEph(); }
-    if (this.swed ==null) { this.swed =Swe.Swe.SwissData; }
+    if (this.swed ==null) { this.swed =Swe.SwissData; }
     this.sm    = new Swemmoon(this.swed, this.sl);
 
     this.TIMESCALE=3652500.0;
@@ -249,6 +249,7 @@ class SwephMosh{
     var pedp = this.swed.pldat[Swe.SwephData.SEI_EARTH];
     var seps2000 = this.swed.oec2000.seps;
     var ceps2000 = this.swed.oec2000.ceps;
+
     if (do_save) {
       xp = pdp.x;
       xe = pedp.x;
@@ -270,6 +271,7 @@ class SwephMosh{
 
       return(Swe.ERR);
     }
+
     /* earth, for geocentric position */
     if (do_earth) {
       if (tjd == pedp.teval && pedp.iephe == Swe.SEFLG_MOSEPH) {
@@ -303,10 +305,12 @@ class SwephMosh{
         }
       }
     }
+
     /* earth is the planet wanted */
     if (ipli == Swe.SwephData.SEI_EARTH) {
       xp = xe;
     } else {
+
       /* other planet */
       /* if planet has already been computed, return */
       if (tjd == pdp.teval && pdp.iephe == Swe.SEFLG_MOSEPH) {
@@ -325,6 +329,7 @@ class SwephMosh{
         this.swi_moshplan2(tjd - dt, iplm, x2);
         this.sl.swi_polcart(x2, x2);
         this.sl.swi_coortrf2(x2, x2, -seps2000, ceps2000);
+
         for (i = 0; i <= 2; i++)
           dx[i] = (xp[i] - x2[i]) / dt;
         /* store speed */
