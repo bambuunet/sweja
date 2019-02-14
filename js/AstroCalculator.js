@@ -35,9 +35,13 @@ class AstroCalculator{
   }
 
   setDate(opt){
+    if(opt.timezone){
+      this.timezone = parseFloat(opt.timezone);
+    }
+
     if(opt.year === undefined && opt.month === undefined && opt.day === undefined){
       this.sd = new SweDate();
-      this.julian_utc = this.sd.getJulDay() - this.timezone;
+      this.julian_utc = this.sd.getJulDay() - this.timezone / 24;
       return;
     }
     else if(opt.year === undefined){
@@ -55,8 +59,8 @@ class AstroCalculator{
 
     if(opt.hour === undefined) opt.hour = 12;
     if(opt.minute === undefined) opt.minute = 0;
-    this.sd = new SweDate(opt.year, opt.month, opt.day, opt.hour + opt.minute / 60);
-    this.julian_utc = this.sd.getJulDay() - this.timezone;
+    this.sd = new SweDate(parseInt(opt.year), parseInt(opt.month), parseInt(opt.day), parseFloat(opt.hour) + parseFloat(opt.minute) / 60);
+    this.julian_utc = this.sd.getJulDay() - this.timezone / 24;
     return;
   }
 
