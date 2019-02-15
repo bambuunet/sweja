@@ -346,10 +346,71 @@
     </p>
 
 <button id="getPlanetPosition">Get Planet Position</button>
-<div>Sun: <span id="sun"></span></div>
-<div>Moon: <span id="moon"></span></div>
+<table>
+  <tr>
+    <th>Planet</th>
+    <th>Sign/degree</th>
+  </tr>
+  <tr>
+    <td>Sun</td>
+    <td id="sun"></td>
+  </tr>
+  <tr>
+    <td>Moon</td>
+    <td id="moon"></td>
+  </tr>
+  <tr>
+    <td>Mercury</td>
+    <td id="mercury"></td>
+  </tr>
+  <tr>
+    <td>Venus</td>
+    <td id="venus"></td>
+  </tr>
+  <tr>
+    <td>Mars</td>
+    <td id="mars"></td>
+  </tr>
+  <tr>
+    <td>Jupiter</td>
+    <td id="jupiter"></td>
+  </tr>
+  <tr>
+    <td>Saturn</td>
+    <td id="saturn"></td>
+  </tr>
+  <tr>
+    <td>uranus</td>
+    <td id="uranus"></td>
+  </tr>
+  <tr>
+    <td>Neptune</td>
+    <td id="neptune"></td>
+  </tr>
+  <tr>
+    <td>Pluto</td>
+    <td id="pluto"></td>
+  </tr>
+</table>
+
+
 
     <script>
+      var signs = [
+        "Aries",
+        "Tauros",
+        "Gemini",
+        "Cancer",
+        "Leo",
+        "Virgo",
+        "Libra",
+        "Scopio",
+        "Sagiterius",
+        "Capricorn",
+        "Aquarius",
+        "Pisces",
+      ];
+
       $('#getPlanetPosition').on('click', function(){
         console.log($('#year').val());
         var a = new AstroCalculator({
@@ -365,19 +426,31 @@
         var p = a.getPlanetPosition();
         console.log(p);
 
-        $('#sun').text(p.Sun.longitude);
-        $('#moon').text(p.Moon.longitude);
+        $('#sun').text(getSignDegreeText(p.Sun.longitude));
+        $('#moon').text(getSignDegreeText(p.Moon.longitude));
+        $('#mercury').text(getSignDegreeText(p.Mercury.longitude));
+        $('#venus').text(getSignDegreeText(p.Venus.longitude));
+        $('#mars').text(getSignDegreeText(p.Mars.longitude));
+        $('#jupiter').text(getSignDegreeText(p.Jupiter.longitude));
+        $('#saturn').text(getSignDegreeText(p.Saturn.longitude));
+        $('#uranus').text(getSignDegreeText(p.Uranus.longitude));
+        $('#neptune').text(getSignDegreeText(p.Neptune.longitude));
+        $('#pluto').text(getSignDegreeText(p.Pluto.longitude));
 
         var elapsed_ms = new Date().getTime() - start_ms;
         console.log('処理時間：' + elapsed_ms);
       });
 
-
+      function getSignDegreeText(longitude){
+        var sign = signs[parseInt(longitude / 30)];
+        var degree = ('00' + parseInt(longitude % 30)).slice(-2);
+        var minute = ('00' + parseInt(longitude % 1 * 60)).slice(-2);
+        return sign + " " + degree + "°" + minute + "′";
+      }
 
       //eph.swe_houses(tjd_ut, geolat, eps, hsys, cusp, ascmc);
 
       //console.log(a.PNOINT2JPL,SwephJPL)
-
 
 
     </script>
