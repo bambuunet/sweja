@@ -1,3 +1,10 @@
+class IntObj{
+  constructor(val){
+    this.val = val;
+    if(val === undefined) this.val = 0;
+  }
+};
+
 class DblObj{
   constructor(val){
     this.val = val;
@@ -99,8 +106,10 @@ class Plantbl{
 }
 class PlanData{
   constructor(r, m){
-    this.x=new Array(6);
-    this.xreturn=new Array(24);
+    this.x = new Array(6);
+    this.xreturn = new Array(24);
+    for(var i=0; i<6; i++) { this.x[i]=0.0; }
+    for(var i=0; i<24; i++) { this.xreturn[i]=0.0; }
     this.ibdy=0;   
     this.iflg=0;
     this.ncoe=0; 

@@ -484,9 +484,10 @@ class SwissLib{
     this.swi_polcart(x, x);
     this.swi_coortrf(x, x, e);
     this.swi_cartpol(x, x);
-    xpn[  nOffs] = x[0] * Swe.SwissData.RADTODEG;
+    xpn[0+nOffs] = x[0] * Swe.SwissData.RADTODEG;
     xpn[1+nOffs] = x[1] * Swe.SwissData.RADTODEG;
     xpn[2+nOffs] = xpo[2+oOffs];
+    return;
   }
 
   /*swi_coortrf(xpo, xpn, eps) {
@@ -508,6 +509,7 @@ class SwissLib{
     xpn[0+nOffs] = x[0];
     xpn[1+nOffs] = x[1];
     xpn[2+nOffs] = x[2];
+    return;
   }
 
   /*swi_coortrf2(xpo, xpn, sineps, coseps) {
@@ -535,7 +537,7 @@ class SwissLib{
     swi_cartpol(x, 0, l, 0);
   }*/
   swi_cartpol(x, xOffs, l, lOffs) {
-    //引数4つの場合
+    //引数2つの場合
     if(l === undefined){
       return this.swi_cartpol(x, 0, xOffs, 0);
     }
@@ -556,6 +558,7 @@ class SwissLib{
     l[0+lOffs] = ll[0];
     l[1+lOffs] = ll[1];
     l[2+lOffs] = ll[2];
+    return;
   }
 
   /*swi_polcart(l, x) {
@@ -581,6 +584,11 @@ class SwissLib{
   }
 
   swi_cartpol_sp(x, xOffs, l, lOffs) {
+    //引数2つの場合
+    if(l === undefined){
+      return this.swi_cartpol_sp(x, 0, xOffs, 0);
+    }
+
     console.log("swi_cartpol_sp()");
     var xx=[0,0,0,0,0,0];
     var ll=[0,0,0,0,0,0];
@@ -623,6 +631,7 @@ class SwissLib{
     l[0+lOffs] = ll[0];                 /* return position */
     l[1+lOffs] = ll[1];
     l[2+lOffs] = ll[2];
+    return;
   }
 
   /*swi_polcart_sp(l, x) {
@@ -664,7 +673,6 @@ class SwissLib{
     x[0+xOffs] = xx[0];                                 /* return position */
     x[1+xOffs] = xx[1];
     x[2+xOffs] = xx[2];
-
     return;
   }
 
@@ -698,14 +706,18 @@ class SwissLib{
     p *= this.AS2R;
     q *= this.AS2R;
     /* return */
-    if (dpre != null && dpre.length > 0)
+    if (dpre != null && dpre.length > 0){
       dpre[0] = p;
-    if (deps != null && deps.length > 0)
+    }
+    if (deps != null && deps.length > 0){
       deps[0] = q;
+    }
+    return;
   } 
 
 
   pre_pecl(tjd, vec) {
+    console.log("pre_pecl()");
     var i;
     var npol = this.NPOL_PECL;
     var nper = this.NPER_PECL;
@@ -734,19 +746,23 @@ class SwissLib{
     q *= this.AS2R;
     /* ecliptic pole vector */
     z = 1 - p * p - q * q;
-    if (z < 0)
+    if (z < 0){
       z = 0;
-    else
+    }
+    else{
       z = Math.sqrt(z);
+    }
     s = Math.sin(this.EPS0);
     c = Math.cos(this.EPS0);
     vec[0] = p;
     vec[1] = - q * c - z * s;
     vec[2] = - q * s + z * c;
+    return;
   }
 
   /* precession of the equator */
   pre_pequ(tjd, veq) {
+    console.log("pre_pequ()");
     var i;
     var npol = this.NPOL_PEQU;
     var nper = this.NPER_PEQU;
@@ -775,15 +791,19 @@ class SwissLib{
     veq[0] = x;
     veq[1] = y;
     w = x * x + y * y;
-    if (w < 1)
+    if (w < 1){
       veq[2] = Math.sqrt(1 - w);
-    else
+    }
+    else{
       veq[2] = 0;
+    }
+    return;
   }
 
 
   /* precession matrix */
   pre_pmat(tjd, rp) {
+    console.log("pre_pmat()");
     var peqr = [0,0,0], pecl = [0,0,0], v = [0,0,0], w, eqx = [0,0,0];
     /*equator pole */
     this.pre_pequ(tjd, peqr);
@@ -805,10 +825,11 @@ class SwissLib{
     rp[6] = peqr[0];
     rp[7] = peqr[1];
     rp[8] = peqr[2];
+    return;
   }
 
   swi_epsiln(J, iflag) {
-
+    console.log("swi_epsiln()");
     var T, eps;
     var tofs, dofs, t0, t1;
     var prec_model = this.swed.astro_models[Swe.SE_MODEL_PREC_LONGTERM];
@@ -895,7 +916,6 @@ class SwissLib{
     var x = [0,0,0];
     var sinth, costh, sinZ, cosZ, sinz, cosz, A, B;
     if( J == Swe.SwephData.J2000 ) {
-
       return(0);
     }
     T = (J - Swe.SwephData.J2000)/36525.0;
@@ -1091,8 +1111,9 @@ class SwissLib{
     var T;
     var x = [0,0,0], pmat = new Array(9);
     var i, j;
-    if( J == Swe.SwephData.J2000 ) 
+    if( J == Swe.SwephData.J2000 ){
       return(0);
+    }
     /* Each precession angle is specified by a polynomial in
      * T = Julian centuries from J2000.0.  See AA page B18.
      */
@@ -1111,8 +1132,9 @@ class SwissLib{
           R[2+rOffs] * pmat[i + 6];
       }
     }
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++){
       R[i+rOffs] = x[i];
+    }
     return(0);
   }
 

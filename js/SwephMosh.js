@@ -89,6 +89,12 @@ class SwephMosh{
     this.nep = new SwemptabNep;
     this.plu = new SwemptabPlu;
 
+    this.plan_fict_nam = ["Cupido", "Hades", "Zeus", "Kronos",
+     "Apollon", "Admetos", "Vulkanus", "Poseidon",
+     "Isis-Transpluto", "Nibiru", "Harrington",
+     "Leverrier", "Adams",
+     "Lowell", "Pickering"];
+
     this.planets = [
       this.mer.mer404,
       this.ven.ven404,
@@ -449,4 +455,254 @@ class SwephMosh{
       xemb[i] -= xyz[i] / (Swe.SwephData.EARTH_MOON_MRAT + 1.0);
   }
 
+  swi_get_fict_name(ipl, snam) {
+    if (snam==null) { snam=""; }
+    var sbnam=new StringBuffer(snam);
+    if (this.read_elements_file(ipl, 0, null, null,
+         null, null, null, null, null, null,
+         sbnam, null, null) == Swe.ERR) {
+      return "name not found";
+    }
+    return sbnam.toString();
+  }
+
+  swi_osc_el_plan(tjd, xp, ipl, ipli, xearth, xsun) {
+    var pqr = new Array(9);
+    var x = new Array(9);
+    var eps, K, fac, rho, cose, sine;
+    var alpha, beta, zeta, sigma, M2, Msgn, M_180_or_0;
+    var tjd0=new DblObj();
+    var tequ=new DblObj();
+    var mano=new DblObj();
+    var sema=new DblObj();
+    var ecce=new DblObj();
+    var parg=new DblObj();
+    var node=new DblObj();
+    var incl=new DblObj();
+    var dmot;
+    var cosnode, sinnode, cosincl, sinincl, cosparg, sinparg;
+    var M, E;
+    var pedp = this.swed.pldat[Swe.SwephData.SEI_EARTH];
+    var pdp = this.swed.pldat[ipli];
+    var fict_ifl = new IntObj(); fict_ifl.val = 0;
+    var i;
+    /* orbital elements, either from file or, if file not found,
+     * from above built-in set
+     */
+    if (this.read_elements_file(ipl, tjd, tjd0, tequ,
+         mano, sema, ecce, parg, node, incl,
+         null, fict_ifl) == Swe.ERR) {
+      return Swe.ERR;
+    }
+    dmot = 0.9856076686 * Swe.SwissData.DEGTORAD / sema.val / Math.sqrt(sema.val);
+                                                            /* daily motion */
+    if ((fict_ifl.val & FICT_GEO) != 0) {
+      dmot /= Math.sqrt(Swe.SwephData.SUN_EARTH_MRAT);
+    }
+    cosnode = Math.cos(node.val);
+    sinnode = Math.sin(node.val);
+    cosincl = Math.cos(incl.val);
+    sinincl = Math.sin(incl.val);
+    cosparg = Math.cos(parg.val);
+    sinparg = Math.sin(parg.val);
+    /* Gaussian vector */
+    pqr[0] = cosparg * cosnode - sinparg * cosincl * sinnode;
+    pqr[1] = -sinparg * cosnode - cosparg * cosincl * sinnode;
+    pqr[2] = sinincl * sinnode;
+    pqr[3] = cosparg * sinnode + sinparg * cosincl * cosnode;
+    pqr[4] = -sinparg * sinnode + cosparg * cosincl * cosnode;
+    pqr[5] = -sinincl * cosnode;
+    pqr[6] = sinparg * sinincl;
+    pqr[7] = cosparg * sinincl;
+    pqr[8] = cosincl;
+    /* Kepler problem */
+    E = M = this.sl.swi_mod2PI(mano.val + (tjd - tjd0.val) * dmot); /* mean anomaly of date*/
+    /* better E for very high eccentricity and small M */
+    if (ecce.val > 0.975) {
+      M2 = M * Swe.SwissData.RADTODEG;
+      if (M2 > 150 && M2 < 210) {
+        M2 -= 180;
+        M_180_or_0 = 180;
+      } else
+        M_180_or_0 = 0;
+      if (M2 > 330) {
+        M2 -= 360;
+      }
+      if (M2 < 0) {
+        M2 = -M2;
+        Msgn = -1;
+      } else {
+        Msgn = 1;
+      }
+      if (M2 < 30) {
+        M2 *= Swe.SwissData.DEGTORAD;
+        alpha = (1 - ecce.val) / (4 * ecce.val + 0.5);
+        beta = M2 / (8 * ecce.val + 1);
+        zeta = Math.pow(beta + Math.sqrt(beta * beta + alpha * alpha), 1/3);
+        sigma = zeta - alpha / 2;
+        sigma = sigma - 0.078 * sigma * sigma * sigma * sigma * sigma / (1 + ecce.val);
+        E = Msgn * (M2 + ecce.val * (3 * sigma - 4 * sigma * sigma * sigma))
+                          + M_180_or_0;
+      }
+    }
+    E = this.sl.swi_kepler(E, M, ecce.val);
+    /* position and speed, referred to orbital plane */
+    if ((fict_ifl.val & FICT_GEO) != 0) {
+      K = Swe.SwephData.KGAUSS_GEO / Math.sqrt(sema.val); 
+    } else {
+      K = Swe.SwephData.KGAUSS / Math.sqrt(sema.val);
+    }
+    cose = Math.cos(E);
+    sine = Math.sin(E);
+    fac = Math.sqrt((1 - ecce.val) * (1 + ecce.val));
+    rho = 1 - ecce.val * cose;
+    x[0] = sema.val * (cose - ecce.val);
+    x[1] = sema.val * fac * sine;
+    x[3] = -K * sine / rho;
+    x[4] = K * fac * cose / rho;
+    /* transformation to ecliptic */
+    xp[0] = pqr[0] * x[0] + pqr[1] * x[1];
+    xp[1] = pqr[3] * x[0] + pqr[4] * x[1];
+    xp[2] = pqr[6] * x[0] + pqr[7] * x[1];
+    xp[3] = pqr[0] * x[3] + pqr[1] * x[4];
+    xp[4] = pqr[3] * x[3] + pqr[4] * x[4];
+    xp[5] = pqr[6] * x[3] + pqr[7] * x[4];
+    /* transformation to equator */
+    eps = this.sl.swi_epsiln(tequ.val, 0);
+    this.sl.swi_coortrf(xp, xp, -eps);
+    this.sl.swi_coortrf(xp, 3, xp, 3, -eps);
+    /* precess to J2000 */
+    if (tequ.val != Swe.SwephData.J2000) {
+      this.sl.swi_precess(xp, tequ.val, 0, Swe.SwephData.J_TO_J2000);
+      this.sl.swi_precess(xp, 3, tequ.val, 0, Swe.SwephData.J_TO_J2000);
+    }
+    /* to solar system barycentre */
+    if ((fict_ifl.val & FICT_GEO) != 0) {
+      for (i = 0; i <= 5; i++) {
+        xp[i] += xearth[i];
+      }
+    } else {
+      for (i = 0; i <= 5; i++) {    
+        xp[i] += xsun[i];
+      }
+    }
+    if (pdp.x == xp) {
+      pdp.teval = tjd;   /* for precession! */
+      pdp.iephe = pedp.iephe;
+    }
+    return Swe.OK;
+  }
+
+  read_elements_file(ipl, tjd, tjd0, tequ,
+                                 mano, sema, ecce,
+                                 parg, node, incl,
+                                 pname, fict_ifl) {
+    var i, iline, iplan, retc, ncpos;
+    var s, sp;
+    var spIdx=0;
+    var elem_found = false;
+    var tt = 0;
+      /* file does not exist, use built-in bodies */
+      if (ipl >= Swe.SE_NFICT_ELEM) {
+        return Swe.ERR;
+      }
+      if (tjd0 != null) {
+        tjd0.val = this.plan_oscu_elem[ipl][0];                   /* epoch */
+      }
+      if (tequ != null) {
+        tequ.val = this.plan_oscu_elem[ipl][1];                   /* equinox */
+      }
+      if (mano != null) {
+        mano.val = this.plan_oscu_elem[ipl][2] * Swe.SwissData.DEGTORAD; /* mean anomaly */
+      }
+      if (sema != null) {
+        sema.val = this.plan_oscu_elem[ipl][3];                   /* semi-axis */
+      }
+      if (ecce != null) {
+        ecce.val = this.plan_oscu_elem[ipl][4];                   /* eccentricity */
+      }
+      if (parg != null) {
+        parg.val = this.plan_oscu_elem[ipl][5] * Swe.SwissData.DEGTORAD; /* arg. of peri. */
+      }
+      if (node != null) {
+        node.val = this.plan_oscu_elem[ipl][6] * Swe.SwissData.DEGTORAD;  /* asc. node */
+      }
+      if (incl != null) {
+        incl.val = this.plan_oscu_elem[ipl][7] * Swe.SwissData.DEGTORAD; /* inclination*/
+      }
+      if (pname != null) {
+        pname.setLength(0);
+        pname.append(this.plan_fict_nam[ipl]);
+      }
+      return Swe.OK;
+  }
+
+  check_t_terms(t, sinp, doutp) {
+    var i, isgn = 1, z;
+    var retc = 0;
+    var spidx;
+    var tt = new Array(5); 
+    var fac;
+    tt[0] = t / 36525;
+    tt[1] = tt[0];
+    tt[2] = tt[1] * tt[1];
+    tt[3] = tt[2] * tt[1];
+    tt[4] = tt[3] * tt[1];
+    if (sinp.indexOf('+') + sinp.indexOf('-') > -2) {
+      retc = 1; /* with additional terms */
+    }
+    spidx=0;
+    doutp.val = 0;
+    fac = 1;
+    z = 0;
+    while (true) {
+      while(spidx<sinp.length() &&
+            (sinp.charAt(spidx)==' ' || sinp.charAt(spidx)=='\t')) {
+        spidx++;
+      }
+      if (spidx==sinp.length() ||
+          sinp.charAt(spidx)=='+' || sinp.charAt(spidx)=='-') {
+        if (z > 0) {
+          doutp.val += fac;
+        }
+        isgn = 1;
+        if (spidx!=sinp.length() && sinp.charAt(spidx) == '-') {
+          isgn = -1;
+        }
+        fac = 1 * isgn;
+        if (spidx==sinp.length()) {
+          return retc;
+        }
+        spidx++;
+      } else {
+        while(spidx<sinp.length() &&
+              (sinp.charAt(spidx)=='*' || sinp.charAt(spidx)==' '
+              || sinp.charAt(spidx)=='\t')) {
+          spidx++;
+        }
+        if (spidx<sinp.length() &&
+            (sinp.charAt(spidx)=='t' || sinp.charAt(spidx)=='T')) {
+                /* a T */
+          spidx++;
+          if (spidx<sinp.length() &&
+              (sinp.charAt(spidx)=='+' || sinp.charAt(spidx)=='-')) {
+            fac *= tt[0];
+          } else if ((i = SwissLib.atoi(sinp.substring(Math.min(sinp.length(),spidx)))) <= 4 && i >= 0) {
+            fac *= tt[i];
+          }
+        } else {
+          /* a number */
+          var db=SwissLib.atof(sinp.substring(spidx));
+          if (db!=0 || sinp.charAt(spidx)=='0') {
+            fac *= db;
+          }
+        }
+        while (spidx<sinp.length() &&
+               (Character.isDigit(sinp.charAt(spidx)) ||
+                sinp.charAt(spidx)=='.'))
+          spidx++;
+      }
+      z++;
+    }
+  }
 }

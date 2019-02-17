@@ -12,7 +12,7 @@ ASTROLOGY
 
 残すもの
 JAVAME　
-NO_Moshier 
+#ifndef NO_MOSHIER
 1 
 
 
