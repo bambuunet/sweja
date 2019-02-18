@@ -80,24 +80,4 @@ class AstroCalculator{
     }
     return ret;
   }
-
-  setGeographicPosition(){
-
-  }
-
-  getHouse(){
-
-  }
-
-  getSolarReturn(longitude, year){
-
-  }
-
-  getLunarReturn(longitude, year){
-
-  }
-
-  getSaturnReturn(longitude, year, times){
-
-  }
 }

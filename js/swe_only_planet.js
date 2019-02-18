@@ -1,25 +1,3 @@
-/*
-よくわかんないので、いったん以下のように残している。
-
-消すもの
-TRACE0 
-TRACE1 
-0 
-ORIGINAL 
-JPL　
-NO_RISE_TRANS 
-ASTROLOGY 
-
-残すもの
-JAVAME　
-#ifndef NO_MOSHIER
-1 
-
-
-
-
-*/
-
 var Swe = Swe || {};
 
 Swe.J_MERCURY =  0;
@@ -4064,7 +4042,8 @@ Swe.Swenut2000aNls = {
   2, -1, 2, 4, 2,
   2, 0, 2, 4, 1,
   ],
-}var Swe = Swe || {};
+}
+var Swe = Swe || {};
 Swe.SwephData = {};
 
 Swe.SwephData.PNOINT2JPL = [
