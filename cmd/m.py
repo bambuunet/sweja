@@ -11,7 +11,6 @@ define_regex = r'#ifn?(def)?\s+('\
 prototype_declaration_regex = r'\);\s*$'
 delete_flags = []
 struct_flag = False
-print define_regex
 
 # get arg
 BASE_FILE = sys.argv[1]
@@ -43,7 +42,6 @@ for line in new_file:
 
   if re.match(r'#else', line):
     delete_flags[-1] = not(delete_flags[-1])
-    print delete_flags[-1]
     continue
 
   if re.match(r'#endif', line):
@@ -141,8 +139,30 @@ new_file.close()
 shutil.copyfile(TMP_FILE, NEW_FILE)
 os.remove(TMP_FILE)
 
+# add struct value to Map
 # struct_aaa = [...];
 # aaa.forEach(function(v,k,m){aaa.set(k, num[i]); i++;});
+
+
+# chenge math, type
+new_file = open(NEW_FILE, 'r')
+lines = new_file.read()
+new_file.close()
+new_file = open(NEW_FILE, 'w')
+lines = re.sub(r'\(int\)\s?\(', "parseInt(", lines)
+lines = re.sub(r'\(int\)\s?(\w+)', "parseInt(\\1)", lines)
+lines = re.sub(r'\(double\)\s?\(', "parseFloat(", lines)
+lines = re.sub(r'\(double\)\s?(\w+)', "parseFloat(\\1)", lines)
+lines = re.sub(r'([^\w])(sin\()', "\\1Math.\\2", lines)
+lines = re.sub(r'([^\w])(cos\()', "\\1Math.\\2", lines)
+lines = re.sub(r'([^\w])(tan\()', "\\1Math.\\2", lines)
+lines = re.sub(r'([^\w])(asin\()', "\\1Math.\\2", lines)
+lines = re.sub(r'([^\w])(acos\()', "\\1Math.\\2", lines)
+lines = re.sub(r'([^\w])(atan\()', "\\1Math.\\2", lines)
+lines = re.sub(r'([^\w])(atan2\()', "\\1Math.\\2", lines)
+lines = re.sub(r'([^\w])(fabs\()', "\\1Math.\\2", lines)
+new_file.write(lines)
+new_file.close()
 
 
 # remove comments, new lines
@@ -154,3 +174,4 @@ lines = re.sub(r'\s*/\*([^/]|[^\*]/)*\*/', "", lines)
 lines = re.sub(r'\n+', "\n", lines)
 new_file.write(lines)
 new_file.close()
+
