@@ -141,6 +141,9 @@ new_file.close()
 shutil.copyfile(TMP_FILE, NEW_FILE)
 os.remove(TMP_FILE)
 
+# struct_aaa = [...];
+# aaa.forEach(function(v,k,m){aaa.set(k, num[i]); i++;});
+
 
 # remove comments, new lines
 new_file = open(NEW_FILE, 'r')
