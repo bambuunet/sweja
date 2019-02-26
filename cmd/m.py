@@ -143,6 +143,31 @@ os.remove(TMP_FILE)
 # struct_aaa = [...];
 # aaa.forEach(function(v,k,m){aaa.set(k, num[i]); i++;});
 
+# 配列
+
+
+# 関数
+is_function = False
+new_file = open(NEW_FILE, 'r')
+for line in new_file:
+  # 関数の開始
+  if :
+    is_function = True
+
+  # 関数の終了
+
+
+  # 関数の中
+  if :
+    # 変数判定
+
+  tmp_file = open(TMP_FILE,'a')
+  tmp_file.write(line)
+  tmp_file.close()
+new_file.close()
+shutil.copyfile(TMP_FILE, NEW_FILE)
+os.remove(TMP_FILE)
+
 
 # chenge math, type
 new_file = open(NEW_FILE, 'r')
