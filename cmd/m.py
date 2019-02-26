@@ -67,6 +67,7 @@ lines = new_file.read()
 new_file.close()
 new_file = open(NEW_FILE, 'w')
 lines = re.sub(r'\r\n', "\n", lines)
+lines = re.sub(r'\s*/\*([^/]|[^\*]/)*\*/', "", lines)
 lines = re.sub(r'\n(static\s+|extern\s+)?\w+\s+\*?\w+\([^\)]+\)\s*;', "", lines)
 lines = re.sub(r'(\n|\s)TLS\s', '\\1', lines)
 lines = re.sub(r'\t', " ", lines)
@@ -143,23 +144,37 @@ os.remove(TMP_FILE)
 # struct_aaa = [...];
 # aaa.forEach(function(v,k,m){aaa.set(k, num[i]); i++;});
 
-# 配列
+# array
 
 
-# 関数
+# function
+new_file = open(NEW_FILE, 'r')
+lines = new_file.read()
+new_file.close()
+while True:
+  lines2 = re.sub(r'((\w+\s+)+\*?\w+\([^\)]*)\n+', "\\1", lines)
+  if lines == lines2:
+    break
+  else:
+    lines = lines2
+new_file = open(NEW_FILE, 'w')
+new_file.write(lines)
+new_file.close()
+
 is_function = False
 new_file = open(NEW_FILE, 'r')
 for line in new_file:
-  # 関数の開始
-  if :
+  # start function
+  if True:
     is_function = True
 
-  # 関数の終了
+  # end function
 
 
-  # 関数の中
-  if :
-    # 変数判定
+  # in function
+  if True:
+    pass
+    # check var
 
   tmp_file = open(TMP_FILE,'a')
   tmp_file.write(line)
@@ -190,12 +205,11 @@ new_file.write(lines)
 new_file.close()
 
 
-# remove comments, new lines
+# remove new lines
 new_file = open(NEW_FILE, 'r')
 lines = new_file.read()
 new_file.close()
 new_file = open(NEW_FILE, 'w')
-lines = re.sub(r'\s*/\*([^/]|[^\*]/)*\*/', "", lines)
 lines = re.sub(r'\n+', "\n", lines)
 new_file.write(lines)
 new_file.close()
