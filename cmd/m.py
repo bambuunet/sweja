@@ -152,7 +152,8 @@ new_file = open(NEW_FILE, 'r')
 lines = new_file.read()
 new_file.close()
 while True:
-  lines2 = re.sub(r'((\w+\s+)+\*?\w+\([^\)]*)\n+', "\\1", lines)
+  lines2 = re.sub(r'((\w+\s+)+\*?\w+\s*\([^\)]*)\n+', "\\1", lines)
+  lines2 = re.sub(r'((\w+\s+)+\*?\w+\s*\([^{]*)\n+({)', "\\1\\3", lines2)
   if lines == lines2:
     break
   else:
@@ -165,8 +166,11 @@ is_function = False
 new_file = open(NEW_FILE, 'r')
 for line in new_file:
   # start function
-  if True:
+  if re.match(r'(\w+\s+)+\*?\w+\s*\([^\)]*\)', line):
     is_function = True
+    line = re.sub(r'(\w+\s+)+\*?(\w+)\(', "function \\2(", line)
+    line = re.sub(r'\s*(\w+\s+)+\*?(\w+)\s*([\,\)])', "\\2\\3 ", line)
+    line = re.sub(r'void', "", line)
 
   # end function
 
