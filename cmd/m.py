@@ -27,28 +27,28 @@ if os.path.isfile(TMP_FILE):
 # remove pre processor, #include
 new_file = open(NEW_FILE, 'r')
 for line in new_file:
-  if re.match(r'#if(def)?\s+', line):
-    if re.match(define_regex, line):
+  if re.search(r'#if(def)?\s+', line):
+    if re.search(define_regex, line):
       delete_flags.append(False)
     else:
       delete_flags.append(True)
     continue
-  elif re.match(r'#ifndef\s+', line):
-    if re.match(define_regex, line):
+  elif re.search(r'#ifndef\s+', line):
+    if re.search(define_regex, line):
       delete_flags.append(True)
     else:
       delete_flags.append(False)
     continue
 
-  if re.match(r'#else', line):
+  if re.search(r'#else', line):
     delete_flags[-1] = not(delete_flags[-1])
     continue
 
-  if re.match(r'#endif', line):
+  if re.search(r'#endif', line):
     delete_flags.pop()
     continue
 
-  if re.match(r'\s*#include', line):
+  if re.search(r'#\s*include', line):
     continue
 
   if delete_flags.count(True) == 0:
@@ -68,12 +68,13 @@ new_file.close()
 new_file = open(NEW_FILE, 'w')
 lines = re.sub(r'\r\n', "\n", lines)
 lines = re.sub(r'\s*/\*([^/]|[^\*]/)*\*/', "", lines)
-lines = re.sub(r'\n(static\s+|extern\s+)?\w+\s+\*?\w+\([^\)]+\)\s*;', "", lines)
+lines = re.sub(r'\n(static\s+|extern\s+)?(\w+\s+)+\*?\w+\s*\([^\)]+\)\s*;', "", lines)
 lines = re.sub(r'(\n|\s)TLS\s', '\\1', lines)
 lines = re.sub(r'\t', " ", lines)
 lines = re.sub(r'(?<!\w)TRUE(?!\w)', "true", lines)
 lines = re.sub(r'(?<!\w)FALSE(?!\w)', "false", lines)
-lines = re.sub(r'//[^\n]*\n', "", lines)
+lines = re.sub(r'(?<!\w)NULL(?!\w)', "null", lines)
+lines = re.sub(r'//[^\n]*', "", lines)
 new_file.write(lines)
 new_file.close()
 
@@ -82,21 +83,21 @@ new_file = open(NEW_FILE, 'r')
 for line in new_file:
   while(True):
     # delete #define
-    define = re.match(r'#define\s+(\w+)\s*$', line)
+    define = re.search(r'#define\s+(\w+)\s*$', line)
     if define:
       line = False
       break
 
     # make const if "xxx" or (xxx) or number
-    define = re.match(r'#define[\s]+(\w+)\s+(struct\s+)?("[^"]*"|\([^\)]*\)|[\w\-\.+]+)(.*)', line)
+    define = re.search(r'#define[\s]+(\w+)\s+(struct\s+)?("[^"]*"|\([^\)]*\)|[\w\-\.+]+)(.*)', line)
     if define:
-      line = "\nconst " + define.group(1) + " = " + define.group(3) + ";" + define.group(4)
-    define = re.match(r'#define\s+(\w+)\s+\{([^\}]*)\}(.*)', line)
+      line = "\nconst " + define.group(1) + " = " + define.group(3) + ";" + define.group(4) + "\n"
+    define = re.search(r'#define\s+(\w+)\s+\{([^\}]*)\}(.*)', line)
     if define:
-      line = "\nconst " + define.group(1) + " = [" + define.group(2) + "];" + define.group(3)
+      line = "\nconst " + define.group(1) + " = [" + define.group(2) + "];" + define.group(3) + "\n"
 
     # make function
-    define = re.match(r'#define\s+(\w+\([^\)]*\))\s+(.*)', line)
+    define = re.search(r'#define\s+(\w+\([^\)]*\))\s+(.*)', line)
     if define:
       line = "\nfunction " + define.group(1) + "{return " + define.group(2) + "}"
     break
@@ -126,13 +127,13 @@ new_file.close()
 
 new_file = open(NEW_FILE, 'r')
 for line in new_file:
-  if re.match(r'struct\s+\w+\s*{', line):
+  if re.search(r'struct\s+\w+\s*{', line):
     line = re.sub(r'\[[\w\+\* ]+\]', '', line)
     line = re.sub(r',', ';', line)
     line = re.sub(r'([{\s;]+)struct\s+\w+\s+\*?(\w+)\s*;', '\\1\\2;', line)
     line = re.sub(r'([{\s;]+)\w+\s+\*?(\w+)\s*;', '\\1\\2;', line)
     line = re.sub(r'({?)([\s;]+)(\w+);', '\\1["\\3",null],', line)
-    line = re.sub(r'struct\s+(\w+)\s*{([^}]*)}', 'var \\1 = new Map([\\2])', line)
+    line = re.sub(r'struct\s+(\w+)\s*\{([^}]*)\}', 'var \\1 = new Map([\\2])', line)
   tmp_file = open(TMP_FILE,'a')
   tmp_file.write(line)
   tmp_file.close()
@@ -140,11 +141,68 @@ new_file.close()
 shutil.copyfile(TMP_FILE, NEW_FILE)
 os.remove(TMP_FILE)
 
-# add struct value to Map
-# struct_aaa = [...];
-# aaa.forEach(function(v,k,m){aaa.set(k, num[i]); i++;});
 
-# array
+# add struct value to Map
+# struct_data = [...];
+# aaa.forEach(function(v,k,m){aaa.set(k, struct_data[struct_data_num]); struct_data_num++;});
+new_file = open(NEW_FILE, 'r')
+lines = new_file.read()
+new_file.close()
+while True:
+  lines2 = re.sub(r'(struct(\s+\w+)+\s*\=\s*\{[^\n;]*)\n+', "\\1", lines)
+  if lines == lines2:
+    break
+  else:
+    lines = lines2
+new_file = open(NEW_FILE, 'w')
+new_file.write(lines)
+new_file.close()
+
+new_file = open(NEW_FILE, 'r')
+for line in new_file:
+  if re.search(r'struct\s+\w+\s+\w+\s*\=\s*\{[^\n;]*',  line):
+    line = re.sub(r'\{', '[', line)
+    line = re.sub(r'\}', ']', line)
+    line = re.sub(r'struct\s+(\w+)\s+(\w+)\s*\=\s*([^\n;]*)', "var struct_data_num = 0;\nvar struct_data = \\3;\nvar \\2 = \\1.forEach(function(v,k,m){\\1.set(k, struct_data[struct_data_num]);", line)
+  tmp_file = open(TMP_FILE,'a')
+  tmp_file.write(line)
+  tmp_file.close()
+new_file.close()
+shutil.copyfile(TMP_FILE, NEW_FILE)
+os.remove(TMP_FILE)
+
+
+# const array
+new_file = open(NEW_FILE, 'r')
+lines = new_file.read()
+new_file.close()
+while True:
+  lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+\[[\w\+\*]*\]\s*\=\s*\{[^\}]*)\n+', "\\1", lines)
+  if lines == lines2:
+    break
+  else:
+    lines = lines2
+lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[\]\s*\=\s*\{([^\}]+)\}', "const \\2 = [\\3]", lines)
+lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[\]\s*\=\s*(\w+)', "const \\2 = \\3", lines)
+new_file = open(NEW_FILE, 'w')
+new_file.write(lines)
+new_file.close()
+
+
+# var array
+new_file = open(NEW_FILE, 'r')
+lines = new_file.read()
+new_file.close()
+while True:
+  lines2 = re.sub(r'((\w+\s+)+\*?\w+\[\w*\]\s*\=\s*\{[^\}]*)\n+', "\\1", lines)
+  if lines == lines2:
+    break
+  else:
+    lines = lines2
+lines = re.sub(r'(\w+\s+)+\*?(\w+)\[\w*\]\s*\=\s*\{([^\}]*)\}', 'var \\2 = [\\3]', lines)
+new_file = open(NEW_FILE, 'w')
+new_file.write(lines)
+new_file.close()
 
 
 # function
@@ -152,8 +210,8 @@ new_file = open(NEW_FILE, 'r')
 lines = new_file.read()
 new_file.close()
 while True:
-  lines2 = re.sub(r'((\w+\s+)+\*?\w+\s*\([^\)]*)\n+', "\\1", lines)
-  lines2 = re.sub(r'((\w+\s+)+\*?\w+\s*\([^{]*)\n+({)', "\\1\\3", lines2)
+  lines2 = re.sub(r'((\*?\w+\s+)+\*?\w+\s*\([^\)]*)\n+', "\\1", lines)
+  lines2 = re.sub(r'((\*?\w+\s+)+\*?\w+\s*\([^{]*)\n+({)', "\\1\\3", lines2)
   if lines == lines2:
     break
   else:
@@ -163,22 +221,38 @@ new_file.write(lines)
 new_file.close()
 
 is_function = False
+bracket_count = 0 # count{}
 new_file = open(NEW_FILE, 'r')
 for line in new_file:
-  # start function
-  if re.match(r'(\w+\s+)+\*?\w+\s*\([^\)]*\)', line):
-    is_function = True
-    line = re.sub(r'(\w+\s+)+\*?(\w+)\(', "function \\2(", line)
-    line = re.sub(r'\s*(\w+\s+)+\*?(\w+)\s*([\,\)])', "\\2\\3 ", line)
-    line = re.sub(r'void', "", line)
+  if is_function == False:
+    # start function
+    if re.search(r'^(\*?\w+\s+)+\*?\w+\s*\([^\)]*\)', line):
+      is_function = True
+      bracket_count = 1
+      line = re.sub(r'(\*?\w+\s+)+\*?(\w+)\(', "function \\2(", line)
+      line = re.sub(r'\s*(\*?\w+\s+)+\*?(\w+)\s*([\,\)])', "\\2\\3 ", line)
+      line = re.sub(r'void', "", line)
 
-  # end function
+  # is function
+  else:
+    if re.search(r'\{', line):
+      bracket_count += 1
+    if re.search(r'\}', line):
+      bracket_count -= 1
+    if re.search(r'[\*\&]\w+', line):
+      line = re.sub(r'[\*\&](\w+)', '\\1', line)
 
+    # end function
+    if bracket_count == 0:
+      is_function = False
 
-  # in function
-  if True:
-    pass
-    # check var
+    # variable definition
+    elif re.search(r'(\w+\s+)+\*?\w+', line):
+      if re.search(r'(else|return)', line):
+        pass
+      else:
+        line = re.sub(r'(\w+\s+)+(\w+)', 'var \\2', line)
+        line = re.sub(r'\[(\d+)\]', ' = new Array(\\1).fill(0)', line)
 
   tmp_file = open(TMP_FILE,'a')
   tmp_file.write(line)
