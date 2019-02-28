@@ -172,7 +172,7 @@ shutil.copyfile(TMP_FILE, NEW_FILE)
 os.remove(TMP_FILE)
 
 
-# const array
+# const var array
 new_file = open(NEW_FILE, 'r')
 lines = new_file.read()
 new_file.close()
@@ -182,30 +182,16 @@ while True:
     break
   else:
     lines = lines2
-lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[\]\s*\=\s*\{([^\}]+)\}', "const \\2 = [\\3]", lines)
-lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[\]\s*\=\s*(\w+)', "const \\2 = \\3", lines)
+
+lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]+)\}', "const \\2 = [\\3]", lines)
+lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\s*\=\s*(\w+)', "const \\2 = \\3", lines)
+lines = re.sub(r'(\w+\s+)+\*?(?!const)(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]*)\}', 'var \\2 = [\\3]', lines)
 new_file = open(NEW_FILE, 'w')
 new_file.write(lines)
 new_file.close()
 
 
-# var array
-new_file = open(NEW_FILE, 'r')
-lines = new_file.read()
-new_file.close()
-while True:
-  lines2 = re.sub(r'((\w+\s+)+\*?\w+\[\w*\]\s*\=\s*\{[^\}]*)\n+', "\\1", lines)
-  if lines == lines2:
-    break
-  else:
-    lines = lines2
-lines = re.sub(r'(\w+\s+)+\*?(\w+)\[\w*\]\s*\=\s*\{([^\}]*)\}', 'var \\2 = [\\3]', lines)
-new_file = open(NEW_FILE, 'w')
-new_file.write(lines)
-new_file.close()
-
-
-# function
+# function, variable definition out of function
 new_file = open(NEW_FILE, 'r')
 lines = new_file.read()
 new_file.close()
@@ -232,6 +218,11 @@ for line in new_file:
       line = re.sub(r'(\*?\w+\s+)+\*?(\w+)\(', "function \\2(", line)
       line = re.sub(r'\s*(\*?\w+\s+)+\*?(\w+)\s*([\,\)])', "\\2\\3 ", line)
       line = re.sub(r'void', "", line)
+
+    #variable definition out of function
+    elif re.search(r'(\w+\s+)+\*?\w+(\[[\w\+\*]*\])*', line):
+      line = re.sub(r'(\w+\s+)+\*?(\w+)(\[[\w\+\*]*\])*', "var \\2", line)
+
 
   # is function
   else:
