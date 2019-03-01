@@ -270,6 +270,7 @@ lines = re.sub(r'([^\w])(acos\()', "\\1Math.\\2", lines)
 lines = re.sub(r'([^\w])(atan\()', "\\1Math.\\2", lines)
 lines = re.sub(r'([^\w])(atan2\()', "\\1Math.\\2", lines)
 lines = re.sub(r'([^\w])(fabs\()', "\\1Math.\\2", lines)
+lines = re.sub(r'sprintf', "console.error", lines)
 new_file.write(lines)
 new_file.close()
 
