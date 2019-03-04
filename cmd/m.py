@@ -151,7 +151,7 @@ def main(base_file, new_file):
   lines = new_file.read()
   new_file.close()
   while True:
-    lines2 = re.sub(r'(struct\s+\w+[^\}]*)\n+', "\\1", lines)
+    lines2 = re.sub(r'(struct\s+\w+\s*\{[^\}]*)\n+', "\\1", lines)
     if lines == lines2:
       break
     else:
@@ -162,7 +162,7 @@ def main(base_file, new_file):
 
   new_file = open(NEW_FILE, 'r')
   for line in new_file:
-    if re.search(r'struct\s+\w+\s*{', line):
+    if re.search(r'struct\s+\w+\s*\{', line):
       line = re.sub(r'\[[\w\+\* ]+\]', '', line)
       line = re.sub(r',', ';', line)
       line = re.sub(r'([{\s;]+)struct\s+\w+\s+\*?(\w+)\s*;', '\\1\\2;', line)
@@ -199,7 +199,7 @@ def main(base_file, new_file):
     if re.search(r'struct\s+\w+\s+\w+\s*\=\s*\{[^\n;]*',  line):
       line = re.sub(r'\{', '[', line)
       line = re.sub(r'\}', ']', line)
-      line = re.sub(r'struct\s+(\w+)\s+(\w+)\s*\=\s*([^\n]*)', "var struct_data_num = 0;\nvar struct_data = \\3;\nvar \\2 = \{\};\\1.forEach(function(v,k,m){\\2[k] = struct_data[struct_data_num]; struct_data_num++;});", line)
+      line = re.sub(r'struct\s+(\w+)\s+(\w+)\s*\=\s*([^\n]*)', "var struct_data_num = 0;\nvar struct_data = \\3;\nvar \\2 = {};\n\\1.forEach(function(v,k,m){\\2[k] = struct_data[struct_data_num]; struct_data_num++;});", line)
     tmp_file = open(TMP_FILE,'a')
     tmp_file.write(line)
     tmp_file.close()
@@ -281,7 +281,8 @@ def main(base_file, new_file):
           pass
 
         else:
-          line = re.sub(r'(\w+\s+)+(\w+)', 'var \\2', line)
+          line = re.sub(r'(\w+\s+)+\*?(\w+)', 'var \\2', line)
+          line = re.sub(r'\*(\w+)', '\\1', line)
           line = re.sub(r'\[(\d+)\]', ' = new Array(\\1).fill(0)', line)
 
     tmp_file = open(TMP_FILE,'a')
@@ -310,8 +311,16 @@ def main(base_file, new_file):
   lines = re.sub(r'([^\w])(atan2\()', "\\1Math.\\2", lines)
   lines = re.sub(r'([^\w])(fabs\()', "\\1Math.\\2", lines)
   lines = re.sub(r'(0x\d+)L', "\\1", lines)
+  lines = re.sub(r'([^a-zA-Z]\d+)L', "\\1", lines)
+  lines = re.sub(r'(\w+)->(\w+)', '\\1["\\2"]', lines)
+  #delete pointer
+  lines = re.sub(r'(\n\s*)\*(\w)', "\\1\\2", lines)
+  lines = re.sub(r'&(\w)', "\\1", lines)
+  lines = re.sub(r'(memset|malloc).+;', "", lines)
 
   lines = re.sub(r'sprintf', "console.error", lines)
+  lines = re.sub(r'strcpy\(([^,]+),(.+)(\)\s*\;)', "\\1 = \\2;", lines)
+  lines = re.sub(r'strncpy\(([^,]+),(.+),(.+)', "\\1 = \\2;", lines)
   new_file.write(lines)
   new_file.close()
 
