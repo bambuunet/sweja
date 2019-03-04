@@ -17,8 +17,6 @@ def main(base_file, new_file):
   BASE_FILE = base_file
   TMP_FILE = 'tmp.js'
   NEW_FILE = new_file
-  if len(sys.argv) > 2:
-    NEW_FILE = sys.argv[2]
 
   # prepare
   shutil.copyfile(BASE_FILE, NEW_FILE)
@@ -111,13 +109,49 @@ def main(base_file, new_file):
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
 
+
+  # change "static const struct" to Map 
+  # change to 1 line
+  new_file = open(NEW_FILE, 'r')
+  lines = new_file.read()
+  new_file.close()
+  while True:
+    lines2 = re.sub(r'(static const struct\s+\w+\s+\w+\[\][^\;]*)\n+', "\\1", lines)
+    if lines == lines2:
+      break
+    else:
+      lines = lines2
+  new_file = open(NEW_FILE, 'w')
+  new_file.write(lines)
+  new_file.close()
+
+  new_file = open(NEW_FILE, 'r')
+  for line in new_file:
+    if re.search(r'static const struct', line):
+      
+      line = re.sub(r'\{', '[', line)
+      line = re.sub(r'\}', ']', line)
+      line = re.sub(r',\s*\]\s*\;', '];', line)
+      variable = re.search(r'(\w+)(?=\[\])', line).group(1)
+      struct = re.search(r'(\w+)\s+\*?\w+(?=\[\])', line).group(1)
+      line = re.sub(r'static const struct\s\w+\s+\*?\w+\[\]', 'var struct_data', line)
+      line += "var struct_data_num = 0;"
+      line += "\nvar " + variable + " = new Array(struct_data.length);"
+      line += "\nfor(var i=0;i<struct_data.length;i++){" + variable + "[i]={};struct_data_num=0;" + struct + ".forEach(function(v,k,m){" + variable + "[i][k] = struct_data[i][struct_data_num];struct_data_num++})};" 
+    tmp_file = open(TMP_FILE,'a')
+    tmp_file.write(line)
+    tmp_file.close()
+  new_file.close()
+  shutil.copyfile(TMP_FILE, NEW_FILE)
+  os.remove(TMP_FILE)
+  
   # change struct to Map
   # change to 1 line
   new_file = open(NEW_FILE, 'r')
   lines = new_file.read()
   new_file.close()
   while True:
-    lines2 = re.sub(r'(struct\s+\w+\s*{[^\n}]*)\n+', "\\1", lines)
+    lines2 = re.sub(r'(struct\s+\w+[^\}]*)\n+', "\\1", lines)
     if lines == lines2:
       break
     else:
@@ -133,8 +167,9 @@ def main(base_file, new_file):
       line = re.sub(r',', ';', line)
       line = re.sub(r'([{\s;]+)struct\s+\w+\s+\*?(\w+)\s*;', '\\1\\2;', line)
       line = re.sub(r'([{\s;]+)\w+\s+\*?(\w+)\s*;', '\\1\\2;', line)
-      line = re.sub(r'({?)([\s;]+)(\w+);', '\\1["\\3",null],', line)
+      line = re.sub(r'(\w+);', '["\\1",null],', line)
       line = re.sub(r'struct\s+(\w+)\s*\{([^}]*)\}', 'var \\1 = new Map([\\2])', line)
+      line = re.sub(r',\]\);', ']);', line);
     tmp_file = open(TMP_FILE,'a')
     tmp_file.write(line)
     tmp_file.close()
@@ -164,10 +199,11 @@ def main(base_file, new_file):
     if re.search(r'struct\s+\w+\s+\w+\s*\=\s*\{[^\n;]*',  line):
       line = re.sub(r'\{', '[', line)
       line = re.sub(r'\}', ']', line)
-      line = re.sub(r'struct\s+(\w+)\s+(\w+)\s*\=\s*([^\n;]*)', "var struct_data_num = 0;\nvar struct_data = \\3;\nvar \\2 = \\1.forEach(function(v,k,m){\\1.set(k, struct_data[struct_data_num]);", line)
+      line = re.sub(r'struct\s+(\w+)\s+(\w+)\s*\=\s*([^\n]*)', "var struct_data_num = 0;\nvar struct_data = \\3;\nvar \\2 = \{\};\\1.forEach(function(v,k,m){\\2[k] = struct_data[struct_data_num]; struct_data_num++;});", line)
     tmp_file = open(TMP_FILE,'a')
     tmp_file.write(line)
     tmp_file.close()
+
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
@@ -178,7 +214,7 @@ def main(base_file, new_file):
   lines = new_file.read()
   new_file.close()
   while True:
-    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+\[[\w\+\*]*\]\s*\=\s*\{[^\}]*)\n+', "\\1", lines)
+    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+\[[\w\+\*]*\]\s*\=\s*\{[^\;]*)\n+', "\\1", lines)
     if lines == lines2:
       break
     else:
@@ -220,10 +256,13 @@ def main(base_file, new_file):
         line = re.sub(r'\s*(\*?\w+\s+)+\*?(\w+)\s*([\,\)])', "\\2\\3 ", line)
         line = re.sub(r'void', "", line)
 
+      #exception
+      elif re.search(r'new\s+\w+', line):
+        pass
+
       #variable definition out of function
       elif re.search(r'(\w+\s+)+\*?\w+(\[[\w\+\*]*\])*', line):
         line = re.sub(r'(\w+\s+)+\*?(\w+)(\[[\w\+\*]*\])*', "var \\2", line)
-
 
     # is function
     else:
@@ -231,8 +270,6 @@ def main(base_file, new_file):
         bracket_count += 1
       if re.search(r'\}', line):
         bracket_count -= 1
-      if re.search(r'[\*\&]\w+', line):
-        line = re.sub(r'[\*\&](\w+)', '\\1', line)
 
       # end function
       if bracket_count == 0:
@@ -240,8 +277,9 @@ def main(base_file, new_file):
 
       # variable definition
       elif re.search(r'(\w+\s+)+\*?\w+', line):
-        if re.search(r'(else|return)', line):
+        if re.search(r'(else|return|new)', line):
           pass
+
         else:
           line = re.sub(r'(\w+\s+)+(\w+)', 'var \\2', line)
           line = re.sub(r'\[(\d+)\]', ' = new Array(\\1).fill(0)', line)
@@ -271,6 +309,8 @@ def main(base_file, new_file):
   lines = re.sub(r'([^\w])(atan\()', "\\1Math.\\2", lines)
   lines = re.sub(r'([^\w])(atan2\()', "\\1Math.\\2", lines)
   lines = re.sub(r'([^\w])(fabs\()', "\\1Math.\\2", lines)
+  lines = re.sub(r'(0x\d+)L', "\\1", lines)
+
   lines = re.sub(r'sprintf', "console.error", lines)
   new_file.write(lines)
   new_file.close()
