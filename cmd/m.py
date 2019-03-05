@@ -242,6 +242,10 @@ def main(base_file, new_file):
       if bracket_count == 0:
         is_function = False
 
+      # example: *(x + i)
+      if re.search(r'\*\(\s*\w+\s*\+\s*\w+\s*\)', line):
+        line = re.sub(r'\*\(\s*(\w+)\s*\+\s*(\w+)\s*\)', '\\1[\\2]', line)
+
       # variable definition
       elif re.search(r'(\w+\s+)+\*?\w+', line):
         if re.search(r'(else|return|new|case)', line):
@@ -250,7 +254,7 @@ def main(base_file, new_file):
         else:
           line = re.sub(r'(\w+\s+)+\*?(\w+)', 'var \\2', line)
           line = re.sub(r'\*(\w+)', '\\1', line)
-          line = re.sub(r'\[(\d+)\]', ' = new Array(\\1).fill(0)', line)
+          line = re.sub(r'\[(\w+)\]', ' = new Array(\\1).fill(0)', line)
 
     file_put_contents(TMP_FILE, line, 'a')
   new_file.close()
@@ -267,7 +271,7 @@ def main(base_file, new_file):
   for line in new_file:
     if is_function == False:
       # start function
-      if re.search(r'^(\*?\w+\s+)+\*?\w+\s*\([^\)]*\)', line):
+      if re.search(r'^\*?function\s+\w+\s*\([^\)]*\)', line):
         is_function = True
         bracket_count = 1
         function_start_line = line
