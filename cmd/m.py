@@ -70,6 +70,7 @@ def main(base_file, new_file):
   lines = re.sub(r'(?<!\w)FALSE(?!\w)', "false", lines)
   lines = re.sub(r'(?<!\w)NULL(?!\w)', "null", lines)
   lines = re.sub(r'//[^\n]*', "", lines)
+  lines = re.sub(r',\s*\n', ",", lines)
   file_put_contents(NEW_FILE, lines, 'w')
 
   # change #define to const or function
@@ -101,7 +102,6 @@ def main(base_file, new_file):
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
-
 
   # change "static const struct" to Map 
   # change to 1 line
@@ -308,6 +308,40 @@ def main(base_file, new_file):
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
 
+  #serr
+  one_line_if = False
+  multi_line_if = False
+  bracket_count = 0 # count{}
+  new_file = open(NEW_FILE, 'r')
+  for line in new_file:
+    line = re.sub(r',\s*serr', "", line)
+
+    if one_line_if:
+      one_line_if = False
+      continue
+
+    if multi_line_if:
+      if re.search(r'\{', line):
+        bracket_count += 1
+      if re.search(r'\}', line):
+        bracket_count -= 1
+      if bracket_count == 0:
+        multi_line_if = False
+      continue
+
+    if re.search(r'if', line):
+      if re.search(r'serr', line):
+        if re.search(r'{', line):
+          multi_line_if = True
+          bracket_count += 1
+        else:
+          one_line_if = True
+        continue
+
+    file_put_contents(TMP_FILE, line, 'a')
+  new_file.close()
+  shutil.copyfile(TMP_FILE, NEW_FILE)
+  os.remove(TMP_FILE)
 
   # chenge math, type
   lines = file_get_contents(NEW_FILE)
@@ -334,6 +368,7 @@ def main(base_file, new_file):
   lines = re.sub(r'sprintf', "console.error", lines)
   lines = re.sub(r'strcpy\(([^,]+),(.+)(\)\s*\;)', "\\1 = \\2;", lines)
   lines = re.sub(r'strncpy\(([^,]+),(.+),(.+)', "\\1 = \\2;", lines)
+  lines = re.sub(r'free\(.*;\s*\n', "", lines)
   file_put_contents(NEW_FILE, lines, 'w')
 
 
