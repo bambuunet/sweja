@@ -7,8 +7,9 @@ import re
 import linecache
 
 def main(base_file, new_file):
-  define_regex = r'#ifn?(def)?\s+('\
-  '1'\
+  define_regex = r'#\s*ifn?(def)?\s+('\
+  '1|'\
+  '_SWEDLL_H'\
   ')'
   prototype_declaration_regex = r'\);\s*$'
   delete_flags = []
@@ -27,24 +28,24 @@ def main(base_file, new_file):
   # remove pre processor, #include
   new_file = open(NEW_FILE, 'r')
   for line in new_file:
-    if re.search(r'^\s*#if(def)?\s+', line):
+    if re.search(r'^\s*#\s*if(def)?\s+', line):
       if re.search(define_regex, line):
         delete_flags.append(False)
       else:
         delete_flags.append(True)
       continue
-    elif re.search(r'^\s*#ifndef\s+', line):
+    elif re.search(r'^\s*#\s*ifndef\s+', line):
       if re.search(define_regex, line):
         delete_flags.append(True)
       else:
         delete_flags.append(False)
       continue
 
-    if re.search(r'^\s*#else', line):
+    if re.search(r'^\s*#\s*else', line):
       delete_flags[-1] = not(delete_flags[-1])
       continue
 
-    if re.search(r'^\s*#endif', line):
+    if re.search(r'^\s*#\s*endif', line):
       delete_flags.pop()
       continue
 
@@ -65,6 +66,7 @@ def main(base_file, new_file):
   lines = re.sub(r'//[^\n]*', "", lines)
   lines = re.sub(r'\s*/\*([^/]|[^\*]/)*\*/', "", lines)
   lines = re.sub(r'\n(static\s+|extern\s+)?(\w+\s+)+\*?\w+\s*\([^\)]+\)\s*;', "", lines)
+  lines = re.sub(r'.*extern.*\n', "\n", lines)
   lines = re.sub(r'(\n|\s)TLS\s', '\\1', lines)
   lines = re.sub(r'\t', " ", lines)
   lines = re.sub(r'(?<!\w)TRUE(?!\w)', "true", lines)
@@ -76,28 +78,29 @@ def main(base_file, new_file):
   file_put_contents(NEW_FILE, lines, 'w')
 
 
+
   # change #define to const or function
   new_file = open(NEW_FILE, 'r')
   for line in new_file:
     while(True):
       # delete #define
-      define = re.search(r'#define\s+(\w+)\s*$', line)
+      define = re.search(r'#\s*define\s+(\w+)\s*$', line)
       if define:
         line = False
         break
 
       # make const if "xxx" or (xxx) or number
-      define = re.search(r'#define[\s]+(\w+)\s+(struct\s+)?("[^"]*"|\([^\)]*\)|[\w\-\.+]+)(.*)', line)
+      define = re.search(r'#\s*define[\s]+(\w+)\s+(struct\s+)?("[^"]*"|\([^\)]*\)|[\w\-\.+]+)(.*)', line)
       if define:
         line = "\nconst " + define.group(1) + " = " + define.group(3) + ";" + define.group(4) + "\n"
-      define = re.search(r'#define\s+(\w+)\s+\{([^\}]*)\}(.*)', line)
+      define = re.search(r'#\s*define\s+(\w+)\s+\{([^\}]*)\}(.*)', line)
       if define:
         line = "\nconst " + define.group(1) + " = [" + define.group(2) + "];" + define.group(3) + "\n"
 
       # make function
-      define = re.search(r'#define\s+(\w+\([^\)]*\))\s+(.*)', line)
+      define = re.search(r'#\s*define\s+(\w+\([^\)]*\))\s+(.*)', line)
       if define:
-        line = "\nfunction " + define.group(1) + "{return " + define.group(2) + "}"
+        line = "\nfunction " + define.group(1) + "{\nreturn " + define.group(2) + ";\n}\n"
       break
 
     if not line == False: 
@@ -106,7 +109,7 @@ def main(base_file, new_file):
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
 
-
+  #sys.exit()
   # change to 1 line
   lines = file_get_contents(NEW_FILE)
   while True:
@@ -188,7 +191,7 @@ def main(base_file, new_file):
       line = re.sub(r'\[[\w\+\* ]+\]', '', line)
       line = re.sub(r',', ';', line)
       line = re.sub(r'([{\s;]+)struct\s+\w+\s+\*?(\w+)\s*;', '\\1\\2;', line)
-      line = re.sub(r'([{\s;]+)\w+\s+\*?(\w+)\s*;', '\\1\\2;', line)
+      line = re.sub(r'([{\s;]+)(\w+\s+){1,2}\*?(\w+)\s*;', '\\1\\3;', line)
       line = re.sub(r'(\w+);', '["\\1",null],', line)
       line = re.sub(r'struct\s+(\w+)\s*\{([^}]*)\}', 'var \\1 = new Map([\\2])', line)
       line = re.sub(r',\]\);', ']);', line);
@@ -196,6 +199,7 @@ def main(base_file, new_file):
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
+
 
   # add struct value to Map
   # struct_data = [...];
@@ -247,6 +251,7 @@ def main(base_file, new_file):
     else:
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
+
 
   is_function = False
   bracket_count = 0 # count{}
@@ -306,83 +311,61 @@ def main(base_file, new_file):
 
       # variable with *
       if re.search(r'[^\w\)]\s*\*\w+', line):
-        line = re.sub(r'([^\w\)]\s*)\*(\w+)', '\\1\\2', line)
+        line = re.sub(r'([^\w\)\]]\s*)\*(\w+)', '\\1\\2', line)
+        
+        
 
     file_put_contents(TMP_FILE, line, 'a')
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
 
+
   # delete default switch
   lines = file_get_contents(NEW_FILE)
   if re.search(r'sweph\.c$', BASE_FILE):
+
+    lines = re.sub(r'return_err:', '', lines)
+    lines = re.sub(r'goto\s+return_err;', 'return ERR;', lines)
     lines = re.sub(r'return_error:', '', lines)
     lines = re.sub(r'goto\s+return_error;', 'return ERR;', lines)
     lines = re.sub(r'return_error_gns:', '', lines)
     lines = re.sub(r'goto\s+return_error_gns;', 'return ERR;', lines)
     lines = re.sub(r'file_damage:', '', lines)
     lines = re.sub(r'goto\s+file_damage;', 'return ERR;', lines)
-
-
     lines = re.sub(r'goto end_swe_calc;', '', lines)#draft
     lines = re.sub(r'end_swe_calc:', '', lines)#draft
-
-    lines = re.sub(r'three_positions;', '', lines)#draft
+    lines = re.sub(r'goto three_positions;', '', lines)#draft
     lines = re.sub(r'three_positions:', '', lines)#draft
-
     lines = re.sub(r'do_fict_plan:', 'while(1){', lines)
     lines = re.sub(r'goto do_fict_plan;([^}]+}[^}]+}[^}]+})', '\\1\nbreak;\n}', lines)
-
     lines = re.sub(r'do_asteroid:', 'while(1){', lines)
     lines = re.sub(r'goto do_asteroid;([^}]+}[^}]+})', '\\1\nbreak;\n}', lines)
-
     lines = re.sub(r'again:', 'while(1){', lines)
     lines = re.sub(r'goto again;([^g]|g[^o])+goto again;([^}]+}[^}]+}[^}]+})', '\\1\n\\2\nbreak;\n}', lines)
     lines = re.sub(r'goto again;', 'continue;', lines)
+
     lines = re.sub(r'moshier_moon:', '', lines)
     lines = re.sub(r'moshier_planet:', '', lines)
+    lines = re.sub(r'(?<=var)([^;])*;.*(?=found:)', '\\1;\nwhile(1){\\2\n}\n', lines, re.S)
 
-    lines = re.sub(r'switch\(epheflag\)([^c]|c[^a]|ca[^s])+(?=case)', '', lines)
-    lines = re.sub(r'switch\(pedp->iephe\)([^c]|c[^a]|ca[^s])+(?=case)', '', lines)
-    lines = re.sub(r'case\sSEFLG_JPLEPH:(([^b]|b[^r]|br[^e])+)break;[\s\n]+default:(([^b]|b[^r]|br[^e])+)break;[^}]*}', '', lines)
-    lines = re.sub(r'case\sSEFLG_SWIEPH:(([^b]|b[^r]|br[^e])+)break;[\s\n]+default:(([^b]|b[^r]|br[^e])+)break;[^}]*}', '', lines)
-    lines = re.sub(r'case\sSEFLG_MOSEPH:(([^b]|b[^r]|br[^e])+)break;[\s\n]+default:(([^b]|b[^r]|br[^e])+)break;[^}]*}', '\\1', lines)
+    lines = re.sub(r'goto found;', '', lines)#draft
+    lines = re.sub(r'found:', '', lines)#draft
 
-    lines = re.sub(r'case\sSEFLG_JPLEPH:([^c]|c[^a]|ca[^s])+(?=case|default)', '', lines)
-    lines = re.sub(r'case\sSEFLG_SWIEPH:([^c]|c[^a]|ca[^s])+(?=case|default)', '', lines)
-
-
-    lines = re.sub(r'case\sSEFLG_MOSEPH:[\s\n]+default:([^b]|b[^r])+break;[^}]+}', '\\1', lines)
-
-
-    lines = re.sub(r'case\sSEFLG_MOSEPH:([^b]|b[^r])+break;[^}]+}', '\\1', lines)
-
-    #file_put_contents(NEW_FILE, lines, 'w')
-    #sys.exit()
-    
-    #lines = re.sub(r'([^b]reak|[^k]);[\n\s]*default:([^b]|b[^r]|br[^e])+break;[^}]+}', '\\1;', lines)
-
-    
-
-    file_put_contents(NEW_FILE, lines, 'w')
-    #sys.exit()
   file_put_contents(NEW_FILE, lines, 'w')
 
-  
-  # goto
-  '''
+
   is_function = False
-  is_goto = False
+  switch_status = 0 #0:not, 1:current switch , 2:current case, 3:current default, 4:finish
   bracket_count = 0 # count{}
-  function_start_line = ""
+  bracket_count2 = 0 # count{}
   new_file = open(NEW_FILE, 'r')
   for line in new_file:
-
-    # start function
-    if re.search(r'^\*?function\s+\w+\s*\([^\)]*\)', line):
-      is_function = True
-      bracket_count = 1
-      function_start_line = line
+    if is_function == False:
+      # start function
+      if re.search(r'function\s\w+', line):
+        is_function = True
+        bracket_count = 1
 
     # is function
     else:
@@ -394,34 +377,47 @@ def main(base_file, new_file):
       # end function
       if bracket_count == 0:
         is_function = False
-        function_start_line = ""
-        if is_goto:
-          line = "}default:{\nbreak target;\n}\n}\n" + line
-          is_goto = False
 
       else:
-        if is_goto == False and (re.search(r'goto\s+\w+', line) or re.search(r'\w+:', line)):
+        if re.search(r'sweph\.c$', BASE_FILE):
+          if switch_status == 0:
+            if re.search(r'switch\((epheflag|pedp->iephe)\)', line):
+              switch_status = 1
+              bracket_count2 = 0
+              continue
+          else:
+            if re.search(r'\{[^\'\"]', line):
+              bracket_count2 += 1
+            if re.search(r'\}[^\'\"]', line):
+              bracket_count2 -= 1
 
-          is_goto = True
-          tmp_file_lines = file_get_contents(TMP_FILE)
-          tmp_file_lines = tmp_file_lines.replace(function_start_line, function_start_line + "\nvar target;\ntarget: while(true) switch (target) {\ncase undefined:{\n")
-          file_put_contents(TMP_FILE, tmp_file_lines, 'w')
+            if switch_status == 1:
+              if re.search(r'case\sSEFLG_MOSEPH:', line):
+                switch_status = 2
+              elif re.search(r'default:', line):
+                switch_status = 3
+              continue
+            elif switch_status == 2:
+              if re.search(r'default:', line):
+                switch_status = 3
+                continue
+              if re.search(r'break;', line) and bracket_count2 == 0:
+                continue
+            elif switch_status == 3:
+              if re.search(r'break;', line) and bracket_count2 == 0:
+                switch_status = 4
+                continue
+            elif switch_status == 4:
+              if re.search(r'}', line):
+                switch_status = 0
+                continue
 
-        if re.search(r'goto\s+\w+', line):
-          line = re.sub(r'goto\s+(\w+)', 'target = "\\1";\ncontinue target', line)
-
-        if re.search(r'default:', line):
-          pass
-        elif re.search(r'case\s+[\w\+\s]+:', line):
-          pass
-        elif re.search(r'(\w+):', line):
-          line = re.sub(r'(\w+):', "\n}case \"\\1\":{", line)
-          
     file_put_contents(TMP_FILE, line, 'a')
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
-  '''
+
+
 
   #serr
   multi_line_if = False
@@ -515,6 +511,7 @@ def main(base_file, new_file):
   lines = re.sub(r'strncpy\(([^,]+),(.+),(.+)\)', "\\1 = \\2", lines)
   lines = re.sub(r'free\(.*;\s*\n', "", lines)
   lines = re.sub(r'sizeof\s*\((\w*\s*)?(\w+)\)', "\\2.length", lines)
+  lines = re.sub(r'.*(MALLOC|CALLOC|FREE).*\n', "\n", lines)
 
   file_put_contents(NEW_FILE, lines, 'w')
   

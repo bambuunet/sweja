@@ -5,7 +5,11 @@ import os
 import m
 
 base_files_dir = "../swisseph/"
+'''
 base_files = [
+  "../cmd/def.js",
+  "swejpl.h",
+  "swephexp.h",
   "sweph.h",
   "sweph.c",
   "swenut2000a.h",
@@ -24,6 +28,14 @@ base_files = [
   "swehouse.c",
   "swepcalc.h",
   "swepcalc.c",
+]
+'''
+base_files = [
+  "../cmd/def.js",
+  "swejpl.h",
+  "swephexp.h",
+  "sweph.h",
+  "sweph.c",
 ]
 new_file_dir = "../js2/"
 new_file_name = "swe"
