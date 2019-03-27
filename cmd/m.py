@@ -317,29 +317,52 @@ def main(base_file, new_file):
   lines = file_get_contents(NEW_FILE)
   if re.search(r'sweph\.c$', BASE_FILE):
     lines = re.sub(r'return_error:', '', lines)
+    lines = re.sub(r'goto\s+return_error;', 'return ERR;', lines)
+    lines = re.sub(r'return_error_gns:', '', lines)
+    lines = re.sub(r'goto\s+return_error_gns;', 'return ERR;', lines)
+    lines = re.sub(r'file_damage:', '', lines)
+    lines = re.sub(r'goto\s+file_damage;', 'return ERR;', lines)
+
 
     lines = re.sub(r'goto end_swe_calc;', '', lines)#draft
     lines = re.sub(r'end_swe_calc:', '', lines)#draft
 
+    lines = re.sub(r'three_positions;', '', lines)#draft
+    lines = re.sub(r'three_positions:', '', lines)#draft
+
+    lines = re.sub(r'do_fict_plan:', 'while(1){', lines)
+    lines = re.sub(r'goto do_fict_plan;([^}]+}[^}]+}[^}]+})', '\\1\nbreak;\n}', lines)
+
+    lines = re.sub(r'do_asteroid:', 'while(1){', lines)
+    lines = re.sub(r'goto do_asteroid;([^}]+}[^}]+})', '\\1\nbreak;\n}', lines)
+
     lines = re.sub(r'again:', 'while(1){', lines)
-    lines = re.sub(r'(goto again;([^g]|g[^o])+goto again;[^}]+})', '\\1\n}', lines)
+    lines = re.sub(r'goto again;([^g]|g[^o])+goto again;([^}]+}[^}]+}[^}]+})', '\\1\n\\2\nbreak;\n}', lines)
     lines = re.sub(r'goto again;', 'continue;', lines)
     lines = re.sub(r'moshier_moon:', '', lines)
     lines = re.sub(r'moshier_planet:', '', lines)
 
     lines = re.sub(r'switch\(epheflag\)([^c]|c[^a]|ca[^s])+(?=case)', '', lines)
+    lines = re.sub(r'switch\(pedp->iephe\)([^c]|c[^a]|ca[^s])+(?=case)', '', lines)
+    lines = re.sub(r'case\sSEFLG_JPLEPH:(([^b]|b[^r]|br[^e])+)break;[\s\n]+default:(([^b]|b[^r]|br[^e])+)break;[^}]*}', '', lines)
     lines = re.sub(r'case\sSEFLG_SWIEPH:(([^b]|b[^r]|br[^e])+)break;[\s\n]+default:(([^b]|b[^r]|br[^e])+)break;[^}]*}', '', lines)
     lines = re.sub(r'case\sSEFLG_MOSEPH:(([^b]|b[^r]|br[^e])+)break;[\s\n]+default:(([^b]|b[^r]|br[^e])+)break;[^}]*}', '\\1', lines)
 
-    lines = re.sub(r'case\sSEFLG_JPLEPH:([^b]|b[^r]|br[^e])+break;', '', lines)
-    lines = re.sub(r'case\sSEFLG_SWIEPH:([^b]|b[^r]|br[^e])+break;', '', lines)
+    lines = re.sub(r'case\sSEFLG_JPLEPH:([^c]|c[^a]|ca[^s])+(?=case|default)', '', lines)
+    lines = re.sub(r'case\sSEFLG_SWIEPH:([^c]|c[^a]|ca[^s])+(?=case|default)', '', lines)
+
+
     lines = re.sub(r'case\sSEFLG_MOSEPH:[\s\n]+default:([^b]|b[^r])+break;[^}]+}', '\\1', lines)
+
+
+    lines = re.sub(r'case\sSEFLG_MOSEPH:([^b]|b[^r])+break;[^}]+}', '\\1', lines)
+
     #file_put_contents(NEW_FILE, lines, 'w')
     #sys.exit()
     
     #lines = re.sub(r'([^b]reak|[^k]);[\n\s]*default:([^b]|b[^r]|br[^e])+break;[^}]+}', '\\1;', lines)
 
-    lines = re.sub(r'goto\s+return_error;', 'return ERR;', lines)
+    
 
     file_put_contents(NEW_FILE, lines, 'w')
     #sys.exit()
