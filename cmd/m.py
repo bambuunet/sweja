@@ -26,7 +26,7 @@ def main(base_file, new_file):
     os.remove(TMP_FILE)
 
   # remove pre processor, #include
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     if re.search(r'^\s*#\s*if(def)?\s+', line):
       if re.search(define_regex, line):
@@ -80,7 +80,7 @@ def main(base_file, new_file):
 
 
   # change #define to const or function
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     while(True):
       # delete #define
@@ -156,7 +156,7 @@ def main(base_file, new_file):
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
 
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     if re.search(r'static const struct', line):
       
@@ -173,6 +173,7 @@ def main(base_file, new_file):
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
+
   
   # change struct to Map
   # change to 1 line
@@ -185,17 +186,15 @@ def main(base_file, new_file):
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
 
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     if re.search(r'struct\s+\w+\s*\{', line):
       line = re.sub(r'\[[\w\+\* ]+\]', '', line)
       line = re.sub(r',', ';', line)
-      line = re.sub(r'([{\s;]+)struct\s+(\w+)\s+\*?(\w+)\s*;', '\\1\\2 \\3;', line)
-      line = re.sub(r'([{\s;]+)(\w+\s+)(\w+\s+)\*?(\w+)\s*;', '\\1\\4 \\3;', line)
-      line = re.sub(r'(\w+)\s(\w+);', '["\\1", \\2],', line)
-      line = re.sub(r'([{\s;]+)(\w+\s+)\*?(\w+)\s*;', '\\1\\3;', line)
-      line = re.sub(r'(\w+);', '["\\1", new Array(24) ],', line)
-      line = re.sub(r'struct\s+(\w+)\s*\{([^}]*)\}', 'var \\1 = new Map([\\2])', line)
+      line = re.sub(r'([{\s;]+)struct\s+(\w+)\s+\*?(\w+)\s*;', '\\1["\\3", \\2];', line)
+      line = re.sub(r'([{\s;]+)(\w+)\s+\*?(\w+)\s*;', '\\1["\\3", null];', line)
+      line = re.sub(r'([{\s;]+)\*?(\w+)\s*;', '\\1["\\2", null];', line)
+      line = re.sub(r';', ',', line)
       line = re.sub(r',\]\);', ']);', line);
     file_put_contents(TMP_FILE, line, 'a')
   new_file.close()
@@ -214,7 +213,7 @@ def main(base_file, new_file):
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
 
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     if re.search(r'struct\s+\w+\s+\w+\s*\=\s*\{[^\n;]*',  line):
       line = re.sub(r'\{', '[', line)
@@ -256,7 +255,7 @@ def main(base_file, new_file):
 
   is_function = False
   bracket_count = 0 # count{}
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     if is_function == False:
       # start function
@@ -360,7 +359,7 @@ def main(base_file, new_file):
   switch_status = 0 #0:not, 1:current switch , 2:current case, 3:current default, 4:finish
   bracket_count = 0 # count{}
   bracket_count2 = 0 # count{}
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     if is_function == False:
       # start function
@@ -423,7 +422,7 @@ def main(base_file, new_file):
   #serr
   multi_line_if = False
   bracket_count = 0 # count{}
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     line = re.sub(r',\s*serr', "", line)
 
@@ -451,7 +450,7 @@ def main(base_file, new_file):
   #if(0)
   multi_line_if = False
   bracket_count = 0 # count{}
-  new_file = open(NEW_FILE, 'r')
+  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
   for line in new_file:
     if multi_line_if:
       if re.search(r'\{', line):
@@ -523,13 +522,13 @@ def main(base_file, new_file):
   file_put_contents(NEW_FILE, lines, 'w')
 
 def file_get_contents(path):
-  file = open(path, 'r')
+  file = open(path, 'r', encoding="utf-8_sig")
   text = file.read()
   file.close()
   return text
 
 def file_put_contents(path, data, flag):
-  file = open(path, flag)
+  file = open(path, flag, encoding="utf-8_sig")
   file.write(data)
   file.close()
 
