@@ -26,7 +26,7 @@ def main(base_file, new_file):
     os.remove(TMP_FILE)
 
   # remove pre processor, #include
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     if re.search(r'^\s*#\s*if(def)?\s+', line):
       if re.search(define_regex, line):
@@ -80,7 +80,7 @@ def main(base_file, new_file):
 
 
   # change #define to const or function
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     while(True):
       # delete #define
@@ -156,7 +156,7 @@ def main(base_file, new_file):
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
 
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     if re.search(r'static const struct', line):
       
@@ -186,16 +186,22 @@ def main(base_file, new_file):
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
 
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     if re.search(r'struct\s+\w+\s*\{', line):
-      line = re.sub(r'\[[\w\+\* ]+\]', '', line)
+      line = re.sub(r'\[[\w\+\* ]+\]', 'aaaaa', line)
       line = re.sub(r',', ';', line)
       line = re.sub(r'([{\s;]+)struct\s+(\w+)\s+\*?(\w+)\s*;', '\\1["\\3", \\2];', line)
-      line = re.sub(r'([{\s;]+)(\w+)\s+\*?(\w+)\s*;', '\\1["\\3", null];', line)
+      line = re.sub(r'([{\s;]+)\w+\s+\w+\s+\*?(\w+)\s*;', '\\1["\\2", null];', line)
+      line = re.sub(r'([{\s;]+)\w+\s+\*?(\w+)\s*;', '\\1["\\2", null];', line)
       line = re.sub(r'([{\s;]+)\*?(\w+)\s*;', '\\1["\\2", null];', line)
       line = re.sub(r';', ',', line)
+      line = re.sub(r'aaaaaaaaaa",\s*null', '", Array(40).fill(Array(40).fill(0))', line)
+      line = re.sub(r'aaaaa",\s*null', '", Array(40).fill(0)', line)
+      line = re.sub(r'aaaaa",\s*(\w+)', '", Array(40).fill(\\1)', line)
       line = re.sub(r',\]\);', ']);', line);
+      line = re.sub(r'struct\s+(\w+)\s*\{([^}]*)\}', 'var \\1 = new Map([\\2])', line)
+      line = re.sub(r'', '', line);
     file_put_contents(TMP_FILE, line, 'a')
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
@@ -213,7 +219,7 @@ def main(base_file, new_file):
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
 
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     if re.search(r'struct\s+\w+\s+\w+\s*\=\s*\{[^\n;]*',  line):
       line = re.sub(r'\{', '[', line)
@@ -229,15 +235,17 @@ def main(base_file, new_file):
   # const var array
   lines = file_get_contents(NEW_FILE)
   while True:
-    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+\[[\w\+\*]*\]\s*\=\s*\{[^\;]*)\n+', "\\1", lines)
+    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+\[[\w\+\*]*\]+\s*\=\s*\{[^\;]*)\n+', "\\1", lines)
     if lines == lines2:
       break
     else:
       lines = lines2
 
+  print lines
   lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]+)\}', "const \\2 = [\\3]", lines)
   lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\s*\=\s*(\w+)', "const \\2 = \\3", lines)
   lines = re.sub(r'(\w+\s+)+\*?(?!const)(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]*)\}', 'var \\2 = [\\3]', lines)
+  print lines
   file_put_contents(NEW_FILE, lines, 'w')
 
 
@@ -255,7 +263,7 @@ def main(base_file, new_file):
 
   is_function = False
   bracket_count = 0 # count{}
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     if is_function == False:
       # start function
@@ -263,7 +271,7 @@ def main(base_file, new_file):
 
         is_function = True
         bracket_count = 1
-        line = re.sub(r'(\*?\w+\s+)+\*?(\w+)\(', "function \\2(", line)
+        line = re.sub(r'(\*?\w+\s+)+\*?(\w+)\s*\(', "function \\2(", line)
         line = re.sub(r'\s*(\*?\w+\s+)+\*?(\w+)\s*([\,\)])', "\\2\\3 ", line)
         line = re.sub(r'void', "", line)
 
@@ -306,8 +314,9 @@ def main(base_file, new_file):
         else:
           line = re.sub(r'(\w+\s+)+(\w+)', 'var \\2', line)
           line = re.sub(r'(\w+\s+)+\*(\w+)', 'var \\2; var \\2_array', line)
-          line = re.sub(r'\*(\w+)', '\\1', line)
-          line = re.sub(r'\[([\w\s\+\-\*]+)\]', ' = new Array(\\1+24).fill(0)', line)#to ensure much
+          line = re.sub(r'^([^=]*)\*(\w+)', '\\1', line)
+          line = re.sub(r'^([^=]*)\[([\w\s\+\-\*]+)\]', '\\1 = new Array(\\2+24).fill(0)', line)#to ensure much
+          line = re.sub(r'^([^=]*)\[([\w\s\+\-\*]+)\]', '\\1 = new Array(\\2+24).fill(0)', line)#to ensure much
 
       # variable with *
       if re.search(r'[^\w\)]\s*\*\w+', line):
@@ -359,7 +368,7 @@ def main(base_file, new_file):
   switch_status = 0 #0:not, 1:current switch , 2:current case, 3:current default, 4:finish
   bracket_count = 0 # count{}
   bracket_count2 = 0 # count{}
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     if is_function == False:
       # start function
@@ -422,7 +431,7 @@ def main(base_file, new_file):
   #serr
   multi_line_if = False
   bracket_count = 0 # count{}
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     line = re.sub(r',\s*serr', "", line)
 
@@ -450,7 +459,7 @@ def main(base_file, new_file):
   #if(0)
   multi_line_if = False
   bracket_count = 0 # count{}
-  new_file = open(NEW_FILE, 'r', encoding="utf-8_sig")
+  new_file = open(NEW_FILE, 'r')
   for line in new_file:
     if multi_line_if:
       if re.search(r'\{', line):
@@ -522,13 +531,13 @@ def main(base_file, new_file):
   file_put_contents(NEW_FILE, lines, 'w')
 
 def file_get_contents(path):
-  file = open(path, 'r', encoding="utf-8_sig")
+  file = open(path, 'r')
   text = file.read()
   file.close()
   return text
 
 def file_put_contents(path, data, flag):
-  file = open(path, flag, encoding="utf-8_sig")
+  file = open(path, flag)
   file.write(data)
   file.close()
 
