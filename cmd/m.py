@@ -190,16 +190,17 @@ def main(base_file, new_file):
     if re.search(r'struct\s+\w+\s*\{', line):
       line = re.sub(r'\[[\w\+\* ]+\]', '', line)
       line = re.sub(r',', ';', line)
-      line = re.sub(r'([{\s;]+)struct\s+\w+\s+\*?(\w+)\s*;', '\\1\\2;', line)
-      line = re.sub(r'([{\s;]+)(\w+\s+){1,2}\*?(\w+)\s*;', '\\1\\3;', line)
-      line = re.sub(r'(\w+);', '["\\1",null],', line)
+      line = re.sub(r'([{\s;]+)struct\s+(\w+)\s+\*?(\w+)\s*;', '\\1\\2 \\3;', line)
+      line = re.sub(r'([{\s;]+)(\w+\s+)(\w+\s+)\*?(\w+)\s*;', '\\1\\4 \\3;', line)
+      line = re.sub(r'(\w+)\s(\w+);', '["\\1", \\2],', line)
+      line = re.sub(r'([{\s;]+)(\w+\s+)\*?(\w+)\s*;', '\\1\\3;', line)
+      line = re.sub(r'(\w+);', '["\\1", new Array(24) ],', line)
       line = re.sub(r'struct\s+(\w+)\s*\{([^}]*)\}', 'var \\1 = new Map([\\2])', line)
       line = re.sub(r',\]\);', ']);', line);
     file_put_contents(TMP_FILE, line, 'a')
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
-
 
   # add struct value to Map
   # struct_data = [...];
@@ -218,7 +219,7 @@ def main(base_file, new_file):
     if re.search(r'struct\s+\w+\s+\w+\s*\=\s*\{[^\n;]*',  line):
       line = re.sub(r'\{', '[', line)
       line = re.sub(r'\}', ']', line)
-      line = re.sub(r'struct\s+(\w+)\s+(\w+)\s*\=\s*([^\n]*)', "var struct_data_num = 0;\nvar struct_data = \\3;\nvar \\2 = {};\n\\1.forEach(function(v,k,m){\\2[k] = struct_data[struct_data_num]; struct_data_num++;});", line)
+      line = re.sub(r'struct\s+(\w+)\s+(\w+)\s*\=\s*([^\n]*)', "var struct_data_num = 0;\nvar struct_data = \\3;\nvar \\2 = \\1;\n\\1.forEach(function(v,k,m){ \\2[k] = (struct_data[struct_data_num] !== undefined) ? struct_data[struct_data_num] : v; struct_data_num++;});", line)
     file_put_contents(TMP_FILE, line, 'a')
 
   new_file.close()
@@ -307,7 +308,7 @@ def main(base_file, new_file):
           line = re.sub(r'(\w+\s+)+(\w+)', 'var \\2', line)
           line = re.sub(r'(\w+\s+)+\*(\w+)', 'var \\2; var \\2_array', line)
           line = re.sub(r'\*(\w+)', '\\1', line)
-          line = re.sub(r'\[([\w\s\+\-\*]+)\]', ' = new Array(\\1).fill(0)', line)
+          line = re.sub(r'\[([\w\s\+\-\*]+)\]', ' = new Array(\\1+24).fill(0)', line)#to ensure much
 
       # variable with *
       if re.search(r'[^\w\)]\s*\*\w+', line):
