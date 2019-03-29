@@ -235,19 +235,30 @@ def main(base_file, new_file):
   # const var array
   lines = file_get_contents(NEW_FILE)
   while True:
-    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+\[[\w\+\*]*\]+\s*\=\s*\{[^\;]*)\n+', "\\1", lines)
+    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+(\[[\w\+\*]*\])+\s*\=\s*\{[^\;]*)\n+', "\\1", lines)
     if lines == lines2:
       break
     else:
       lines = lines2
 
-  print lines
+  # const matrix[][]
+  lines2 = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)(\[[\w\+\*]*\])+\s*\=\s*([^{])*\{', "\nconst \\2[][]=\\4[", lines)
+  while True:
+    lines2 = re.sub(r'\nconst\s(\w+)\[\]\[\]\=([^{])*\{', "\nconst \\1[][]=\\2[", lines2)
+    lines2 = re.sub(r'\nconst\s(\w+)\[\]\[\]\=([^}])*\}', "\nconst \\1[][]=\\2]", lines2)
+    if lines == lines2:
+      break
+    else:
+      lines = lines2
+  lines = re.sub(r'\nconst\s(\w+)\[\]\[\]\=', "\nconst \\1=", lines)
+
+  # const array[]
   lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]+)\}', "const \\2 = [\\3]", lines)
   lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\s*\=\s*(\w+)', "const \\2 = \\3", lines)
   lines = re.sub(r'(\w+\s+)+\*?(?!const)(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]*)\}', 'var \\2 = [\\3]', lines)
-  print lines
   file_put_contents(NEW_FILE, lines, 'w')
 
+  sys.exit()
 
   # function, variable definition out of function
   lines = file_get_contents(NEW_FILE)
