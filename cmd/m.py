@@ -78,7 +78,6 @@ def main(base_file, new_file):
   file_put_contents(NEW_FILE, lines, 'w')
 
 
-
   # change #define to const or function
   new_file = open(NEW_FILE, 'r')
   for line in new_file:
@@ -109,11 +108,10 @@ def main(base_file, new_file):
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
 
-  #sys.exit()
   # change to 1 line
   lines = file_get_contents(NEW_FILE)
   while True:
-    lines2 = re.sub(r'\n(\s*[\|\&\+\-\*\(])', "\\1", lines)
+    lines2 = re.sub(r'\n\s*([\|\&\+\-\(]|\*[^\w\(])', "\\1", lines)
     if lines == lines2:
       break
     else:
@@ -121,7 +119,7 @@ def main(base_file, new_file):
   file_put_contents(NEW_FILE, lines, 'w')
 
 
-  # change if, for
+  # change if, for, case
   lines = file_get_contents(NEW_FILE)
   # cut \n
   while True:
@@ -129,10 +127,12 @@ def main(base_file, new_file):
     lines2 = re.sub(r'(if\s*\([^\{]+)\s*\n\s*([\|\&])', "\\1\\2", lines2)
     lines2 = re.sub(r'(else\s+if\s*\([^\{]+)\s*\n\s*([\|\&])', "\\1\\2", lines2)
     lines2 = re.sub(r'(for\s*\([^\{]+)\s*\n\s*([\|\&])', "\\1\\2", lines2)
+    lines2 = re.sub(r'(case\s*\w+:)([^\n;]+)', "\\1\n\\2", lines2)
     if lines == lines2:
       break
     else:
       lines = lines2
+
   
   lines = re.sub(r'(if\s*\([^\{\n]+\))(\s*\n.*);\s*\n', "\\1{\n\\2;\n}\n", lines)
   lines = re.sub(r'(if\s*\([^\{\n]+\))(\s*\n.*)(\s*\n.*);\s*\n', "\\1{\n\\2\\3;\n}\n", lines)
@@ -235,22 +235,27 @@ def main(base_file, new_file):
   # const var array
   lines = file_get_contents(NEW_FILE)
   while True:
-    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+(\[[\w\+\*]*\])+\s*\=\s*\{[^\;]*)\n+', "\\1", lines)
+    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+\[[\w\+\*]*\]\s*\=\s*[^\;]*)\n+', "\\1", lines)
+    lines2 = re.sub(r'((\w+\s+)+const\s+\w+\s+\*?\w+\[[\w\+\*]*\]\[[\w\+\*]*\]\s*\=\s*[^\;]*)\n+', "\\1", lines2)
     if lines == lines2:
       break
     else:
       lines = lines2
 
   # const matrix[][]
-  lines2 = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)(\[[\w\+\*]*\])+\s*\=\s*([^{])*\{', "\nconst \\2[][]=\\4[", lines)
+  lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\[[\w\+\*]*\]\s*\=\s*([^{]*)\{', "\nconst \\2[][]=\\3[", lines)
+
   while True:
-    lines2 = re.sub(r'\nconst\s(\w+)\[\]\[\]\=([^{])*\{', "\nconst \\1[][]=\\2[", lines2)
-    lines2 = re.sub(r'\nconst\s(\w+)\[\]\[\]\=([^}])*\}', "\nconst \\1[][]=\\2]", lines2)
+    lines2 = re.sub(r'\nconst\s(\w+)\[\]\[\]\=([^{\n]*)\{([^;]*)', "\nconst \\1[][]=\\2[\\3", lines)
+    lines2 = re.sub(r'\nconst\s(\w+)\[\]\[\]\=([^}\n]*)\}([^;]*)', "\nconst \\1[][]=\\2]\\3", lines2)
+
     if lines == lines2:
       break
     else:
       lines = lines2
+
   lines = re.sub(r'\nconst\s(\w+)\[\]\[\]\=', "\nconst \\1=", lines)
+
 
   # const array[]
   lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]+)\}', "const \\2 = [\\3]", lines)
@@ -258,7 +263,6 @@ def main(base_file, new_file):
   lines = re.sub(r'(\w+\s+)+\*?(?!const)(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]*)\}', 'var \\2 = [\\3]', lines)
   file_put_contents(NEW_FILE, lines, 'w')
 
-  sys.exit()
 
   # function, variable definition out of function
   lines = file_get_contents(NEW_FILE)
@@ -270,7 +274,6 @@ def main(base_file, new_file):
     else:
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
-
 
   is_function = False
   bracket_count = 0 # count{}
@@ -305,40 +308,58 @@ def main(base_file, new_file):
       if bracket_count == 0:
         is_function = False
 
+        
+      # & change in function
+      if re.search(r'\w+\([^&]+&[^&]', line):
+        while True:
+          addresses = re.search(r'[^&]&([\w\.]+|\([\w\.]+\))', line)
+          if addresses:
+            address = addresses.groups()[0]
+            line2 = address + "=" + address + "[" + address + "];\n" + line.replace('&'+address, address) + "\n" + address + "=" + address + "[0];\n"
+          #while True:
+          if line == line2: break
+          else: line = line2
+
       # example: *x =
       #if re.search(r'\*[\w\.]+\s*\=', line):
       #  line = re.sub(r'\*([\w\.]+)\s*\=', '\\1[0] =', line)
 
-      # example: *(x)
-      if re.search(r'\*\(\s*[\w\.]+\s*\)', line):
-        line = re.sub(r'\*\(\s*([\w\.]+)\s*\)', '\\1[0]', line)
-
-      # example: *(x + i)
-      elif re.search(r'\*\(\s*[\w\.]+\s*[\+\-]\s*[\w\.\+\-\s]+\s*\)', line):
-        line = re.sub(r'\*\(\s*([\w\.]+)\s*([\+\-]\s*[\w\.\+\-\s]+)\s*\)', '\\1_array[\\1\\2]', line)
-
       # variable definition
-      elif re.search(r'(\w+\s+)+\*?\w+', line):
+      if re.search(r'(\w+\s+)+\*?\w+', line):
         if re.search(r'(else|return|new|case|goto)', line):
           pass
 
         else:
           line = re.sub(r'(\w+\s+)+(\w+)', 'var \\2', line)
-          line = re.sub(r'(\w+\s+)+\*(\w+)', 'var \\2; var \\2_array', line)
+          line = re.sub(r',\s*\*(\w+)\s*', '; var \\1 = 0, \\1_array;', line)
+          line = re.sub(r'\w+\s*\*(\w+)\s*', '\\1 = 0, \\1_array;', line)
           line = re.sub(r'^([^=]*)\*(\w+)', '\\1', line)
-          line = re.sub(r'^([^=]*)\[([\w\s\+\-\*]+)\]', '\\1 = new Array(\\2+24).fill(0)', line)#to ensure much
-          line = re.sub(r'^([^=]*)\[([\w\s\+\-\*]+)\]', '\\1 = new Array(\\2+24).fill(0)', line)#to ensure much
+          while True:
+            line2 = re.sub(r'^([^=]*)\[([\w\s\+\-\*]+)\]', '\\1 = new Array(\\2+24).fill(0)', line)#to ensure much
+            if line == line2: break
+            else: line = line2
+              
+        # variable with *
+        if re.search(r'[^\w\)]\s*\*\w+', line):
+          print line
+          line = re.sub(r'([^\w\)\]]\s*)\*(\w+)', '\\1\\2', line)
 
-      # variable with *
-      if re.search(r'[^\w\)]\s*\*\w+', line):
-        line = re.sub(r'([^\w\)\]]\s*)\*(\w+)', '\\1\\2', line)
-        
-        
+      else:
+        # example: *(x)
+        if re.search(r'\*\(\s*[\w\.]+\s*\)', line):
+          line = re.sub(r'\*\(\s*([\[a-zA-Z\.][\w\.]*)\s*\)', '\\1_array[\\1]', line)
 
+        # example: *(x + i)
+        elif re.search(r'\*\(\s*[\[a-zA-Z\.][\w\.]*\s*[\+\-]\s*[\w\.\+\-\s]+\s*\)', line):
+          line = re.sub(r'\*\(\s*([\[a-zA-Z\.][\w\.]*)\s*([\+\-]\s*[\w\.\+\-\s]+)\s*\)', '\\1_array[\\1\\2]', line)
+
+        
     file_put_contents(TMP_FILE, line, 'a')
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
+
+  
 
 
   # delete default switch
@@ -372,8 +393,14 @@ def main(base_file, new_file):
     lines = re.sub(r'goto found;', '', lines)#draft
     lines = re.sub(r'found:', '', lines)#draft
 
-  file_put_contents(NEW_FILE, lines, 'w')
+  if re.search(r'swephlib\.c$', BASE_FILE):
+    lines = re.sub(r'(function\sbessel.*)(([^d]|d[^o]|do[^n]|don[^e]|done[^:])+)done:', '\\1\nwhile(1){\n\\2\nbreak;\n}\n', lines)
+    lines = re.sub(r'(function\sdeltat_aa.*)(([^d]|d[^o]|do[^n]|don[^e]|done[^:])+)done:', '\\1\nwhile(1){\n\\2\nbreak;\n}\n', lines)
+    lines = re.sub(r'goto done;', 'break;', lines)
 
+
+  file_put_contents(NEW_FILE, lines, 'w')
+  #sys.exit()
 
   is_function = False
   switch_status = 0 #0:not, 1:current switch , 2:current case, 3:current default, 4:finish
