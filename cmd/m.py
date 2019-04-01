@@ -341,8 +341,9 @@ def main(base_file, new_file):
               
         # variable with *
         if re.search(r'[^\w\)]\s*\*\w+', line):
-          print line
-          line = re.sub(r'([^\w\)\]]\s*)\*(\w+)', '\\1\\2', line)
+          pass
+          #print (line)
+          #line = re.sub(r'([^\w\)\]]\s*)\*(\w+)', '\\1\\2', line)
 
       else:
         # example: *(x)
@@ -393,11 +394,32 @@ def main(base_file, new_file):
     lines = re.sub(r'goto found;', '', lines)#draft
     lines = re.sub(r'found:', '', lines)#draft
 
-  if re.search(r'swephlib\.c$', BASE_FILE):
+  if re.search(r'swephlib\.c$', BASE_FImoon_event_errLE):
     lines = re.sub(r'(function\sbessel.*)(([^d]|d[^o]|do[^n]|don[^e]|done[^:])+)done:', '\\1\nwhile(1){\n\\2\nbreak;\n}\n', lines)
     lines = re.sub(r'(function\sdeltat_aa.*)(([^d]|d[^o]|do[^n]|don[^e]|done[^:])+)done:', '\\1\nwhile(1){\n\\2\nbreak;\n}\n', lines)
-    lines = re.sub(r'goto done;', 'break;', lines)
+    lines = re.sub(r'goto\sdone;', 'break;', lines)
+    lines = re.sub(r'goto\ssidtime_done', 'return gmst;', lines)
+    lines = re.sub(r'sidtime_done:', '', lines)
 
+  if re.search(r'swemplan\.c$', BASE_FILE):
+    lines = re.sub(r'goto\s+return_err;', 'return ERR;', lines)
+    lines = re.sub(r'return_err:', '', lines)
+
+  if re.search(r'swehel\.c$', BASE_FILE):
+    lines = re.sub(r'goto\sswe_heliacal_err;', 'return retval;', lines)
+    lines = re.sub(r'swe_heliacal_err:', '', lines)
+    lines = re.sub(r'goto\smoon_event_err;', 'return retval;', lines)
+    lines = re.sub(r'moon_event_err:', '', lines)
+    lines = re.sub(r'goto\smoon_event_err;', 'return retval;', lines)
+    lines = re.sub(r'moon_event_err:', '', lines)
+    content = re.search(r'output_heliacal_pheno:([^}]*)', lines).group(1)
+    lines = lines.('goto output_heliacal_pheno;', content)
+    lines = re.sub(r'goto\soutput_heliacal_pheno;', '', lines)
+    lines = re.sub(r'output_heliacal_pheno:', '', lines)
+
+  if re.search(r'porphyry\.c$', BASE_FILE):
+    lines = re.sub(r'goto\sporphyry;', 'console.error("Use Porphyry House System.")\nbreak;', lines)
+    lines = re.sub(r'porphyry:', '', lines)
 
   file_put_contents(NEW_FILE, lines, 'w')
   #sys.exit()
