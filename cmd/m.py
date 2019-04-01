@@ -75,6 +75,8 @@ def main(base_file, new_file):
   lines = re.sub(r'sprintf([^)]|\)[^;])+\);', "console.info('info')", lines)
   lines = re.sub(r'=\{0\}', "", lines)
   lines = re.sub(r',\s*\n', ",", lines)
+  lines = re.sub(r'=\s*\n', "=", lines)
+  lines = re.sub(r'\(\s*int\s*\)', "", lines)
   file_put_contents(NEW_FILE, lines, 'w')
 
 
@@ -111,13 +113,11 @@ def main(base_file, new_file):
   # change to 1 line
   lines = file_get_contents(NEW_FILE)
   while True:
-    lines2 = re.sub(r'\n\s*([\|\&\+\-\(]|\*[^\w\(])', "\\1", lines)
-    if lines == lines2:
-      break
-    else:
-      lines = lines2
+    lines2 = re.sub(r'\n\s*([\|\&\+\-\(,]|\*[^\w\(])', "\\1", lines)
+    if lines == lines2: break
+    else: lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
-
+  
 
   # change if, for, case
   lines = file_get_contents(NEW_FILE)
@@ -125,23 +125,24 @@ def main(base_file, new_file):
   while True:
     lines2 = lines
     lines2 = re.sub(r'(if\s*\([^\{]+)\s*\n\s*([\|\&])', "\\1\\2", lines2)
+    lines2 = re.sub(r'(while\s*\([^\{]+)\s*\n\s*([\|\&])', "\\1\\2", lines2)
     lines2 = re.sub(r'(else\s+if\s*\([^\{]+)\s*\n\s*([\|\&])', "\\1\\2", lines2)
     lines2 = re.sub(r'(for\s*\([^\{]+)\s*\n\s*([\|\&])', "\\1\\2", lines2)
     lines2 = re.sub(r'(case\s*\w+:)([^\n;]+)', "\\1\n\\2", lines2)
-    if lines == lines2:
-      break
-    else:
-      lines = lines2
+    if lines == lines2: break
+    else: lines = lines2
 
   
   lines = re.sub(r'(if\s*\([^\{\n]+\))(\s*\n.*);\s*\n', "\\1{\n\\2;\n}\n", lines)
   lines = re.sub(r'(if\s*\([^\{\n]+\))(\s*\n.*)(\s*\n.*);\s*\n', "\\1{\n\\2\\3;\n}\n", lines)
+  lines = re.sub(r'(while\s*\([^\{\n]+\))(\s*\n.*);\s*\n', "\\1{\n\\2;\n}\n", lines)
+  lines = re.sub(r'(while\s*\([^\{\n]+\))(\s*\n.*)(\s*\n.*);\s*\n', "\\1{\n\\2\\3;\n}\n", lines)
   lines = re.sub(r'(else\s*if\s*\([^\{\n]+\))(\s*\n.*);\s*\n', "\\1{\n\\2;\n}\n", lines)
   lines = re.sub(r'(else\s*if\s*\([^\{\n]+\))(\s*\n.*)(\s*\n.*);\s*\n', "\\1{\n\\2\\3;\n}\n", lines)
   lines = re.sub(r'else(\s*\n.*);\s*\n', "else{\n\\1;\n}\n", lines)
   lines = re.sub(r'else(\s*\n.*)(\s*\n.*);\s*\n', "else{\n\\1\\2;\n}\n", lines)
   lines = re.sub(r'(for\s*\([^;]*;[^;]*;[^;]*\))\s*\n([^;]+;)\n', "\\1{\n\\2\n}\n", lines)
-  lines = re.sub(r'}([^\n]*)', "}\n\\1", lines)
+  #lines = re.sub(r'}([^\n]*)', "}\n\\1", lines)
   file_put_contents(NEW_FILE, lines, 'w')
 
 
@@ -150,10 +151,8 @@ def main(base_file, new_file):
   lines = file_get_contents(NEW_FILE)
   while True:
     lines2 = re.sub(r'(static const struct\s+\w+\s+\w+\[\][^\;]*)\n+', "\\1", lines)
-    if lines == lines2:
-      break
-    else:
-      lines = lines2
+    if lines == lines2: break
+    else: lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
 
   new_file = open(NEW_FILE, 'r')
@@ -180,11 +179,10 @@ def main(base_file, new_file):
   lines = file_get_contents(NEW_FILE)
   while True:
     lines2 = re.sub(r'(struct\s+\w+\s*\{[^\}]*)\n+', "\\1", lines)
-    if lines == lines2:
-      break
-    else:
-      lines = lines2
+    if lines == lines2: break
+    else: lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
+
 
   new_file = open(NEW_FILE, 'r')
   for line in new_file:
@@ -201,11 +199,12 @@ def main(base_file, new_file):
       line = re.sub(r'aaaaa",\s*(\w+)', '", Array(40).fill(\\1)', line)
       line = re.sub(r',\]\);', ']);', line);
       line = re.sub(r'struct\s+(\w+)\s*\{([^}]*)\}', 'var \\1 = new Map([\\2])', line)
-      line = re.sub(r'', '', line);
+      line = re.sub(r',\]\),', ']);', line);
     file_put_contents(TMP_FILE, line, 'a')
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
+
 
   # add struct value to Map
   # struct_data = [...];
@@ -213,10 +212,8 @@ def main(base_file, new_file):
   lines = file_get_contents(NEW_FILE)
   while True:
     lines2 = re.sub(r'(struct(\s+\w+)+\s*\=\s*\{[^\n;]*)\n+', "\\1", lines)
-    if lines == lines2:
-      break
-    else:
-      lines = lines2
+    if lines == lines2: break
+    else: lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
 
   new_file = open(NEW_FILE, 'r')
@@ -244,6 +241,7 @@ def main(base_file, new_file):
 
   # const matrix[][]
   lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\[[\w\+\*]*\]\s*\=\s*([^{]*)\{', "\nconst \\2[][]=\\3[", lines)
+  lines = re.sub(r'\s*double\s+\*?(\w+)\[[\w\+\*]*\]\[[\w\+\*]*\]\s*\=\s*([^{]*)\{', "\nconst \\1[][]=\\2[", lines)
 
   while True:
     lines2 = re.sub(r'\nconst\s(\w+)\[\]\[\]\=([^{\n]*)\{([^;]*)', "\nconst \\1[][]=\\2[\\3", lines)
@@ -262,6 +260,7 @@ def main(base_file, new_file):
   lines = re.sub(r'(\w+\s+)+const\s+\w+\s+\*?(\w+)\[[\w\+\*]*\]\s*\=\s*(\w+)', "const \\2 = \\3", lines)
   lines = re.sub(r'(\w+\s+)+\*?(?!const)(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]*)\}', 'var \\2 = [\\3]', lines)
   file_put_contents(NEW_FILE, lines, 'w')
+
 
 
   # function, variable definition out of function
@@ -325,19 +324,16 @@ def main(base_file, new_file):
       #  line = re.sub(r'\*([\w\.]+)\s*\=', '\\1[0] =', line)
 
       # variable definition
-      if re.search(r'(\w+\s+)+\*?\w+', line):
-        if re.search(r'(else|return|new|case|goto)', line):
-          pass
+      if re.search(r'(\w+\s+)+\*?\w+', line) and not re.search(r'(else|return|new|case|goto)', line):
 
-        else:
-          line = re.sub(r'(\w+\s+)+(\w+)', 'var \\2', line)
-          line = re.sub(r',\s*\*(\w+)\s*', '; var \\1 = 0, \\1_array;', line)
-          line = re.sub(r'\w+\s*\*(\w+)\s*', '\\1 = 0, \\1_array;', line)
-          line = re.sub(r'^([^=]*)\*(\w+)', '\\1', line)
-          while True:
-            line2 = re.sub(r'^([^=]*)\[([\w\s\+\-\*]+)\]', '\\1 = new Array(\\2+24).fill(0)', line)#to ensure much
-            if line == line2: break
-            else: line = line2
+        line = re.sub(r'(\w+\s+)+(\*?\w+)', 'var \\2', line)
+        line = re.sub(r'(var|,)\s*\*(\w+)\s*', '; var \\2 = 0, \\2_array', line)
+        #line = re.sub(r'\w+\s*\*(\w+)\s*', '\\1 = 0, \\1_array', line)
+        #line = re.sub(r'^([^=]*)\*(\w+)', '\\1', line)
+        while True:
+          line2 = re.sub(r'([^=]*)\[([\w\s\+\-\*]+)\]', '\\1 = new Array(\\2+24).fill(0)', line)#to ensure much
+          if line == line2: break
+          else: line = line2
               
         # variable with *
         if re.search(r'[^\w\)]\s*\*\w+', line):
@@ -346,13 +342,17 @@ def main(base_file, new_file):
           #line = re.sub(r'([^\w\)\]]\s*)\*(\w+)', '\\1\\2', line)
 
       else:
-        # example: *(x)
-        if re.search(r'\*\(\s*[\w\.]+\s*\)', line):
-          line = re.sub(r'\*\(\s*([\[a-zA-Z\.][\w\.]*)\s*\)', '\\1_array[\\1]', line)
+        # pointer example: *x
+        line = re.sub(r'(^|\+|\-|\*|\/|\=|;|\(|,|&|\|)\s*\*\s*([\[a-zA-Z\.][\w\.]*)\s*', '\\1 \\2_array[\\2]', line)
 
-        # example: *(x + i)
-        elif re.search(r'\*\(\s*[\[a-zA-Z\.][\w\.]*\s*[\+\-]\s*[\w\.\+\-\s]+\s*\)', line):
-          line = re.sub(r'\*\(\s*([\[a-zA-Z\.][\w\.]*)\s*([\+\-]\s*[\w\.\+\-\s]+)\s*\)', '\\1_array[\\1\\2]', line)
+        # pointer example: *(x)
+        line = re.sub(r'(^|\+|\-|\*|\/|\=|;|\(|,|&|\|)\s*\*\(\s*([\[a-zA-Z\.][\w\.]*)\s*\)', '\\1 \\2_array[\\2]', line)
+
+
+
+        # pointer example: *(x + i)
+        line = re.sub(r'(^|\+|\-|\*|\/|\=|;|\(|,|&|\|)\s*\*\(\s*([\[a-zA-Z\.][\w\.]*)\s*([\+\-]\s*[\w\.\+\-\s]+)\s*\)', '\\1\\2_array[\\2\\3]', line)
+
 
         
     file_put_contents(TMP_FILE, line, 'a')
@@ -360,7 +360,7 @@ def main(base_file, new_file):
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
 
-  
+  #sys.exit()
 
 
   # delete default switch
@@ -394,7 +394,7 @@ def main(base_file, new_file):
     lines = re.sub(r'goto found;', '', lines)#draft
     lines = re.sub(r'found:', '', lines)#draft
 
-  if re.search(r'swephlib\.c$', BASE_FImoon_event_errLE):
+  if re.search(r'swephlib\.c$', BASE_FILE):
     lines = re.sub(r'(function\sbessel.*)(([^d]|d[^o]|do[^n]|don[^e]|done[^:])+)done:', '\\1\nwhile(1){\n\\2\nbreak;\n}\n', lines)
     lines = re.sub(r'(function\sdeltat_aa.*)(([^d]|d[^o]|do[^n]|don[^e]|done[^:])+)done:', '\\1\nwhile(1){\n\\2\nbreak;\n}\n', lines)
     lines = re.sub(r'goto\sdone;', 'break;', lines)
@@ -413,7 +413,7 @@ def main(base_file, new_file):
     lines = re.sub(r'goto\smoon_event_err;', 'return retval;', lines)
     lines = re.sub(r'moon_event_err:', '', lines)
     content = re.search(r'output_heliacal_pheno:([^}]*)', lines).group(1)
-    lines = lines.('goto output_heliacal_pheno;', content)
+    lines = lines.replace('goto output_heliacal_pheno;', content)
     lines = re.sub(r'goto\soutput_heliacal_pheno;', '', lines)
     lines = re.sub(r'output_heliacal_pheno:', '', lines)
 
@@ -494,6 +494,7 @@ def main(base_file, new_file):
   new_file = open(NEW_FILE, 'r')
   for line in new_file:
     line = re.sub(r',\s*serr', "", line)
+    line = re.sub(r'\(\s*serr\s*\)', "()", line)
 
     if multi_line_if:
       if re.search(r'\{', line):
@@ -514,6 +515,8 @@ def main(base_file, new_file):
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
+
+
 
 
   #if(0)
@@ -542,8 +545,9 @@ def main(base_file, new_file):
 
   # chenge math, type
   lines = file_get_contents(NEW_FILE)
-  lines = re.sub(r'sizeof\(int\)', "8", lines)
-  lines = re.sub(r'sizeof\(double\)', "32", lines)
+  lines = re.sub(r'.*serr.*', "", lines)
+  lines = re.sub(r'sizeof\(\s*int\s*\)', "8", lines)
+  lines = re.sub(r'sizeof\(\s*double\s*\)', "32", lines)
   lines = re.sub(r'atoi\(([^)]+)\)', "parseInt(\\1)", lines)
   lines = re.sub(r'ato[fl]\(([^)]+)\)', "parseFloat(\\1)", lines)
   lines = re.sub(r'\([^\(\)]*\w+\s+\*\)', "", lines)
@@ -552,12 +556,12 @@ def main(base_file, new_file):
   #lines = re.sub(r'\(double\)\s?\(', "parseFloat(", lines)
   #lines = re.sub(r'\(double\)\s?(\w+)', "parseFloat(\\1)", lines)
   lines = re.sub(r'\([^\(\)]*\w+\s+\*\)', "", lines)
-  lines = re.sub(r'\(int\)', "", lines)
-  lines = re.sub(r'\(int32\)', "", lines)
-  lines = re.sub(r'\(double\)', "", lines)
-  lines = re.sub(r'\(char\)', "", lines)
-  lines = re.sub(r'\(void\)', "", lines)
-  lines = re.sub(r'\(size_t\)', "", lines)
+  lines = re.sub(r'\(\s*int\s*\)', "", lines)
+  lines = re.sub(r'\(\s*int32\s*\)', "", lines)
+  lines = re.sub(r'\(\s*double\s*\)', "", lines)
+  lines = re.sub(r'\(\s*char\s*\)', "", lines)
+  lines = re.sub(r'\(\s*void\s*\)', "", lines)
+  lines = re.sub(r'\(\s*size_t\s*\)', "", lines)
   
   lines = re.sub(r'([^\w])(sin\()', "\\1Math.\\2", lines)
   lines = re.sub(r'([^\w])(cos\()', "\\1Math.\\2", lines)
