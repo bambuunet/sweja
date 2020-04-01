@@ -3,6 +3,7 @@ class SweHouse{
   constructor(sl, sw, swed){
     this.MILLIARCSEC = 1.0 / 3600000.0;
     this.VERY_SMALL=1E-10;
+    this.sd = new SweDate;
     this.sl   = sl;
     this.sw   = sw;
     this.swed = swed;
@@ -11,30 +12,25 @@ class SweHouse{
     if (this.swed ==null) { this.swed =Swe.SwissData; }
   }
 
-  sind(double x) {
+  sind(x) {
     return Math.sin(x * SwissData.DEGTORAD);
   }
-  cosd(double x) {
+  cosd(x) {
     return Math.cos(x * SwissData.DEGTORAD);
   }
-  tand(double x) {
+  tand(x) {
     return Math.tan(x * SwissData.DEGTORAD);
   }
-  asind(double x) {
+  asind(x) {
     return (Math.asin(x) * SwissData.RADTODEG);
   }
-  atand(double x) {
+  atand(x) {
     return (Math.atan(x) * SwissData.RADTODEG);
   }
-
-  swe_houses(double tjd_ut,
-                 double geolat,
-                 double geolon,
-                 int hsys,
-                 double cusp[],
-                 double ascmc[]) {
+/*
+  swe_houses(tjd_ut, geolat, geolon, hsys, cusp, ascmc) {
     var i, retc = 0;
-    var armc, eps, nutlo[]=new double[2];
+    var armc, eps, nutlo=new Array(2);
     var tjde = tjd_ut + SweDate.getDeltaT(tjd_ut);
     eps = this.sl.swi_epsiln(tjde, 0) * SwissData.RADTODEG;
     this.sl.swi_nutation(tjde, 0, nutlo);
@@ -44,27 +40,33 @@ class SweHouse{
     retc = swe_houses_armc(armc, geolat, eps + nutlo[1], hsys, cusp, ascmc);
     return retc;
   }
+*/
+  swe_houses(tjd_ut, iflag, geolat, geolon, hsys, cusp, ascmc, aOffs) {
+    if(ascmc === undefined){
+      var i, retc = 0;
+      var armc, eps, nutlo=new Array(2);
+      var tjde = tjd_ut + this.sd.getDeltaT(tjd_ut);
+      eps = this.sl.swi_epsiln(tjde, 0) * SwissData.RADTODEG;
+      this.sl.swi_nutation(tjde, 0, nutlo);
+      for (i = 0; i < 2; i++)
+        nutlo[i] *= SwissData.RADTODEG;
+      armc = this.sl.swe_degnorm(this.sl.swe_sidtime0(tjd_ut, eps + nutlo[1], nutlo[0]) * 15 + geolon);
+      retc = swe_houses_armc(armc, geolat, eps + nutlo[1], hsys, cusp, ascmc);
+      return retc;
+    }
 
-  swe_houses(double tjd_ut,
-                 int iflag,
-                 double geolat,
-                 double geolon,
-                 int hsys,
-                 double[] cusp,
-                 double[] ascmc,
-                 int aOffs) {
     var i, retc = 0;
-    var armc, eps_mean, nutlo[]=new double[2];
-    var tjde = tjd_ut + SweDate.getDeltaT(tjd_ut);
-    SidData sip = this.swed.sidd;
+    var armc, eps_mean, nutlo=new Array(2);
+    var tjde = tjd_ut + this.sd.getDeltaT(tjd_ut);
+    var sip = this.swed.sidd;
     var ito;
-    if (Character.toUpperCase((char)hsys) == 'G') {
+    if (hsys == 'G') {
       ito = 36;
     } else {
       ito = 12;
     }
-    if ((iflag & SweConst.SEFLG_SIDEREAL)!=0 && !this.swed.ayana_is_set) {
-      this.sw.swe_set_sid_mode(SweConst.SE_SIDM_FAGAN_BRADLEY, 0, 0);
+    if ((iflag & Swe.SEFLG_SIDEREAL)!=0 && !this.swed.ayana_is_set) {
+      this.sw.swe_set_sid_mode(Swe.SE_SIDM_FAGAN_BRADLEY, 0, 0);
     }
     eps_mean = this.sl.swi_epsiln(tjde, 0) * SwissData.RADTODEG;
     this.sl.swi_nutation(tjde, 0, nutlo);
@@ -72,10 +74,10 @@ class SweHouse{
       nutlo[i] *= SwissData.RADTODEG;
       /*houses_to_sidereal(tjde, geolat, hsys, eps, cusp, ascmc, iflag);*/
     armc = this.sl.swe_degnorm(this.sl.swe_sidtime0(tjd_ut, eps_mean + nutlo[1], nutlo[0]) * 15 + geolon);
-    if ((iflag & SweConst.SEFLG_SIDEREAL)!=0) {
-      if ((sip.sid_mode & SweConst.SE_SIDBIT_ECL_T0)!=0) {
+    if ((iflag & Swe.SEFLG_SIDEREAL)!=0) {
+      if ((sip.sid_mode & Swe.SE_SIDBIT_ECL_T0)!=0) {
         retc = sidereal_houses_ecl_t0(tjde, armc, eps_mean + nutlo[1], nutlo, geolat, hsys, cusp, ascmc, aOffs);
-      } else if ((sip.sid_mode & SweConst.SE_SIDBIT_SSY_PLANE)!=0) {
+      } else if ((sip.sid_mode & Swe.SE_SIDBIT_SSY_PLANE)!=0) {
         retc = sidereal_houses_ssypl(tjde, armc, eps_mean + nutlo[1], nutlo, geolat, hsys, cusp, ascmc, aOffs);
       } else {
         retc = sidereal_houses_trad(tjde, armc, eps_mean + nutlo[1], nutlo[0], geolat, hsys, cusp, ascmc, aOffs);
@@ -83,10 +85,10 @@ class SweHouse{
     } else {
       retc = swe_houses_armc(armc, geolat, eps_mean + nutlo[1], hsys, cusp, ascmc, aOffs);
     }
-    if ((iflag & SweConst.SEFLG_RADIANS)!=0) {
+    if ((iflag & Swe.SEFLG_RADIANS)!=0) {
       for (i = 1; i <= ito; i++)
         cusp[i] *= SwissData.DEGTORAD;
-      for (i = 0; i < SweConst.SE_NASCMC; i++)
+      for (i = 0; i < Swe.SE_NASCMC; i++)
         ascmc[i+aOffs] *= SwissData.DEGTORAD;
     }
     return retc;
@@ -118,23 +120,15 @@ class SweHouse{
    * 6. subtract this distance from all house cusps.
    * 7. subtract ayanamsa_t0 from all house cusps.
    */
-  sidereal_houses_ecl_t0(double tjde,
-                                     double armc,
-                                     double eps,
-                                     double[] nutlo,
-                                     double lat,
-                                     int hsys,
-                                     double[] cusp,
-                                     double[] ascmc,
-                                     int aOffs) {
-    var i, j, retc = SweConst.OK;
-    var x[]=new double[6], xvpx[]=new double[6], x2[]=new double[6], epst0,
-           xnorm[]=new double[6];
+  sidereal_houses_ecl_t0(tjde, armc, eps, nutlo, lat, hsys, cusp, ascmc, aOffs) {
+    var i, j, retc = Swe.OK;
+    var x=new Array(6), xvpx=new Array(6), x2=new Array(6), epst0,
+           xnorm=new Array(6);
     var rxy, rxyz, c2, epsx, sgn, fac, dvpx, dvpxe;
     var armcx;
-    SidData sip = this.swed.sidd;
+    var sip = this.swed.sidd;
     var ito;
-    if (Character.toUpperCase((char)hsys) == 'G') {
+    if (hsys == 'G') {
       ito = 36;
     } else {
       ito = 12;
@@ -193,7 +187,7 @@ class SweHouse{
     }
     for (i = 1; i <= ito; i++)                     /* 6, 7 */
       cusp[i] = this.sl.swe_degnorm(cusp[i] - dvpxe - sip.ayan_t0);
-    for (i = 0; i <= SweConst.SE_NASCMC; i++)
+    for (i = 0; i <= Swe.SE_NASCMC; i++)
       ascmc[aOffs+i] = this.sl.swe_degnorm(ascmc[aOffs+i] - dvpxe - sip.ayan_t0);
     return retc;
   }
@@ -218,23 +212,15 @@ class SweHouse{
    * 8. subtract ayanamsa_t0 from all house cusps.
    * 9. subtract ayanamsa_2000 from all house cusps.
    */
-  sidereal_houses_ssypl(double tjde,
-                                    double armc,
-                                    double eps,
-                                    double[] nutlo,
-                                    double lat,
-                                    int hsys,
-                                    double[] cusp,
-                                    double[] ascmc,
-                                    int aOffs) {
-    var i, j, retc = SweConst.OK;
-    var x[]=new double[6], x0[]=new double[6], xvpx[]=new double[6],
-           x2[]=new double[6], xnorm[]=new double[6];
+  sidereal_houses_ssypl(tjde, armc, eps, nutlo, lat, hsys, cusp, ascmc, aOffs) {
+    var i, j, retc = Swe.OK;
+    var x=new Array(6), x0=new Array(6), xvpx=new Array(6),
+           x2=new Array(6), xnorm=new Array(6);
     var rxy, rxyz, c2, epsx, eps2000, sgn, fac, dvpx, dvpxe, x00;
     var armcx;
-    SidData sip = this.swed.sidd;
+    var sip = this.swed.sidd;
     var ito;
-    if (Character.toUpperCase((char)hsys) == 'G') {
+    if (hsys == 'G') {
       ito = 36;
     } else {
       ito = 12;
@@ -315,26 +301,18 @@ class SweHouse{
     x00 = x0[0] * SwissData.RADTODEG;                       /* 7 */
     for (i = 1; i <= ito; i++)                     /* 6, 8, 9 */
       cusp[i] = this.sl.swe_degnorm(cusp[i] - dvpxe - sip.ayan_t0 - x00);
-    for (i = 0; i <= SweConst.SE_NASCMC; i++)
+    for (i = 0; i <= Swe.SE_NASCMC; i++)
       ascmc[aOffs+i] = this.sl.swe_degnorm(ascmc[aOffs+i] - dvpxe - sip.ayan_t0 - x00);
     return retc;
   }
 
   /* common simplified procedure */
-  sidereal_houses_trad(double tjde,
-                                   double armc,
-                                   double eps,
-                                   double nutl,
-                                   double lat,
-                                   int hsys,
-                                   double[] cusp,
-                                   double[] ascmc,
-                                   int aOffs) {
-    var i, retc = SweConst.OK;
+  sidereal_houses_trad(tjde, armc, eps, nutl, lat, hsys, cusp, ascmc, aOffs) {
+    var i, retc = Swe.OK;
     var ay;
     var ito;
-    char ihs = Character.toUpperCase((char)hsys);
-    char ihs2 = ihs;
+    var ihs = hsys;
+    var ihs2 = ihs;
     ay = this.sw.swe_get_ayanamsa(tjde);
     if (ihs == 'G') {
       ito = 36;
@@ -348,7 +326,7 @@ class SweHouse{
       cusp[i] = this.sl.swe_degnorm(cusp[i] - ay - nutl);
       if (ihs == 'W') /* whole sign houses */
         cusp[i] -= (cusp[i] % 30);
-    for (i = 0; i < SweConst.SE_NASCMC; i++) {
+    for (i = 0; i < Swe.SE_NASCMC; i++) {
       if (i == 2) /* armc */ {
         continue;
       }
@@ -390,17 +368,11 @@ class SweHouse{
   * @see swisseph.SwissEph#swe_calc
   * @return SweConst.OK (==0) or SweConst.ERR (==-1), if an error occured.
   */
-  swe_houses_armc(double armc,
-                      double geolat,
-                      double eps,
-                      int hsys,
-                      double cusp[],
-                      double ascmc[],
-                      int aOffs) {
-    Houses h=new Houses();
+  swe_houses_armc(armc, geolat, eps, hsys, cusp, ascmc, aOffs) {
+    var h=new Houses();
     var i, retc = 0;
     var ito;
-    if (Character.toUpperCase((char)hsys) == 'G') {
+    if (hsys == 'G') {
       ito = 36;
     } else {
       ito = 12;
@@ -409,7 +381,7 @@ class SweHouse{
     retc = CalcH(armc,
                  geolat,
                  eps,
-                 (char)hsys, 2, h);
+                 hsys, 2, h);
     cusp[0] = 0;
     for (i = 1; i <= ito; i++) {
       cusp[i] = h.cusp[i];
@@ -422,7 +394,7 @@ class SweHouse{
     ascmc[aOffs+5] = h.coasc1;  /* "co-ascendant" (Walter Koch) */
     ascmc[aOffs+6] = h.coasc2;  /* "co-ascendant" (Michael Munkasey) */
     ascmc[aOffs+7] = h.polasc;  /* "polar ascendant" (Michael Munkasey) */
-    for (i = SweConst.SE_NASCMC; i < 10; i++)
+    for (i = Swe.SE_NASCMC; i < 10; i++)
       ascmc[aOffs+i] = 0;
     return retc;
   }
@@ -433,7 +405,7 @@ class SweHouse{
    * e  ecliptic obliquity
    * az armc
    */
-  apc_sector(int n, double ph, double e, double az) {
+  apc_sector(n, ph, e, az) {
     var k, is_below_hor = 0;
     var dasc, kv, a, dret;
     /* ascensional difference of the ascendant */
@@ -466,8 +438,8 @@ class SweHouse{
     return dret;
   }
 
-  String swe_house_name(int hsys) {
-    switch (Character.toUpperCase((char)hsys)) {
+  swe_house_name(hsys) {
+    switch (hsys) {
       case 'A': return "equal";
       case 'E': return "equal";
       case 'B': return "Alcabitius";
@@ -488,8 +460,7 @@ class SweHouse{
     }
   }
 
-  CalcH(double th, double fi, double ekl, char hsy,
-                    int iteration_count, Houses hsp )
+  CalcH(th, fi, ekl, hsy, iteration_count, hsp)
   /* *********************************************************
    *  Arguments: th = sidereal time (angle 0..360 degrees
    *             hsy = letter code for house system;
@@ -526,9 +497,9 @@ class SweHouse{
   {
     var tane, tanfi, cosfi, tant, sina, cosa, th2;
     var a, c, f, fh1, fh2, xh1, xh2, rectasc, ad3, acmc, vemc;
-    var i, ih, ih2, retc = SweConst.OK;
+    var i, ih, ih2, retc = Swe.OK;
     var sine, cose;
-    var x[] = new double[3], krHorizonLon; /* BK 14.02.2006 */
+    var x=new Array(3), krHorizonLon; /* BK 14.02.2006 */
     cose  = cosd(ekl);
     sine  = sind(ekl);
     tane  = tand(ekl);
@@ -647,7 +618,7 @@ class SweHouse{
         break;
       case 'K': /* Koch houses */
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
-          retc = SweConst.ERR;
+          retc = Swe.ERR;
           makePorphyry(hsp);
           break;
         }
@@ -777,7 +748,7 @@ class SweHouse{
          */
         var j;
         var am = th;
-        var xm[] = new double[3];
+        var xm=new Array(3);
         for (i = 1; i <= 12; i++) {
           j = i + 10;
           if (j > 12) j -= 12;
@@ -802,7 +773,7 @@ class SweHouse{
            the ecliptic. */
         var dek, r, sna, sda, sn3, sd3;
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
-          retc = SweConst.ERR;
+          retc = Swe.ERR;
           makePorphyry(hsp);
           break;
         }
@@ -840,7 +811,7 @@ class SweHouse{
           hsp.cusp[i] = 0;
         }
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
-          retc = SweConst.ERR;
+          retc = Swe.ERR;
                     makePorphyry(hsp);
         }
         /*************** forth/second quarter ***************/
@@ -927,7 +898,7 @@ class SweHouse{
          * 1. In this definition we assume MC on ecliptic as point where
          *    half-meridian (from north to south pole) cuts ecliptic,
          *    so MC may be below horizon in arctic regions.
-         * 2. Houses could be calculated in all latitudes except the poles 
+         * 2.  could be calculated in all latitudes except the poles 
          *    themselves (-90,90) and points on arctic circle in cases where 
          *    ecliptic is equal to horizon and then ascendant is undefined. 
          *    But ascendant when 'horizon=ecliptic' could be deduced as limes 
@@ -998,10 +969,9 @@ class SweHouse{
         break;
       default:    /* Placidus houses */
         if (hsy != 'P') {
-          System.err.println("swe_houses: make Placidus, unknown key "+hsy);
         }
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
-          retc = SweConst.ERR;
+          retc = Swe.ERR;
           makePorphyry(hsp);
           break;
         }
@@ -1151,7 +1121,7 @@ class SweHouse{
   * This is just a wrapping function to deal with the <CODE>goto</CODE>'s in
   * the original C-Code.
   */
-  makePorphyry(Houses hsp) {
+  makePorphyry(hsp) {
     /*
      * within polar circle we swap AC/DC if AC is on wrong side
      */
@@ -1168,7 +1138,7 @@ class SweHouse{
   }
 
   /******************************/
-  Asc1 (double x1, double f, double sine, double cose) {
+  Asc1 (x1, f, sine, cose) {
     var n;
     var ass;
     x1 = this.sl.swe_degnorm(x1);
@@ -1198,7 +1168,7 @@ class SweHouse{
     return ass;
   }  /* Asc1 */
 
-  Asc2 (double x, double f, double sine, double cose) {
+  Asc2 (x, f, sine, cose) {
     var n;
     var ass, sinx;
     ass = - tand(f) * sine + cose * cosd(x);
@@ -1277,19 +1247,18 @@ class SweHouse{
   * planet is and how far from its cusp it is.
   * #swe_houses
   */
-  swe_house_pos(double armc, double geolat, double eps,
-                       int hsys, double xpin[], StringBuffer serr) {
-    var xp[]=new double[6], xeq[]=new double[6], ra, de, mdd, mdn, sad, san;
+  swe_house_pos(armc, geolat, doubleeps, hsys, doublexpin) {
+    var xp=new Array(6), xeq=new Array(6), ra, de, mdd, mdn, sad, san;
     var hpos, sinad, ad, a, admc, adp, samc, demc, asc, mc, acmc, tant;
     var fh, ra0, tanfi, fac, dfac;
-    var x[] = new double[3], xasc[] = new double[3], raep, raaz, oblaz, xtemp; /* BK 21.02.2006 */
+    var x=new Array(3), xasc=new Array(3), raep, raaz, oblaz, xtemp; /* BK 21.02.2006 */
     var sine = sind(eps);
     var cose = cosd(eps);
-    boolean is_above_hor = false;
-    boolean is_invalid = false;
-    boolean is_circumpolar = false;
-    if (serr != null) { serr.setLength(0); }
-    hsys = Character.toUpperCase((char)hsys);
+    var is_above_hor = false;
+    var is_invalid = false;
+    var is_circumpolar = false;
+
+    hsys = hsys;
     xeq[0] = xpin[0];
     xeq[1] = xpin[1];
     xeq[2] = 1;
@@ -1479,18 +1448,9 @@ class SweHouse{
         if (is_invalid) {
           xp[0] = 0;
           hpos = 0;
-          if (serr != null) {
-            serr.setLength(0);
-            serr.append("Koch house position failed in circumpolar area");
-          }
           break;
         }
-        if (is_circumpolar) {
-          if (serr != null) {
-            serr.setLength(0);
-            serr.append("Koch house position, doubtful result in circumpolar area");
-          }
-        }
+
         /* to make sure that a call with a house cusp position returns
          * a value within the house, 0.001" is added */
         hpos = xp[0] / 30.0 + 1;
@@ -1679,9 +1639,6 @@ class SweHouse{
           } else {
             xp[0] = this.sl.swe_degnorm(270 + mdd / 2);
           }
-          if (serr != null) {
-            serr.append("Otto Ludwig procedure within circumpolar regions.");
-          }
         } else {
           sinad = tand(de) * tand(geolat);
           ad = asind(sinad);
@@ -1700,7 +1657,7 @@ class SweHouse{
            * a value within the house, 0.001" is added */
           xp[0] = this.sl.swe_degnorm(xp[0] + MILLIARCSEC);
         }
-        if ((char)hsys == 'G') {
+        if (hsys == 'G') {
           xp[0] = 360 - xp[0]; /* Gauquelin sectors are in clockwise direction */
           hpos = xp[0] / 10.0 + 1;
         } else {
