@@ -261,7 +261,7 @@ def main(base_file, new_file):
   lines = re.sub(r'(\w+\s+)+\*?(?!const)(\w+)\[[\w\+\*]*\]\s*\=\s*\{([^\}]*)\}', 'var \\2 = [\\3]', lines)
   file_put_contents(NEW_FILE, lines, 'w')
 
-
+  
 
   # function, variable definition out of function
   lines = file_get_contents(NEW_FILE)
@@ -273,6 +273,8 @@ def main(base_file, new_file):
     else:
       lines = lines2
   file_put_contents(NEW_FILE, lines, 'w')
+
+  sys.exit()
 
   is_function = False
   bracket_count = 0 # count{}
@@ -359,8 +361,6 @@ def main(base_file, new_file):
   new_file.close()
   shutil.copyfile(TMP_FILE, NEW_FILE)
   os.remove(TMP_FILE)
-
-  #sys.exit()
 
 
   # delete default switch
@@ -585,6 +585,9 @@ def main(base_file, new_file):
   lines = re.sub(r'free\(.*;\s*\n', "", lines)
   lines = re.sub(r'sizeof\s*\((\w*\s*)?(\w+)\)', "\\2.length", lines)
   lines = re.sub(r'.*(MALLOC|CALLOC|FREE).*\n', "\n", lines)
+
+  #change bad point
+  lines = re.sub(r',\n', ";\n", lines)
 
   file_put_contents(NEW_FILE, lines, 'w')
   

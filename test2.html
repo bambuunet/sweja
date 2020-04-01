@@ -11,24 +11,11 @@
   <body>
 
 <script>
-var a = {
-  b: function(){
-    console.log(this.c);
-  },
-  a: 1,
-  c: 1,
-  d: 2
-}
-a.b();
-
-class aa {
-  constructor(){
-  this.a = 1;
-  this.b = 2;
-  }
-}
-
-console.log(aa.a);
+var tjd = 200000;
+var ipl = 0;
+var iflag = SEFLG_MOSEPH|SEFLG_SPEED;
+var xx = new Array(6);
+swe_calc(tjd, ipl, iflag, xx);
 </script>
 
   </body>

@@ -36,6 +36,11 @@ base_files = [
   "swephexp.h",
   "sweph.h",
   "sweph.c",
+  "swenut2000a.h",
+  "swedate.h",
+  "swedate.c",
+  "swephlib.h",
+  "swephlib.c"
 ]
 new_file_dir = "../js2/"
 new_file_name = "swe"
