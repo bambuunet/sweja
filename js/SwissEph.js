@@ -6,7 +6,7 @@ class SwissEph{
     this.sc = null;
     this.sm = new Swemmoon(this.swed, this.sl);
     this.smosh = new SwephMosh(this.sl, this, this.swed);
-    //this.sh = new SweHouse;
+    this.sh = new SweHouse(this.sl, this, this.swed);
     //this.ext = new Extensions;
     this.lastLat = 0.0;
     this.lastLong = 0.0;
@@ -415,14 +415,14 @@ class SwissEph{
 
   swe_house_name(hsys) {
     if (sh==null) {
-      sh=new SweHouse(sl, this, this.swed);
+      this.sh=new SweHouse(sl, this, this.swed);
     }
-    return sh.swe_house_name(Math.float(hsys));
+    return this.sh.swe_house_name(Math.float(hsys));
   }
 
   swe_house_pos(armc, geolat, eps, hsys, xpin) {
     if (sh==null) {
-      sh=new SweHouse(sl, this, this.swed);
+      this.sh=new SweHouse(sl, this, this.swed);
     }
     if (xpin.length != 6) {
       xpin = [xpin[0], xpin[1], 0, 0, 0, 0];
@@ -432,7 +432,7 @@ class SwissEph{
 
   swe_houses_armc(armc, geolat, eps, hsys, cusp, ascmc) {
     if (sh==null) {
-      sh=new SweHouse(sl, this, this.swed);
+      this.sh=new SweHouse(sl, this, this.swed);
     }
     return sh.swe_houses_armc(armc, geolat, eps, hsys, cusp, ascmc, 0);
   }
@@ -444,7 +444,7 @@ class SwissEph{
     if (this.sh===null) {
       this.sh = new SweHouse(this.sl, this, this.swed);
     }
-    return sh.swe_houses(tjd_ut, iflag, geolat, geolon, hsys, cusp, ascmc, aOffs);
+    return this.sh.swe_houses(tjd_ut, iflag, geolat, geolon, hsys, cusp, ascmc, aOffs);
   }
 
   getIterateCount() {

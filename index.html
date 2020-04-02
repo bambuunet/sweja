@@ -26,7 +26,11 @@
     <script type="text/javascript" src="js/SwemptabPlu.js"></script>
     <script type="text/javascript" src="js/SwephMosh.js"></script>
     
+
+
     <script type="text/javascript" src="js/Swecl.js"></script>
+
+    <script type="text/javascript" src="js/SweHouse.js"></script>
     <script type="text/javascript" src="js/SwissEph.js"></script>
 
    <script type="text/javascript" src="js/AstroCalculator.js"></script> 
@@ -88,7 +92,7 @@
 <option value="1967">1967</option>
 <option value="1968">1968</option>
 <option value="1969">1969</option>
-<option value="1970" selected="">1970</option>
+<option value="1970">1970</option>
 <option value="1971">1971</option>
 <option value="1972">1972</option>
 <option value="1973">1973</option>
@@ -103,7 +107,7 @@
 <option value="1982">1982</option>
 <option value="1983">1983</option>
 <option value="1984">1984</option>
-<option value="1985">1985</option>
+<option value="1985" selected>1985</option>
 <option value="1986">1986</option>
 <option value="1987">1987</option>
 <option value="1988">1988</option>
@@ -148,7 +152,7 @@
 <option value="4">4</option>
 <option value="5">5</option>
 <option value="6">6</option>
-<option value="7">7</option>
+<option value="7" selected>7</option>
 <option value="8">8</option>
 <option value="9">9</option>
 <option value="10">10</option>
@@ -159,7 +163,7 @@
     <p>day:
 <select id="day">
 <option value="1">1</option>
-<option value="2">2</option>
+<option value="2" selected>2</option>
 <option value="3">3</option>
 <option value="4">4</option>
 <option value="5">5</option>
@@ -202,7 +206,7 @@
 <option value="6">6</option>
 <option value="7">7</option>
 <option value="8">8</option>
-<option value="9">9</option>
+<option value="9" selected>9</option>
 <option value="10">10</option>
 <option value="11">11</option>
 <option value="12">12</option>
@@ -286,7 +290,7 @@
 <option value="54">54</option>
 <option value="55">55</option>
 <option value="56">56</option>
-<option value="57">57</option>
+<option value="57" selected>57</option>
 <option value="58">58</option>
 <option value="59">59</option>
 </select>
@@ -317,7 +321,7 @@
 <option value="-1.5">-1.5</option>
 <option value="-1">-1</option>
 <option value="-0.5">-0.5</option>
-<option value="0" selected>0</option>
+<option value="0">0</option>
 <option value="0.5">0.5</option>
 <option value="1">1</option>
 <option value="1.5">1.5</option>
@@ -335,7 +339,7 @@
 <option value="7.5">7.5</option>
 <option value="8">8</option>
 <option value="8.5">8.5</option>
-<option value="9">9</option>
+<option value="9" selected>9</option>
 <option value="9.5">9.5</option>
 <option value="10">10</option>
 <option value="10.5">10.5</option>
@@ -420,6 +424,12 @@
           minute: $('#minute').val(),
           timezone: $('#timezone').val(),
         });
+
+
+var h_res = a.getHouse();
+console.log(h_res);
+
+
         
         var start_ms = new Date().getTime();
         var p = a.getPlanetPosition();
@@ -450,6 +460,7 @@
       //eph.swe_houses(tjd_ut, geolat, eps, hsys, cusp, ascmc);
 
       //console.log(a.PNOINT2JPL,SwephJPL)
+
 
 
     </script>
