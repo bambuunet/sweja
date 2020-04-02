@@ -22,4 +22,4 @@ cat \
   Swecl.js \
   SwissEph.js \
   AstroCalculator.js \
-  > swe_only_planet.js
+  > swe_ofi.js
