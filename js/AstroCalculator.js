@@ -3,9 +3,13 @@ class AstroCalculator{
     this.swe = new SwissEph();
     this.sd;
     this.swe.init();
+    this.sh;
 
     this.julian_utc;
     this.timezone = 0;
+    this.iflag = Swe.SEFLG_MOSEPH|Swe.SEFLG_SPEED;
+    this.lat = 0;
+    this.lon = 0;
 
     this.longitude;
     this.latitude;
@@ -19,12 +23,13 @@ class AstroCalculator{
       Jupiter: Swe.SE_JUPITER,
       Saturn: Swe.SE_SATURN,
       Uranus: Swe.SE_URANUS,
-      Neptune: Swe.SE_NEPTUNE,
-      Pluto: Swe.SE_PLUTO,*/
+      Neptune: Swe.SE_NEPTUNE,*/
+      Pluto: Swe.SE_PLUTO,
       //MeanNode: Swe.SE_MEAN_NODE,
       //TrueNode: Swe.SE_TRUE_NODE,
-      Chiron: Swe.SE_CHIRON, 
+      //Chiron: Swe.SE_CHIRON, 
       //Lilith: Swe.SE_MEAN_APOG,
+      //Juno: Swe.SE_JUNO,
     };
 
     if(opt === undefined) opt = {};
@@ -66,11 +71,10 @@ class AstroCalculator{
 
   getPlanetPosition(){
     var ret = {};
-    var iflag = Swe.SEFLG_MOSEPH|Swe.SEFLG_SPEED;//|Swe.SEFLG_SIDEREAL;
     var ret_matrix = new Array(6);
 
     for(var planet in this.planets){
-      this.swe.calc(this.julian_utc, this.planets[planet], iflag, ret_matrix);
+      this.swe.calc(this.julian_utc, this.planets[planet], this.iflag, ret_matrix);
       ret[planet] = {
         longitude: ret_matrix[0],
         latitude: ret_matrix[1],
@@ -81,12 +85,16 @@ class AstroCalculator{
     return ret;
   }
 
-  setGeographicPosition(){
-
+  setGeoPosition(lat, lon){
+    if(lat > -90 && lat < 90) this.lat = lat;
+    if(lon > -180 && lon < 180) this.lon = lon;
   }
 
-  getHouse(){
-
+  getHouse(system){
+    var cusp = Array(13);
+    var ascmc = Array(10);
+    this.swe.swe_houses(this.julian_utc, this.iflag, this.lat, this.lon, system, cusp, ascmc, 0);
+    return cusp;
   }
 
   getSolarReturn(longitude, year){
