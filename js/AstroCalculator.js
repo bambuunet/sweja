@@ -15,7 +15,7 @@ class AstroCalculator{
     this.latitude;
 
     this.planets = {
-      /*Sun: Swe.SE_SUN,
+      Sun: Swe.SE_SUN,
       Moon: Swe.SE_MOON,
       Mercury: Swe.SE_MERCURY,
       Venus: Swe.SE_VENUS,
@@ -23,7 +23,7 @@ class AstroCalculator{
       Jupiter: Swe.SE_JUPITER,
       Saturn: Swe.SE_SATURN,
       Uranus: Swe.SE_URANUS,
-      Neptune: Swe.SE_NEPTUNE,*/
+      Neptune: Swe.SE_NEPTUNE,
       Pluto: Swe.SE_PLUTO,
       //MeanNode: Swe.SE_MEAN_NODE,
       //TrueNode: Swe.SE_TRUE_NODE,
