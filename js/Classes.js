@@ -220,3 +220,16 @@ class TopoData{
     this.xobs = new Array(6);
   }
 };
+
+class Houses{
+  constructor(){
+    this.cusp = new Array(37);
+    this.ac = 0.0;
+    this.mc = 0.0;
+    this.vertex = 0.0;
+    this.equasc = 0.0;
+    this.coasc1 = 0.0;
+    this.coasc2 = 0.0;
+    this.polasc = 0.0;
+  }
+}

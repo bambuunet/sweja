@@ -110,7 +110,7 @@ class SwephMosh{
 
 
   swi_moshplan2 (J, iplm, pobj) {
-    console.log("swi_moshplan2() J:"+J+", iplm:"+iplm+", pobj:"+pobj);
+    
 
     var i, j, k, m, k1, ip, np, nt;
     var p;
@@ -240,7 +240,7 @@ class SwephMosh{
   }
 
   swi_moshplan(tjd, ipli, do_save, xpret, xeret) {
-    console.log("swi_moshplan() tjd:"+tjd+", ipli:"+ipli+", do_save:"+do_save+", xpret:"+xpret+", xeret:"+xeret);
+    
     var i;
     var do_earth = false;
     var dx=[0,0,0];
@@ -354,7 +354,7 @@ class SwephMosh{
 
 
   sscc (k, arg, n) {
-    console.log("sscc() k:"+k+", arg:"+arg+", n:"+n)
+    
     var cu, su, cv, sv, s;
     var i;
 
@@ -378,7 +378,7 @@ class SwephMosh{
 
 
   embofs_mosh(tjd, xemb) {
-    console.log("embofs_mosh()")
+    
     var T, M, a, L, B, p;
     var smp, cmp, s2mp, c2mp, s2d, c2d, sf, cf;
     var s2f, sx, cx, xyz=new Array(6);

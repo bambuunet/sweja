@@ -6,7 +6,7 @@ class SwissEph{
     this.sc = null;
     this.sm = new Swemmoon(this.swed, this.sl);
     this.smosh = new SwephMosh(this.sl, this, this.swed);
-    //this.sh = new SweHouse;
+    this.sh = new SweHouse(this.sl, this, this.swed);
     //this.ext = new Extensions;
     this.lastLat = 0.0;
     this.lastLong = 0.0;
@@ -137,7 +137,7 @@ class SwissEph{
   };
 
   _calc(tjd, ipl, iflag, xx){
-    console.log("_calc()");
+    
     var i, j;
     var iflgcoor;
     var iflgsave = iflag;
@@ -214,8 +214,7 @@ class SwissEph{
       iflag = iflag & ~Swe.SEFLG_DEFAULTEPH;
     }
 
-    console.log("_calc() end");
-    return iflag;
+        return iflag;
   };
 
   free_planets() {
@@ -414,27 +413,27 @@ class SwissEph{
   }
 
   swe_house_name(hsys) {
-    if (sh==null) {
-      sh=new SweHouse(sl, this, this.swed);
+    if (this.sh==null) {
+      this.sh=new SweHouse(sl, this, this.swed);
     }
-    return sh.swe_house_name(Math.float(hsys));
+    return this.sh.swe_house_name(Math.float(hsys));
   }
 
   swe_house_pos(armc, geolat, eps, hsys, xpin) {
-    if (sh==null) {
-      sh=new SweHouse(sl, this, this.swed);
+    if (this.sh==null) {
+      this.sh=new SweHouse(sl, this, this.swed);
     }
     if (xpin.length != 6) {
       xpin = [xpin[0], xpin[1], 0, 0, 0, 0];
     }
-    return sh.swe_house_pos(armc, geolat, eps, hsys, xpin);
+    return this.sh.swe_house_pos(armc, geolat, eps, hsys, xpin);
   }
 
   swe_houses_armc(armc, geolat, eps, hsys, cusp, ascmc) {
-    if (sh==null) {
-      sh=new SweHouse(sl, this, this.swed);
+    if (this.sh==null) {
+      this.sh=new SweHouse(sl, this, this.swed);
     }
-    return sh.swe_houses_armc(armc, geolat, eps, hsys, cusp, ascmc, 0);
+    return this.sh.swe_houses_armc(armc, geolat, eps, hsys, cusp, ascmc, 0);
   }
 
   swe_houses(tjd_ut, iflag, geolat, geolon, hsys, cusp, ascmc, aOffs) {
@@ -444,7 +443,7 @@ class SwissEph{
     if (this.sh===null) {
       this.sh = new SweHouse(this.sl, this, this.swed);
     }
-    return sh.swe_houses(tjd_ut, iflag, geolat, geolon, hsys, cusp, ascmc, aOffs);
+    return this.sh.swe_houses(tjd_ut, iflag, geolat, geolon, hsys, cusp, ascmc, aOffs);
   }
 
   getIterateCount() {
@@ -496,8 +495,7 @@ class SwissEph{
 
 
   swecalc(tjd, ipl, iflag, x) {
-    console.log("swecalc()");
-    var i;
+        var i;
     var ipli, ipli_ast, ifno;
     var retc;
     var epheflag = Swe.SEFLG_DEFAULTEPH;
@@ -789,8 +787,7 @@ class SwissEph{
     for (i = 0; i < 24; i++) {
       x[i] = xp[i];
     }
-    console.log("swecalc() end")
-    return(iflag);
+        return(iflag);
   }
 
   moshier_moon(tjd, do_save, xpmret) {
@@ -841,7 +838,6 @@ class SwissEph{
   }
 
   main_planet(tjd, ipli, epheflag, iflag){
-    console.log("main_planet()")
     var retc;
     var calc_swieph=false;
     var calc_moshier=false;
@@ -860,8 +856,7 @@ class SwissEph{
         return Swe.ERR;
       }
     }
-    console.log("main_planet() end")
-    return Swe.OK;
+        return Swe.OK;
   }
 
   sweplan(tjd, ipli, ifno, iflag, do_save,
@@ -1035,8 +1030,7 @@ class SwissEph{
   }
 
   app_pos_etc_plan(ipli, iflag) {
-    console.log("app_pos_etc_plan()");
-    var i, j, niter;
+        var i, j, niter;
     var retc = Swe.OK;
     var ifno, ibody;
     var flg1, flg2;
@@ -1302,12 +1296,11 @@ class SwissEph{
     }
 
     var ret = this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
-    console.log("app_pos_etc_plan() end");
-    return ret;
+        return ret;
   }
 
   app_pos_rest(pdp, iflag, xx, x2000, oe) {
-    console.log("app_pos_rest()");
+    
 
     var i;
     /************************************************
@@ -1369,7 +1362,7 @@ class SwissEph{
     pdp.xflgs = iflag;
     pdp.iephe = iflag & Swe.SEFLG_EPHMASK;
 
-    console.log("app_pos_rest() end");
+    
     return Swe.OK;
   }
 
@@ -1378,7 +1371,7 @@ class SwissEph{
       this.swi_precess_speed(xx, 0, xOffs, t, iflag);
       return;
     }
-    console.log("swi_precess_speed()");
+    
 
     var oe;
     var fac, dpre = new Array(1), dpre2 = new Array(1);
@@ -1412,7 +1405,7 @@ class SwissEph{
     this.sl.swi_coortrf2(xx, xOffs, xx, xOffs, -oe.seps, oe.ceps);
     this.sl.swi_coortrf2(xx, 3+xOffs, xx, 3+xOffs, -oe.seps, oe.ceps);
 
-    console.log("swi_precess_speed() end")
+    
   }
 
 
@@ -1472,7 +1465,7 @@ class SwissEph{
       return;
     }
 
-    console.log("swi_aberr_light()");
+    
     var i;
     var xxs=[0,0,0,0,0,0], v=[0,0,0,0,0,0], u=[0,0,0,0,0,0], ru;
     var xx2=[0,0,0,0,0,0], dx1, dx2;
@@ -1518,7 +1511,7 @@ class SwissEph{
 
 
   swi_deflect_light(xx, offs, dt, iflag) {
-    console.log("swi_deflect_light()")
+    
     var i;
     var xx2 = [0,0,0,0,0,0];
     var u = [0,0,0,0,0,0];
@@ -1639,7 +1632,7 @@ class SwissEph{
   }
 
   app_pos_etc_sun(iflag) {
-    console.log("app_pos_etc_sun()");
+    
     var i, j, niter, retc = Swe.OK;
     var flg1, flg2;
     var xx=new Array(6), xxsv=new Array(6), dx=new Array(3), dt, t = 0;
@@ -1793,12 +1786,12 @@ class SwissEph{
       oe = this.swed.oec2000;
 
     var ret = this.app_pos_rest(pedp, iflag, xx, xxsv, oe);
-    console.log("app_pos_etc_sun() end");
+    
     return ret;
   }
 
   app_pos_etc_moon(iflag) {
-    console.log("app_pos_etc_moon()");
+    
     var i;
     var flg1, flg2;
     var xx=new Array(6), xxsv=new Array(6), xobs=new Array(6),
@@ -1957,12 +1950,12 @@ class SwissEph{
     }
 
     var ret = this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
-    console.log("app_pos_etc_moon() end");
+    
     return ret;
   }
 
   app_pos_etc_mean(ipl, iflag) {
-    console.log("app_pos_etc_mean()");
+    
     var i;
     var flg1, flg2;
     var xx=new Array(6), xxsv=new Array(6);
@@ -2004,7 +1997,7 @@ class SwissEph{
     }
 
     var ret =  this.app_pos_rest(pdp, iflag, xx, xxsv, oe);
-    console.log("app_pos_etc_mean() end");
+    
     return ret
   }
 
@@ -2411,7 +2404,7 @@ class SwissEph{
           x[i] = ndp.xreturn[18+i];
         }
         /* precess to J2000 */
-        sl.swi_precess(x, tjd, iflag, Swe.SwephData.J_TO_J2000);
+        this.sl.swi_precess(x, tjd, iflag, Swe.SwephData.J_TO_J2000);
         if ((iflag & Swe.SEFLG_SPEED)!=0) {
           this.swi_precess_speed(x, tjd, iflag, Swe.SwephData.J_TO_J2000);
         }
@@ -2444,7 +2437,7 @@ class SwissEph{
   /* lunar osculating elements, i.e.
    */ 
   intp_apsides(tjd, ipl, iflag) {
-    console.log("intp_apsides()");
+    
     var i;
     var flg1, flg2;
     var ndp;
@@ -2666,7 +2659,7 @@ class SwissEph{
 
 
   swi_check_ecliptic(tjd, iflag) {
-    console.log("swi_check_ecliptic()");
+    
     if (this.swed.oec2000.teps != Swe.SwephData.J2000) {
       this.calc_epsilon(Swe.SwephData.J2000, iflag, this.swed.oec2000);
     }
@@ -2686,7 +2679,7 @@ class SwissEph{
    * if speed flag has been turned on since last computation,
    * nutation is recomputed */
   swi_check_nutation(tjd, iflag) {
-    console.log("swi_check_nutation()");
+    
     var speedf1, speedf2;
     var t;
     speedf1 = this.chck_nut_nutflag & Swe.SEFLG_SPEED;
@@ -2811,7 +2804,7 @@ class SwissEph{
   }
 
   swi_get_observer(tjd, iflag, do_save, xobs) {
-    console.log("swi_get_observer");
+    
     var i;
     var sidt, delt, tjd_ut, eps, nut, nutlo=new Array(2);
     var f = Swe.SwephData.EARTH_OBLATENESS;

@@ -25,7 +25,8 @@
     <script type="text/javascript" src="js/SwemptabNep.js"></script>
     <script type="text/javascript" src="js/SwemptabPlu.js"></script>
     <script type="text/javascript" src="js/SwephMosh.js"></script>
-    
+
+    <script type="text/javascript" src="js/SweHouse.js"></script>
     <script type="text/javascript" src="js/Swecl.js"></script>
     <script type="text/javascript" src="js/SwissEph.js"></script>
 
@@ -423,7 +424,10 @@
         
         var start_ms = new Date().getTime();
         var p = a.getPlanetPosition();
+        a.setGeoPosition(43, 135);
+        var h = a.getHouse("K");
         console.log(p);
+        console.log(h);
 
         $('#sun').text(getSignDegreeText(p.Sun.longitude));
         $('#moon').text(getSignDegreeText(p.Moon.longitude));

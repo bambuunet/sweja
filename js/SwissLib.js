@@ -521,7 +521,7 @@ class SwissLib{
       return this.swi_coortrf2(xpo, 0, oOffs, 0, xpn, nOffs);
     }
 
-    console.log("swi_coortrf2() xpo:"+xpo+", oOffs:"+oOffs+", xpn:"+xpn+", nOffs:"+nOffs+", sineps:"+sineps+", coseps:"+coseps);
+    
 
     var x=[0,0,0];
     x[0] = xpo[0+oOffs];
@@ -570,7 +570,7 @@ class SwissLib{
       return this.swi_polcart(l, 0, lOffs, 0);
     }
 
-    console.log("swi_polcart() l:"+l+", x:"+x);
+    
     var xx=[0,0,0];
     var cosl1;
     cosl1 = Math.cos(l[lOffs+1]);
@@ -589,7 +589,7 @@ class SwissLib{
       return this.swi_cartpol_sp(x, 0, xOffs, 0);
     }
 
-    console.log("swi_cartpol_sp()");
+    
     var xx=[0,0,0,0,0,0];
     var ll=[0,0,0,0,0,0];
     var rxy, coslon, sinlon, coslat, sinlat;
@@ -643,7 +643,7 @@ class SwissLib{
       return this.swi_polcart_sp(l, 0, lOffs, 0);
     }
 
-    console.log("swi_polcart_sp()")
+    
     var sinlon, coslon, sinlat, coslat;
     var xx=[0,0,0,0,0,0], rxy, rxyz;
     /* zero speed */
@@ -678,7 +678,7 @@ class SwissLib{
 
 
   swi_ldp_peps(tjd, dpre, deps) {
-    console.log("swi_ldp_peps()");
+    
     var i;
     var npol = this.NPOL_PEPS;
     var nper = this.NPER_PEPS;
@@ -717,7 +717,7 @@ class SwissLib{
 
 
   pre_pecl(tjd, vec) {
-    console.log("pre_pecl()");
+    
     var i;
     var npol = this.NPOL_PECL;
     var nper = this.NPER_PECL;
@@ -762,7 +762,7 @@ class SwissLib{
 
   /* precession of the equator */
   pre_pequ(tjd, veq) {
-    console.log("pre_pequ()");
+    
     var i;
     var npol = this.NPOL_PEQU;
     var nper = this.NPER_PEQU;
@@ -803,7 +803,7 @@ class SwissLib{
 
   /* precession matrix */
   pre_pmat(tjd, rp) {
-    console.log("pre_pmat()");
+    
     var peqr = [0,0,0], pecl = [0,0,0], v = [0,0,0], w, eqx = [0,0,0];
     /*equator pole */
     this.pre_pequ(tjd, peqr);
@@ -829,7 +829,7 @@ class SwissLib{
   }
 
   swi_epsiln(J, iflag) {
-    console.log("swi_epsiln()");
+    
     var T, eps;
     var tofs, dofs, t0, t1;
     var prec_model = this.swed.astro_models[Swe.SE_MODEL_PREC_LONGTERM];
@@ -1146,7 +1146,7 @@ class SwissLib{
     if(direction === undefined){
       return this.swi_precess(R, 0, rOffs, J, iflag);
     }
-    console.log("swi_precess() R:"+R+", rOffs:"+rOffs+", J:"+J+", iflag:"+iflag+", direction:"+direction);
+    
 
     var T = (J - Swe.SwephData.J2000)/36525.0;
     var prec_model = this.swed.astro_models[Swe.SE_MODEL_PREC_LONGTERM];
@@ -1611,7 +1611,7 @@ class SwissLib{
 
   /* GCRS to J2000 */
   swi_bias( x, tjd, iflag, backward) {
-    console.log("swi_bias() x:"+x+", tjd:"+tjd+", iflag:"+iflag+", backward:"+backward);
+    
     var xx=[0,0,0,0,0,0];
     var rb=[0,0,0];
     for(var i=0; i<3; i++){
