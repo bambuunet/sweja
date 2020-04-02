@@ -1,6 +1,7 @@
 #!/bin/sh
 
 cat \
+  copyright.txt \
   Swe.js \
   Classes.js \
   Swenut2000.js \
@@ -19,7 +20,8 @@ cat \
   SwemptabNep.js \
   SwemptabPlu.js \
   SwephMosh.js \
+  SweHouse.js \
   Swecl.js \
   SwissEph.js \
   AstroCalculator.js \
-  > swe_ofi.js
+  > AstroCalculator.1.0.0.js
