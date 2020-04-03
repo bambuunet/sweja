@@ -619,7 +619,7 @@ class SweHouse{
       case 'K': /* Koch houses */
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
           retc = Swe.ERR;
-          makePorphyry(hsp);
+          this.makePorphyry(hsp);
           break;
         }
         sina = this.sind(hsp.mc) * sine / this.cosd(fi);
@@ -634,7 +634,7 @@ class SweHouse{
         hsp.cusp [3] = this.Asc1 (th + 150 + 2 * ad3, fi, sine, cose);
         break;
       case 'O':   /* Porphyry houses */
-        makePorphyry(hsp);
+        this.makePorphyry(hsp);
         break;
       case 'R':   /* Regiomontanus houses */
         fh1 = this.atand (tanfi * 0.5);
@@ -774,7 +774,7 @@ class SweHouse{
         var dek, r, sna, sda, sn3, sd3;
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
           retc = Swe.ERR;
-          makePorphyry(hsp);
+          this.makePorphyry(hsp);
           break;
         }
         acmc = this.sl.swe_difdeg2n(hsp.ac, hsp.mc);
@@ -812,7 +812,7 @@ class SweHouse{
         }
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
           retc = Swe.ERR;
-                    makePorphyry(hsp);
+                    this.makePorphyry(hsp);
         }
         /*************** forth/second quarter ***************/
         /* note: Gauquelin sectors are counted in clockwise direction */
@@ -972,7 +972,7 @@ class SweHouse{
         }
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
           retc = Swe.ERR;
-          makePorphyry(hsp);
+          this.makePorphyry(hsp);
           break;
         }
         a = this.asind(this.tand(fi) * tane);

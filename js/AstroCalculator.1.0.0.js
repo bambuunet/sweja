@@ -64,6 +64,22 @@ rubyfmzk@gmail.com
 
   The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' may be used
   for promoting such software, products or services.
+*//*
+よくわかんないので、いったん以下のように残している。
+
+消すもの
+TRACE0 
+TRACE1 
+0 
+ORIGINAL 
+JPL　
+NO_RISE_TRANS 
+ASTROLOGY 
+
+残すもの
+JAVAME　
+#ifndef NO_MOSHIER
+1 
 */
 
 var Swe = Swe || {};
@@ -693,7 +709,8 @@ class Houses{
     this.coasc2 = 0.0;
     this.polasc = 0.0;
   }
-}Swe.Swenut2000a = {
+}
+Swe.Swenut2000a = {
     O1MAS2DEG : 1 / 3600.0 / 10000000.0,
     NLS : 678,
     NLS_2000B : 77,
@@ -4132,7 +4149,8 @@ Swe.Swenut2000aNls = {
   2, -1, 2, 4, 2,
   2, 0, 2, 4, 1,
   ],
-}var Swe = Swe || {};
+}
+var Swe = Swe || {};
 Swe.SwephData = {};
 
 Swe.SwephData.PNOINT2JPL = [
@@ -5638,7 +5656,8 @@ class SweDate{
     return this.getUTCfromJDET(tjd_et, gregflag);
   }
 
-};class SwissLib{
+};
+class SwissLib{
   constructor(swed){
     this.sd = new SweDate;
 
@@ -7716,8 +7735,8 @@ class SweDate{
     }
     return Integer.valueOf(sout).intValue();
   }
-
-}class Swemmoon{
+}
+class Swemmoon{
 
   constructor(swed, sl){
     this.swed=swed;
@@ -8949,7 +8968,8 @@ class SweDate{
     return(0);
   }
 
-}class SwemptabMer{
+}
+class SwemptabMer{
   constructor(){
 
   this.mertabl = [
@@ -10775,7 +10795,8 @@ class SwemptabVen{
       );
 
   }
-}class SwemptabEar{
+}
+class SwemptabEar{
   constructor(){
 
     this.eartabl = [
@@ -11805,7 +11826,8 @@ class SwemptabVen{
       );
 
   }
-}class SwemptabMar{
+}
+class SwemptabMar{
   constructor(){
 
   this.martabl = [
@@ -20123,7 +20145,8 @@ class SwephMosh{
       z++;
     }
   }
-}class SweHouse{
+}
+class SweHouse{
 
   constructor(sl, sw, swed){
     this.MILLIARCSEC = 1.0 / 3600000.0;
@@ -20744,7 +20767,7 @@ class SwephMosh{
       case 'K': /* Koch houses */
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
           retc = Swe.ERR;
-          makePorphyry(hsp);
+          this.makePorphyry(hsp);
           break;
         }
         sina = this.sind(hsp.mc) * sine / this.cosd(fi);
@@ -20759,7 +20782,7 @@ class SwephMosh{
         hsp.cusp [3] = this.Asc1 (th + 150 + 2 * ad3, fi, sine, cose);
         break;
       case 'O':   /* Porphyry houses */
-        makePorphyry(hsp);
+        this.makePorphyry(hsp);
         break;
       case 'R':   /* Regiomontanus houses */
         fh1 = this.atand (tanfi * 0.5);
@@ -20899,7 +20922,7 @@ class SwephMosh{
         var dek, r, sna, sda, sn3, sd3;
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
           retc = Swe.ERR;
-          makePorphyry(hsp);
+          this.makePorphyry(hsp);
           break;
         }
         acmc = this.sl.swe_difdeg2n(hsp.ac, hsp.mc);
@@ -20937,7 +20960,7 @@ class SwephMosh{
         }
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
           retc = Swe.ERR;
-                    makePorphyry(hsp);
+                    this.makePorphyry(hsp);
         }
         /*************** forth/second quarter ***************/
         /* note: Gauquelin sectors are counted in clockwise direction */
@@ -21097,7 +21120,7 @@ class SwephMosh{
         }
         if (Math.abs(fi) >= 90 - ekl) {  /* within polar circle */
           retc = Swe.ERR;
-          makePorphyry(hsp);
+          this.makePorphyry(hsp);
           break;
         }
         a = this.asind(this.tand(fi) * tane);
@@ -23532,7 +23555,8 @@ class Swecl{
       return Swe.ERR;
     }
   }
-};class SwissEph{
+};
+class SwissEph{
   constructor(){
     
     this.swed = Swe.SwissData;
@@ -26464,7 +26488,8 @@ class Swecl{
 
     return x[0]*y[yOffs]+x[1]*y[1+yOffs]+x[2]*y[2+yOffs];
   }
-};class AstroCalculator{
+};
+class AstroCalculator{
   constructor(opt){
     this.swe = new SwissEph();
     this.sd;
